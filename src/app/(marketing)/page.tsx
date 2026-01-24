@@ -1,29 +1,36 @@
-import Link from "next/link"
-import { siteConfig } from "@/config/site"
+// HomePage - Page d'accueil avec scène 3D
+'use client';
+
+import { SceneContainer } from '@/core/3d/scenes/SceneContainer';
+import { TestScene } from '@/core/3d/scenes/TestScene';
+import { LoadingScreen } from '@/components/3d/LoadingScreen';
+import { FloatingUI } from '@/components/3d/FloatingUI';
+import { useWorldStore } from '@/store/3d-world-store';
 
 export default function HomePage() {
+  const currentWorld = useWorldStore((s) => s.currentWorld);
+
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-        Welcome to {siteConfig.name}
-      </h1>
-      <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-        {siteConfig.description}
-      </p>
-      <div className="mt-10 flex gap-4">
-        <Link
-          href="/blog"
-          className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-        >
-          Read Blog
-        </Link>
-        <Link
-          href="/portfolio"
-          className="inline-flex items-center justify-center rounded-md border border-input bg-background px-8 py-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-        >
-          View Portfolio
-        </Link>
+    <main className="relative h-screen w-screen overflow-hidden">
+      {/* 3D Scene */}
+      <SceneContainer currentWorld={currentWorld}>
+        <TestScene worldType={currentWorld} />
+      </SceneContainer>
+
+      {/* Loading Screen */}
+      <LoadingScreen />
+
+      {/* Floating UI */}
+      <FloatingUI />
+
+      {/* Welcome Overlay - Disparaît au premier clique */}
+      <div className="absolute bottom-6 left-6 z-40 max-w-sm rounded-lg bg-black/50 backdrop-blur-md p-4 text-white border border-white/10">
+        <h2 className="text-lg font-semibold mb-2">Welcome to Oalacea 3D</h2>
+        <p className="text-sm text-white/70">
+          Explore the {currentWorld === 'dev' ? 'Imperium' : 'Underground'} world.
+          Click anywhere to start exploring with WASD.
+        </p>
       </div>
-    </div>
-  )
+    </main>
+  );
 }

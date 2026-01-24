@@ -122,4 +122,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Cacher les scrollbars */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  html, body {
+    overflow-x: hidden;
+    scrollbar-width: none; /* Firefox */
+  }
 }
