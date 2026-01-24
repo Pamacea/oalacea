@@ -61,7 +61,7 @@ class NavigationGrid {
 
     // Marquer les cellules en collision
     for (const zone of zones) {
-      const zoneRadius = zone.radius + 0.7; // + marge pour le personnage
+      const zoneRadius = zone.radius + 0.5; // + rayon du personnage (sans marge supplémentaire)
       const centerGridX = Math.floor((zone.position[0] - WORLD_MIN) / GRID_SIZE);
       const centerGridZ = Math.floor((zone.position[2] - WORLD_MIN) / GRID_SIZE);
       const radiusInCells = Math.ceil(zoneRadius / GRID_SIZE);
