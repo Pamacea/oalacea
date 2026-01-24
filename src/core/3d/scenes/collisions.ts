@@ -43,11 +43,11 @@ export const DEV_COLLISION_ZONES: CollisionZone[] = [
   { id: 'arch-west-left', position: [-18, 0, -3], radius: 0.8, name: 'Pilier Arc Ouest Gauche' },
   { id: 'arch-west-right', position: [-18, 0, 3], radius: 0.8, name: 'Pilier Arc Ouest Droite' },
 
-  // Terminaux (box 2x1 = rayon ~1)
-  { id: 'terminal-1', position: [-12, 0, -8], radius: 1.0, name: 'Terminal 1' },
-  { id: 'terminal-2', position: [12, 0, -8], radius: 1.0, name: 'Terminal 2' },
-  { id: 'terminal-3', position: [-8, 0, 8], radius: 1.0, name: 'Terminal 3' },
-  { id: 'terminal-4', position: [8, 0, 8], radius: 1.0, name: 'Terminal 4' },
+  // Terminaux (box 2x1)
+  { id: 'terminal-1', position: [-12, 0, -8], radius: 0.91, name: 'Terminal 1' },
+  { id: 'terminal-2', position: [12, 0, -8], radius: 0.91, name: 'Terminal 2' },
+  { id: 'terminal-3', position: [-8, 0, 8], radius: 0.91, name: 'Terminal 3' },
+  { id: 'terminal-4', position: [8, 0, 8], radius: 0.91, name: 'Terminal 4' },
 ];
 
 // =========================================

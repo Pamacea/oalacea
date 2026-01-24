@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { WorldSwitch } from './WorldSwitch';
+import { InteractionPrompt } from './InteractionPrompt';
+import { SceneOverlay } from './SceneOverlay';
 
 export function FloatingUI() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -52,6 +54,12 @@ export function FloatingUI() {
           </motion.svg>
         </Button>
       </motion.header>
+
+      {/* Interaction Prompt */}
+      <InteractionPrompt />
+
+      {/* Overlay pour afficher le contenu des pages */}
+      <SceneOverlay />
     </>
   );
 }

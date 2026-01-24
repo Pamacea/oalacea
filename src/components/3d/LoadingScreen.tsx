@@ -63,7 +63,7 @@ export function LoadingScreen() {
             transition={{ delay: 0.8, duration: 0.6 }}
             className="mt-4 text-xs text-white/40"
           >
-            Use WASD to explore the 3D world
+            Use Right Click to explore the world
           </motion.p>
         </motion.div>
       )}
