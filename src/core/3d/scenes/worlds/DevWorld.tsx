@@ -3,6 +3,7 @@
 
 import { useMemo } from 'react';
 import { ImperialPillar, GothicArch, DevTerminal, DustParticles } from './dev/DevComponents';
+import { ImperiumPortal } from '../portals';
 
 interface DevWorldProps {
   position?: [number, number, number];
@@ -32,8 +33,8 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
       <GothicArch position={[0, 0, 18]} rotation={0} />
       <GothicArch position={[0, 0, -18]} rotation={Math.PI} />
 
-      {/* Monolithe central */}
-      <group position={[0, 0, -20]}>
+      {/* Monolithe central - DÉSACTIVÉ car trop proche du portail central */}
+      {/* <group position={[0, 0, -20]}>
         <mesh position={[0, 5, 0]} castShadow receiveShadow>
           <boxGeometry args={[6, 10, 2]} />
           <meshStandardMaterial color="#0a0a0a" roughness={0.5} metalness={0.5} />
@@ -56,7 +57,7 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
             <meshStandardMaterial color="#8b0000" metalness={0.9} emissive="#8b0000" emissiveIntensity={0.3} />
           </mesh>
         </group>
-      </group>
+      </group> */}
 
       {/* Terminaux */}
       <DevTerminal position={[-12, 0, -8]} rotation={0.3} />
@@ -66,6 +67,9 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
 
       {/* Particules */}
       <DustParticles count={300} />
+
+      {/* Portail vers l'Underground - AU CENTRE */}
+      <ImperiumPortal position={[0, 0, 0]} targetWorld="art" rotation={0} />
     </group>
   );
 }

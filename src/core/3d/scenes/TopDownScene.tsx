@@ -3,14 +3,15 @@
 // Barre espace: Toggle caméra follow vs free
 'use client';
 
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Vector3 } from 'three';
 import type { WorldType } from './types';
 import { DevWorld, ArtWorld } from './worlds';
 import { InteractionZone } from './interactions';
-import { useProximity } from '@/hooks/useProximity';
+import { useInteractionsRegistry } from './interactions/useInteractionsRegistry';
 import { useCharacterStore } from '@/store/3d-character-store';
 import { useOverlayStore } from '@/store/3d-overlay-store';
+import { useWorldStore } from '@/store/3d-world-store';
 import { Character } from '@/core/3d/character';
 import { FollowCamera } from '@/core/3d/camera';
 
@@ -46,28 +47,12 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
     },
   }[worldType];
 
-  // Zones d'interaction avec routes
-  const interactionZones = useMemo(() => [
-    { id: 'zone-blog', position: [-15, 0, -15] as [number, number, number], label: 'Blog', route: '/blog' },
-    { id: 'zone-portfolio-dev', position: [15, 0, -15] as [number, number, number], label: 'Portfolio Dev', route: '/portfolio' },
-    { id: 'zone-portfolio-art', position: [-15, 0, 15] as [number, number, number], label: 'Portfolio Art', route: '/portfolio' },
-    { id: 'zone-about', position: [15, 0, 15] as [number, number, number], label: 'About', route: '/about' },
-  ], []);
+  // Utilise le registry d'interactions (PLUS DE CODE HARDCODÉ !)
+  const { proximityObjects, visualInteractions } = useInteractionsRegistry(worldType);
 
-  // Proximity detection pour les interactions
-  const proximityObjects = useMemo(() =>
-    interactionZones.map(zone => ({
-      id: zone.id,
-      position: zone.position,
-      radius: 3.5,
-      data: { name: zone.label, route: zone.route },
-    })),
-    [interactionZones]
-  );
-  useProximity(proximityObjects);
-
-  // Store pour l'overlay
+  // Store pour l'overlay et interactions
   const openOverlay = useOverlayStore((s) => s.openOverlay);
+  const switchWorld = useWorldStore((s) => s.switchWorld);
   const canInteract = useCharacterStore((s) => s.canInteract);
   const interactTarget = useCharacterStore((s) => s.interactTarget);
 
@@ -75,15 +60,19 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'KeyE' && !e.repeat) {
-        if (canInteract && interactTarget?.route && interactTarget?.name) {
-          openOverlay(interactTarget.route, interactTarget.name);
+        if (canInteract && interactTarget) {
+          if (interactTarget.targetWorld) {
+            switchWorld(interactTarget.targetWorld);
+          } else if (interactTarget.route && interactTarget.name) {
+            openOverlay(interactTarget.route, interactTarget.name);
+          }
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canInteract, interactTarget, openOverlay]);
+  }, [canInteract, interactTarget, openOverlay, switchWorld]);
 
   return (
     <>
@@ -99,14 +88,14 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
       {/* Grille subtile pour repères visuels */}
       <gridHelper args={[100, 50, colors.grid, colors.gridAlt]} position={[0, 0, 0]} />
 
-      {/* Zones d'interaction */}
-      {interactionZones.map((zone) => (
+      {/* Zones d'interaction visuelles (sans les portails qui ont leur propre visuel) */}
+      {visualInteractions.map((zone) => (
         <InteractionZone
           key={zone.id}
           id={zone.id}
           position={zone.position}
           label={zone.label}
-          route={zone.route}
+          route={zone.route ?? ''}
           worldType={worldType}
           color={colors.accent}
           radius={3}

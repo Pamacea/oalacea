@@ -4,17 +4,26 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCharacterStore } from '@/store/3d-character-store';
 import { useOverlayStore } from '@/store/3d-overlay-store';
+import { useWorldStore } from '@/store/3d-world-store';
 
 export function InteractionPrompt() {
   const openOverlay = useOverlayStore((s) => s.openOverlay);
+  const switchWorld = useWorldStore((s) => s.switchWorld);
   const canInteract = useCharacterStore((s) => s.canInteract);
   const interactTarget = useCharacterStore((s) => s.interactTarget);
 
   const handleInteract = () => {
-    if (interactTarget?.route && interactTarget?.name) {
+    if (interactTarget?.targetWorld) {
+      switchWorld(interactTarget.targetWorld);
+    } else if (interactTarget?.route && interactTarget?.name) {
       openOverlay(interactTarget.route, interactTarget.name);
     }
   };
+
+  if (!canInteract || !interactTarget) return null;
+
+  const isPortal = !!interactTarget.targetWorld;
+  const actionText = isPortal ? 'enter' : 'view';
 
   return (
     <AnimatePresence>
@@ -28,13 +37,13 @@ export function InteractionPrompt() {
         >
           <div className="flex items-center gap-4 rounded-full bg-black/70 px-6 py-3 backdrop-blur-md border border-white/10">
             <span className="text-sm font-medium text-white">
-              {interactTarget.name}
+              {isPortal ? `Portal to ${interactTarget.name}` : interactTarget.name}
             </span>
             <div className="flex items-center gap-2">
               <kbd className="rounded bg-white/20 px-2 py-1 text-xs text-white font-mono">
                 E
               </kbd>
-              <span className="text-xs text-white/60">to view</span>
+              <span className="text-xs text-white/60">to {actionText}</span>
             </div>
             <button
               onClick={handleInteract}

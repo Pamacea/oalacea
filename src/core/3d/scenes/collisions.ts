@@ -1,5 +1,9 @@
 // Collision zones pour les deux mondes
 // Zones de collision définies comme cercles (position, rayon)
+//
+// IMPORTANT: Les portails sont positionnés à [0, 0, 0] dans les deux mondes (AU CENTRE).
+// TOUJOURS laisser un rayon de sécurité d'au moins 10 unités autour du centre [0, 0].
+// Ne pas placer de zones de collision dans un rayon de 10m autour du centre.
 
 import { Vector3 } from 'three';
 
@@ -14,8 +18,8 @@ export interface CollisionZone {
 // DEV WORLD - COLLISION ZONES
 // =========================================
 export const DEV_COLLISION_ZONES: CollisionZone[] = [
-  // Monolithe central (box 6x2 = rayon ~3)
-  { id: 'monolith', position: [0, 0, -20], radius: 3.1, name: 'Monolithe' },
+  // Monolithe central - DÉSACTIVÉ car portail au centre
+  // { id: 'monolith', position: [0, 0, -20], radius: 3.1, name: 'Monolithe' },
 
   // Piliers (16 piliers en cercle) - base rayon 2.0, avec petit écart
   ...Array.from({ length: 16 }, (_, i) => {
@@ -59,7 +63,7 @@ export const ART_COLLISION_ZONES: CollisionZone[] = [
   { id: 'wall-2', position: [20, 0, -15], radius: 4.0, name: 'Mur Béton 2' },
   { id: 'wall-3', position: [-25, 0, 5], radius: 3.0, name: 'Mur Béton 3' },
   { id: 'wall-4', position: [25, 0, 5], radius: 3.0, name: 'Mur Béton 4' },
-  { id: 'wall-5', position: [0, 0, -30], radius: 7.0, name: 'Mur du fond' },
+  { id: 'wall-5', position: [0, 0, -30], radius: 3.8, name: 'Mur du fond' },
 
   // Pedestals - base rayon 2.0, réduit
   { id: 'pedestal-1', position: [-10, 0, -8], radius: 1.9, name: 'Pedestal 1' },
