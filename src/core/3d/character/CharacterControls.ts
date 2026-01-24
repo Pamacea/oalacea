@@ -1,4 +1,4 @@
-// Character controls logic
+// Character controls logic - Fixed with proper collision checking during movement
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
@@ -7,7 +7,7 @@ import { Vector3, Group } from 'three';
 import * as THREE from 'three';
 import type { WorldType } from '../scenes/types';
 import type { CollisionZone } from '../scenes/collisions';
-import { navigationGrid } from '../scenes/pathfinding';
+import { usePhysicsEngine, useCharacterController as usePhysicsController } from '@/hooks/usePhysicsEngine';
 import { useCharacterStore } from '@/store/3d-character-store';
 
 const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
@@ -21,17 +21,28 @@ export interface CharacterControlsProps {
 }
 
 export function useCharacterControls({
-  worldType, collisionZones, positionRef, onTargetSet, onSprintChange,
+  worldType,
+  collisionZones,
+  positionRef,
+  onTargetSet,
+  onSprintChange,
 }: CharacterControlsProps) {
   const groupRef = useRef<Group>(null);
   const { camera } = useThree();
   const pathRef = useRef<Vector3[]>([]);
   const currentWaypointRef = useRef<Vector3 | null>(null);
+  const finalDestinationRef = useRef<Vector3 | null>(null); // Store original destination
+  const blockedFramesRef = useRef(0); // Count consecutive blocked frames
+
   const [rotation, setRotation] = useState(0);
   const [isMoving, setIsMoving] = useState(false);
   const [isSprinting, setIsSprinting] = useState(false);
   const [displayPath, setDisplayPath] = useState<Vector3[]>([]);
   const [localPosition, setLocalPosition] = useState(new Vector3(...INITIAL_POSITION));
+
+  // Initialize new physics engine
+  const physicsEngine = usePhysicsEngine(collisionZones);
+  const characterController = usePhysicsController(physicsEngine, localPosition);
 
   const setPosition = useCharacterStore((s) => s.setPosition);
   const lastSyncedPositionRef = useRef(new Vector3(...INITIAL_POSITION));
@@ -59,7 +70,7 @@ export function useCharacterControls({
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (e.button !== 2 || !camera) return;
+      if (e.button !== 2 || !camera || !physicsEngine) return;
       e.preventDefault();
 
       const raycaster = new THREE.Raycaster();
@@ -75,20 +86,29 @@ export function useCharacterControls({
 
       const x = Math.max(-45, Math.min(45, intersection.x));
       const z = Math.max(-45, Math.min(45, intersection.z));
-      const clickedPos = new Vector3(x, 0.5, z);
+      let clickedPos = new Vector3(x, 0.5, z);
       const currentPos = positionRef?.current || localPosition;
 
-      navigationGrid.updateCollisionZones(collisionZones);
-      const path = navigationGrid.findPath(currentPos, clickedPos);
+      // Validate clicked position - if inside obstacle, find nearest valid position
+      // Pathfinding will handle routing around obstacles
+      if (physicsEngine.checkCollision(clickedPos)) {
+        clickedPos = physicsEngine.collisionDetector.findNearestValidPosition(clickedPos, 0.5, 5);
+      }
+
+      // Use pathfinding to get full route (handles going around obstacles)
+      const path = physicsEngine.findPath(currentPos, clickedPos);
 
       if (path.length > 0) {
         pathRef.current = path;
         setDisplayPath(path);
         const nextWaypoint = path.length > 1 ? path[1] : path[0];
         currentWaypointRef.current = nextWaypoint;
+        finalDestinationRef.current = path[path.length - 1]; // Store final destination
+        blockedFramesRef.current = 0; // Reset blocked counter
         onTargetSet?.(path[path.length - 1]);
       } else {
         setDisplayPath([]);
+        finalDestinationRef.current = null;
       }
     };
 
@@ -100,17 +120,45 @@ export function useCharacterControls({
       window.removeEventListener('mousedown', handleClick);
       window.removeEventListener('contextmenu', handleContextMenu);
     };
-  }, [camera, collisionZones, positionRef, localPosition, onTargetSet]);
+  }, [camera, collisionZones, positionRef, localPosition, onTargetSet, physicsEngine]);
+
+  /**
+   * Move towards a target with collision checking at each step
+   * Returns the new position - stops if blocked (no sliding)
+   */
+  const moveTowardsWithCollision = (
+    currentPos: Vector3,
+    targetPos: Vector3,
+    speed: number,
+    delta: number
+  ): { position: Vector3; blocked: boolean } => {
+    const dx = targetPos.x - currentPos.x;
+    const dz = targetPos.z - currentPos.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
+
+    if (distance <= 0.1) {
+      return { position: currentPos.clone(), blocked: false }; // Reached
+    }
+
+    const direction = new Vector3(dx, 0, dz).normalize();
+    const moveDistance = Math.min(speed * delta, distance);
+    const tentativePos = currentPos.clone().add(direction.clone().multiplyScalar(moveDistance));
+
+    // Check if next position would collide
+    const collision = physicsEngine!.collisionDetector.checkCollision(tentativePos, 0.5);
+
+    if (collision.collided) {
+      // Blocked - don't slide, let pathfinding handle it
+      return { position: currentPos.clone(), blocked: true };
+    }
+
+    return { position: tentativePos, blocked: false };
+  };
 
   useFrame((_, delta) => {
-    if (!groupRef.current) return;
+    if (!groupRef.current || !physicsEngine) return;
 
-    const baseSpeed = 12;
-    const sprintMultiplier = 1.6;
-    const speed = isSprinting ? baseSpeed * sprintMultiplier : baseSpeed;
-    const rotSpeed = 15;
     const sprinting = keys.current.sprint;
-
     setIsSprinting(sprinting);
     onSprintChange?.(sprinting);
 
@@ -118,28 +166,51 @@ export function useCharacterControls({
 
     if (currentWaypointRef.current) {
       const targetPos = currentWaypointRef.current;
-      const dx = targetPos.x - currentPos.x;
-      const dz = targetPos.z - currentPos.z;
-      const distance = Math.sqrt(dx * dx + dz * dz);
+      const distance = currentPos.distanceTo(targetPos);
 
       if (distance > 0.3) {
         setIsMoving(true);
+
+        // Calculate rotation
+        const dx = targetPos.x - currentPos.x;
+        const dz = targetPos.z - currentPos.z;
         const targetRotation = Math.atan2(dx, dz);
         const rotDiff = targetRotation - rotation;
         const shortestRot = ((rotDiff + Math.PI) % (2 * Math.PI)) - Math.PI;
-        setRotation(r => r + shortestRot * delta * rotSpeed);
+        setRotation(r => r + shortestRot * delta * 15);
 
-        const moveDist = speed * delta;
-        const ratio = Math.min(moveDist / distance, 1);
-        const newPos = new Vector3(
-          currentPos.x + dx * ratio,
-          0.5,
-          currentPos.z + dz * ratio
-        );
+        // Move WITH collision checking
+        const speed = sprinting ? 8 : 4;
+        const { position: newPos, blocked } = moveTowardsWithCollision(currentPos, targetPos, speed, delta);
 
-        setLocalPosition(newPos);
+        if (blocked) {
+          blockedFramesRef.current++;
+
+          // If blocked for more than 10 frames, recalculate path
+          if (blockedFramesRef.current > 10 && finalDestinationRef.current) {
+            const newPath = physicsEngine.findPath(currentPos, finalDestinationRef.current);
+            if (newPath.length > 0) {
+              pathRef.current = newPath;
+              setDisplayPath(newPath);
+              currentWaypointRef.current = newPath.length > 1 ? newPath[1] : newPath[0];
+              blockedFramesRef.current = 0;
+            } else {
+              // No path found, give up
+              currentWaypointRef.current = null;
+              pathRef.current = [];
+              setDisplayPath([]);
+              setIsMoving(false);
+            }
+          }
+        } else {
+          blockedFramesRef.current = 0; // Reset when moving
+        }
+
+        // Update position
+        setLocalPosition(newPos.clone());
         if (positionRef) positionRef.current.copy(newPos);
       } else {
+        // Reached waypoint, get next one
         const path = pathRef.current;
         const currentIndex = path.findIndex(p =>
           Math.abs(p.x - targetPos.x) < 0.1 && Math.abs(p.z - targetPos.z) < 0.1
@@ -147,10 +218,13 @@ export function useCharacterControls({
 
         if (currentIndex >= 0 && currentIndex < path.length - 1) {
           currentWaypointRef.current = path[currentIndex + 1];
+          blockedFramesRef.current = 0;
         } else {
           currentWaypointRef.current = null;
           pathRef.current = [];
           setDisplayPath([]);
+          finalDestinationRef.current = null;
+          blockedFramesRef.current = 0;
           onTargetSet?.(null);
           setIsMoving(false);
         }
@@ -159,6 +233,7 @@ export function useCharacterControls({
       setIsMoving(false);
     }
 
+    // Sync position to store
     const posChanged = currentPos.distanceTo(lastSyncedPositionRef.current) > 0.5;
     if (posChanged) {
       lastSyncedPositionRef.current.copy(currentPos);
