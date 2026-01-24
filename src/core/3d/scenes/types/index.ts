@@ -5,5 +5,4 @@ export * from './camera';
 export * from './interaction';
 export * from './transition';
 export * from './audio';
-export * from './physics';
 export * from './loading';

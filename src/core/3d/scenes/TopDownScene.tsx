@@ -11,8 +11,7 @@ import { InteractionZone } from './interactions';
 import { useProximity } from '@/hooks/useProximity';
 import { useCharacterStore } from '@/store/3d-character-store';
 import { useOverlayStore } from '@/store/3d-overlay-store';
-import { PhysicsCharacter } from '@/core/3d/physics/PhysicsCharacter';
-import { PhysicsWorld, PhysicsPillar, PhysicsArch, PhysicsTerminal, PhysicsMonolith, PhysicsGround, PhysicsWall, PhysicsPedestal } from '@/core/3d/physics';
+import { Character } from '@/core/3d/character';
 import { FollowCamera } from '@/core/3d/camera';
 
 const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
@@ -87,10 +86,7 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
   }, [canInteract, interactTarget, openOverlay]);
 
   return (
-    <PhysicsWorld worldType={worldType}>
-      {/* Sol physique */}
-      <PhysicsGround />
-
+    <>
       {/* Sol visuel */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
         <planeGeometry args={[100, 100]} />
@@ -98,43 +94,7 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
       </mesh>
 
       {/* Monde spécifique selon le type */}
-      {worldType === 'dev' ? (
-        <>
-          <DevWorld />
-          {/* Piliers gothiques */}
-          <PhysicsPillar position={[0, 4, -25]} />
-          <PhysicsPillar position={[25, 4, 0]} />
-          <PhysicsPillar position={[-25, 4, 0]} />
-          <PhysicsPillar position={[0, 4, 25]} />
-          {/* Arcs */}
-          <PhysicsArch position={[18, 0, 0]} rotation={Math.PI / 2} />
-          <PhysicsArch position={[-18, 0, 0]} rotation={-Math.PI / 2} />
-          <PhysicsArch position={[0, 0, 18]} rotation={0} />
-          <PhysicsArch position={[0, 0, -18]} rotation={Math.PI} />
-          {/* Monolithe */}
-          <PhysicsMonolith position={[0, 5, -20]} />
-          {/* Terminaux */}
-          <PhysicsTerminal position={[-12, 0.75, -8]} rotation={0.3} />
-          <PhysicsTerminal position={[12, 0.75, -8]} rotation={-0.3} />
-          <PhysicsTerminal position={[-8, 0.75, 8]} rotation={Math.PI - 0.3} />
-          <PhysicsTerminal position={[8, 0.75, 8]} rotation={-Math.PI + 0.3} />
-        </>
-      ) : (
-        <>
-          <ArtWorld />
-          {/* Murs de béton */}
-          <PhysicsWall position={[-20, 4, -15]} rotation={0.3} />
-          <PhysicsWall position={[20, 4, -15]} rotation={-0.3} />
-          <PhysicsWall position={[-25, 4, 5]} rotation={Math.PI / 4} />
-          <PhysicsWall position={[25, 4, 5]} rotation={-Math.PI / 4} />
-          <PhysicsWall position={[0, 4, -30]} rotation={0} />
-          {/* Piédestaux */}
-          <PhysicsPedestal position={[-10, 1, -8]} rotation={-0.3} />
-          <PhysicsPedestal position={[10, 1, -8]} rotation={0.3} />
-          <PhysicsPedestal position={[-8, 1, 12]} rotation={Math.PI - 0.2} />
-          <PhysicsPedestal position={[8, 1, 12]} rotation={-Math.PI + 0.2} />
-        </>
-      )}
+      {worldType === 'dev' ? <DevWorld /> : <ArtWorld />}
 
       {/* Grille subtile pour repères visuels */}
       <gridHelper args={[100, 50, colors.grid, colors.gridAlt]} position={[0, 0, 0]} />
@@ -153,9 +113,10 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
         />
       ))}
 
-      {/* Personnage contrôlable avec physique */}
-      <PhysicsCharacter
+      {/* Personnage contrôlable avec système maison */}
+      <Character
         worldType={worldType}
+        positionRef={characterPositionRef}
         onTargetSet={(pos) => setTargetPosition(pos)}
         onSprintChange={setIsSprinting}
       />
@@ -174,6 +135,6 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
 
       {/* Caméra isométrique */}
       <FollowCamera targetRef={characterPositionRef} mode={cameraMode} />
-    </PhysicsWorld>
+    </>
   );
 }
