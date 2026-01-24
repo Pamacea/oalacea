@@ -3,8 +3,9 @@
 
 'use client';
 
-import { useMemo } from 'react';
-import { Instances, Instance } from '@react-three/drei';
+import { useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 
 interface ArtWorldProps {
   position?: [number, number, number];
@@ -170,34 +171,92 @@ function GalleryFrame({ position, rotation }: {
   );
 }
 
-// Particules néon avec Instances - positions mémorisées
+// Particules néon animées avec mouvement flottant
 function NeonParticles({ count = 250 }: { count?: number }) {
+  const instancesRef = useRef<THREE.InstancedMesh>(null);
   const colors = ['#ff6b6b', '#4ecdc4', '#feca57', '#ff9ff3'];
+  const colorObjects = useMemo(() =>
+    colors.map(c => new THREE.Color(c)),
+    []
+  );
 
-  const particles = useMemo(() => {
+  // Données des particules
+  const particlesData = useMemo(() => {
     return Array.from({ length: count }, () => ({
-      position: [
+      position: new THREE.Vector3(
         (Math.random() - 0.5) * 80,
-        Math.random() * 3 + 0.5, // Plus bas : hauteur du perso
-        (Math.random() - 0.5) * 80,
-      ] as [number, number, number],
+        Math.random() * 3 + 0.5,
+        (Math.random() - 0.5) * 80
+      ),
+      velocity: new THREE.Vector3(
+        (Math.random() - 0.5) * 0.6,
+        (Math.random() - 0.5) * 0.3,
+        (Math.random() - 0.5) * 0.6
+      ),
+      baseY: Math.random() * 3 + 0.5,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + Math.random() * 0.7,
       scale: Math.random() * 0.12 + 0.04,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      colorIndex: Math.floor(Math.random() * colors.length),
     }));
   }, [count]);
 
+  // Animation des particules
+  useFrame((state, delta) => {
+    if (!instancesRef.current) return;
+
+    const dummy = new THREE.Object3D();
+    const time = state.clock.elapsedTime;
+
+    for (let i = 0; i < count; i++) {
+      const data = particlesData[i];
+
+      // Mouvement horizontal avec wrap-around
+      data.position.x += data.velocity.x * delta;
+      data.position.z += data.velocity.z * delta;
+
+      // Wrap autour des limites du monde
+      if (data.position.x > 45) data.position.x = -45;
+      if (data.position.x < -45) data.position.x = 45;
+      if (data.position.z > 45) data.position.z = -45;
+      if (data.position.z < -45) data.position.z = 45;
+
+      // Mouvement vertical flottant (sinusoïdal)
+      data.position.y = data.baseY + Math.sin(time * data.speed + data.phase) * 0.4;
+
+      // Pulsation de l'échelle
+      const pulseScale = data.scale * (0.8 + Math.sin(time * data.speed * 2) * 0.3);
+
+      // Mise à jour de l'instance
+      dummy.position.copy(data.position);
+      dummy.scale.setScalar(pulseScale);
+      dummy.updateMatrix();
+      instancesRef.current.setMatrixAt(i, dummy.matrix);
+
+      // Mise à jour de la couleur
+      instancesRef.current.setColorAt(i, colorObjects[data.colorIndex]);
+    }
+
+    instancesRef.current.instanceMatrix.needsUpdate = true;
+    if (instancesRef.current.instanceColor) {
+      instancesRef.current.instanceColor.needsUpdate = true;
+    }
+  });
+
   return (
-    <Instances limit={count}>
+    <instancedMesh
+      ref={instancesRef}
+      args={[undefined, undefined, count]}
+    >
       <sphereGeometry args={[1, 4, 4]} />
-      {particles.map((props, i) => (
-        <Instance
-          key={i}
-          position={props.position}
-          scale={props.scale}
-          color={props.color}
-        />
-      ))}
-    </Instances>
+      <meshStandardMaterial
+        color="#ffffff"
+        emissive="#ffffff"
+        emissiveIntensity={0.5}
+        transparent
+        opacity={0.6}
+      />
+    </instancedMesh>
   );
 }
 
