@@ -4,7 +4,7 @@
 'use client';
 
 import { useMemo, useRef } from 'react';
-import { Instances, Instance } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 interface DevWorldProps {
@@ -88,27 +88,77 @@ function DevTerminal({ position, rotation }: { position: [number, number, number
   );
 }
 
-// Particules avec Instances pour la perf - positions mémorisées
+// Particules animées avec mouvement flottant
 function DustParticles({ count = 300 }: { count?: number }) {
-  const particles = useMemo(() => {
+  const instancesRef = useRef<THREE.InstancedMesh>(null);
+
+  // Données des particules (position, vitesse, offset)
+  const particlesData = useMemo(() => {
     return Array.from({ length: count }, () => ({
-      position: [
+      position: new THREE.Vector3(
         (Math.random() - 0.5) * 80,
-        Math.random() * 3 + 0.5, // Plus bas : entre 0.5 et 3.5 de hauteur
-        (Math.random() - 0.5) * 80,
-      ] as [number, number, number],
+        Math.random() * 3 + 0.5,
+        (Math.random() - 0.5) * 80
+      ),
+      velocity: new THREE.Vector3(
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.5) * 0.2,
+        (Math.random() - 0.5) * 0.5
+      ),
+      baseY: Math.random() * 3 + 0.5,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.3 + Math.random() * 0.5,
       scale: Math.random() * 0.15 + 0.05,
     }));
   }, [count]);
 
+  // Animation des particules
+  useFrame((state, delta) => {
+    if (!instancesRef.current) return;
+
+    const dummy = new THREE.Object3D();
+    const time = state.clock.elapsedTime;
+
+    for (let i = 0; i < count; i++) {
+      const data = particlesData[i];
+
+      // Mouvement horizontal avec wrap-around
+      data.position.x += data.velocity.x * delta;
+      data.position.z += data.velocity.z * delta;
+
+      // Wrap autour des limites du monde
+      if (data.position.x > 45) data.position.x = -45;
+      if (data.position.x < -45) data.position.x = 45;
+      if (data.position.z > 45) data.position.z = -45;
+      if (data.position.z < -45) data.position.z = 45;
+
+      // Mouvement vertical flottant (sinusoïdal)
+      data.position.y = data.baseY + Math.sin(time * data.speed + data.phase) * 0.3;
+
+      // Mise à jour de l'instance
+      dummy.position.copy(data.position);
+      dummy.scale.setScalar(data.scale);
+      dummy.updateMatrix();
+      instancesRef.current.setMatrixAt(i, dummy.matrix);
+    }
+
+    instancesRef.current.instanceMatrix.needsUpdate = true;
+  });
+
   return (
-    <Instances limit={count}>
+    <instancedMesh
+      ref={instancesRef}
+      args={[undefined, undefined, count]}
+    >
       <sphereGeometry args={[1, 4, 4]} />
-      <meshStandardMaterial color="#d4af37" emissive="#d4af37" emissiveIntensity={0.3} transparent opacity={0.3} />
-      {particles.map((props, i) => (
-        <Instance key={i} position={props.position} scale={props.scale} />
-      ))}
-    </Instances>
+      <meshStandardMaterial
+        color="#d4af37"
+        emissive="#d4af37"
+        emissiveIntensity={0.3}
+        transparent
+        opacity={0.3}
+      />
+    </instancedMesh>
   );
 }
 
