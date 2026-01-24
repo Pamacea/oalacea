@@ -12,6 +12,7 @@ export interface ProximityObject {
   data: {
     name: string;
     route: string;
+    targetWorld?: 'dev' | 'art';
   };
 }
 
@@ -59,6 +60,7 @@ export function useProximity(
             name: closestObject.data.name,
             route: closestObject.data.route,
             objectId: closestObject.id,
+            targetWorld: closestObject.data.targetWorld,
           }
         );
       } else {

@@ -2,6 +2,7 @@
 'use client';
 
 import { ConcreteWall, NeonSign, ArtPedestal, SprayCan, GalleryFrame, NeonParticles } from './art/ArtComponents';
+import { UndergroundPortal } from '../portals';
 
 interface ArtWorldProps {
   position?: [number, number, number];
@@ -42,8 +43,8 @@ export function ArtWorld({ position = [0, 0, 0] }: ArtWorldProps) {
       <SprayCan position={[18, 0, 15]} rotation={-0.8} />
       <SprayCan position={[22, 0, -10]} rotation={2} />
 
-      {/* Tapis de sol néon */}
-      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      {/* Tapis de sol néon - DÉSACTIVÉS car portail au centre */}
+      {/* <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <ringGeometry args={[10, 12, 6]} />
         <meshStandardMaterial color="#ff6b6b" emissive="#ff6b6b" emissiveIntensity={0.3} transparent opacity={0.4} />
       </mesh>
@@ -54,10 +55,13 @@ export function ArtWorld({ position = [0, 0, 0] }: ArtWorldProps) {
       <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, -Math.PI / 3, 0]} receiveShadow>
         <ringGeometry args={[10, 12, 6]} />
         <meshStandardMaterial color="#feca57" emissive="#feca57" emissiveIntensity={0.3} transparent opacity={0.4} />
-      </mesh>
+      </mesh> */}
 
       {/* Particules néon */}
       <NeonParticles count={250} />
+
+      {/* Portail vers l'Imperium - AU CENTRE */}
+      <UndergroundPortal position={[0, 0, 0]} targetWorld="dev" rotation={0} />
     </group>
   );
 }

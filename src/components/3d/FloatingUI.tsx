@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { WorldSwitch } from './WorldSwitch';
 import { InteractionPrompt } from './InteractionPrompt';
 import { SceneOverlay } from './SceneOverlay';
 
@@ -13,7 +12,7 @@ export function FloatingUI() {
 
   return (
     <>
-      {/* Top bar - Logo + World Switch */}
+      {/* Top bar - Logo */}
       <motion.header
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -26,9 +25,6 @@ export function FloatingUI() {
             OALACEA
           </h1>
         </div>
-
-        {/* World Switch */}
-        <WorldSwitch />
 
         {/* Menu Button */}
         <Button
