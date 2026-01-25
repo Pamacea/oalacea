@@ -15,6 +15,17 @@ export const authConfig: NextAuthConfig = {
 
         const { email, password } = parsed.data
 
+        const adminEmail = process.env.ADMIN_EMAIL
+        const adminPassword = process.env.ADMIN_PASSWORD
+
+        if (email === adminEmail && password === adminPassword) {
+          return {
+            id: "1",
+            email: adminEmail,
+            name: "Admin",
+          }
+        }
+
         return null
       },
     }),
