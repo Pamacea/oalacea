@@ -5,18 +5,27 @@ import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import { Vector3, PerspectiveCamera as PerspectiveCameraType } from 'three';
+import { clampCameraPosition, CAMERA_LIMITS } from './cameraBounds';
 
 export interface FollowCameraProps {
   targetRef: React.MutableRefObject<Vector3>;
   mode: 'follow' | 'free';
+  cameraRef?: React.MutableRefObject<PerspectiveCameraType | null>;
 }
 
-export function FollowCamera({ targetRef, mode }: FollowCameraProps) {
+export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef }: FollowCameraProps) {
   const ref = useRef<PerspectiveCameraType | null>(null);
 
   const isoOffset = { x: -15, y: 20, z: 15 };
   const cameraTarget = useRef({ x: -15, y: 20, z: 15 });
   const keys = useRef({ forward: false, backward: false, left: false, right: false });
+
+  // Sync external ref
+  useEffect(() => {
+    if (externalCameraRef) {
+      externalCameraRef.current = ref.current;
+    }
+  });
 
   // Setup keyboard pour mode free
   useEffect(() => {
@@ -108,8 +117,19 @@ export function FollowCamera({ targetRef, mode }: FollowCameraProps) {
       if (keys.current.right) dx += 1;
 
       if (dx !== 0 || dz !== 0) {
-        cameraTarget.current.x += dx * speed * delta;
-        cameraTarget.current.z += dz * speed * delta;
+        const newX = cameraTarget.current.x + dx * speed * delta;
+        const newZ = cameraTarget.current.z + dz * speed * delta;
+
+        // Check if new position would be clamped (at boundary)
+        const newPos = new Vector3(newX, cameraTarget.current.y, newZ);
+        const clampedPos = clampCameraPosition(newPos, targetRef.current, CAMERA_LIMITS);
+
+        // Only move if not at boundary (position changed after clamping)
+        if (Math.abs(clampedPos.x - newX) < 0.01 && Math.abs(clampedPos.z - newZ) < 0.01) {
+          cameraTarget.current.x = clampedPos.x;
+          cameraTarget.current.z = clampedPos.z;
+        }
+        // If at boundary, don't update position - camera stays still
       }
 
       ref.current.position.set(
@@ -118,7 +138,12 @@ export function FollowCamera({ targetRef, mode }: FollowCameraProps) {
         cameraTarget.current.z
       );
 
-      ref.current.lookAt(cameraTarget.current.x - isoOffset.x, 0, cameraTarget.current.z - isoOffset.z);
+      // Fixed isometric view - look at a point below based on isoOffset
+      ref.current.lookAt(
+        cameraTarget.current.x - isoOffset.x,
+        0,
+        cameraTarget.current.z - isoOffset.z
+      );
     }
   });
 
