@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -11,4 +8,114 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// =========================================
+// BLOG MODELS
+// =========================================
+
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String?
+  content     String    @default("")
+  published   Boolean   @default(false)
+  featured    Boolean   @default(false)
+  publishDate  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  coverImage  String?
+  tags        String[]  @default([])
+  metaTitle   String?
+  metaDescription String?
+  readingTime Int      @default(5)
+
+  @@index([published])
+  @@index([publishDate])
+  @@index([categoryId])
+}
+
+// =========================================
+// PORTFOLIO PROJECTS
+// =========================================
+
+model Project {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  description   String
+  longDescription String?
+  techStack     String[]  @default([])
+  githubUrl     String?
+  liveUrl       String?
+  thumbnail     String?
+  featured      Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  year          Int
+  category      ProjectCategory
+  worldPosition WorldPosition?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([featured])
+  @@index([year])
+  @@index([category])
+}
+
+model WorldPosition {
+  id          String   @id @default(cuid())
+  projectId    String   @unique
+  world       WorldType
+  x           Float
+  z           Float
+  y           Float    @default(0)
+  rotation    Float    @default(0)
+
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+enum ProjectCategory {
+  WEB
+  MOBILE
+  THREE_D
+  AI
+  OTHER
+}
+
+enum WorldType {
+  DEV
+  ART
+}
+
+// =========================================
+// ADMIN
+// =========================================
+
+model AdminSettings {
+  id              String   @id @default(cuid())
+  siteName        String   @default("Oalacea")
+  siteDescription String?
+  logoUrl         String?
+  faviconUrl      String?
+  seoTitle       String?
+  seoDescription  String?
+  ogImage         String?
+  contactEmail    String?
+  socialLinks     Json?    @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
