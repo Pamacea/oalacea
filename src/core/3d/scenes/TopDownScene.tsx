@@ -4,7 +4,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { Vector3 } from 'three';
+import { Vector3, PerspectiveCamera as PerspectiveCameraType, Group } from 'three';
 import type { WorldType } from './types';
 import { DevWorld, ArtWorld } from './worlds';
 import { InteractionZone } from './interactions';
@@ -14,6 +14,7 @@ import { useOverlayStore } from '@/store/3d-overlay-store';
 import { useWorldStore } from '@/store/3d-world-store';
 import { Character } from '@/core/3d/character';
 import { FollowCamera } from '@/core/3d/camera';
+import { OcclusionManager } from '@/core/3d/camera/OcclusionManager';
 
 const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
 
@@ -24,10 +25,13 @@ interface TopDownSceneProps {
 
 export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopDownSceneProps) {
   const characterPositionRef = useRef(new Vector3(...INITIAL_POSITION));
+  const characterGroupRef = useRef<Group | null>(null);
+  const cameraRef = useRef<PerspectiveCameraType | null>(null);
   const [internalCameraMode, _setInternalCameraMode] = useState<'follow' | 'free'>('follow');
   const cameraMode = externalCameraMode ?? internalCameraMode;
   const [targetPosition, setTargetPosition] = useState<Vector3 | null>(null);
   const [isSprinting, setIsSprinting] = useState(false);
+  const [isOccluded, setIsOccluded] = useState(false);
 
   // Couleurs du monde
   const colors = {
@@ -108,6 +112,8 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
         positionRef={characterPositionRef}
         onTargetSet={(pos) => setTargetPosition(pos)}
         onSprintChange={setIsSprinting}
+        isOccluded={isOccluded}
+        groupRef={characterGroupRef}
       />
 
       {/* Indicateur de destination */}
@@ -123,7 +129,14 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
       )}
 
       {/* Caméra isométrique */}
-      <FollowCamera targetRef={characterPositionRef} mode={cameraMode} />
+      <FollowCamera targetRef={characterPositionRef} mode={cameraMode} cameraRef={cameraRef} />
+
+      {/* Occlusion detection - renders objects transparent when blocking view */}
+      <OcclusionManager
+        characterRef={characterGroupRef}
+        cameraRef={cameraRef}
+        onOcclusionChange={setIsOccluded}
+      />
     </>
   );
 }

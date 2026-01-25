@@ -6,16 +6,21 @@ import type { WorldType } from '../scenes/types';
 interface CharacterModelProps {
   isMoving: boolean;
   isSprinting: boolean;
+  isOccluded?: boolean;
 }
 
-export function CharacterModel({ isMoving, isSprinting }: CharacterModelProps) {
-  const colors: Record<WorldType, { body: string; glow: string; sprint: string }> = {
-    dev: { body: '#d4af37', glow: '#8b0000', sprint: '#ff6b00' },
-    art: { body: '#ff6b6b', glow: '#4ecdc4', sprint: '#feca57' },
+export function CharacterModel({ isMoving, isSprinting, isOccluded = false }: CharacterModelProps) {
+  const colors: Record<WorldType, { body: string; glow: string; sprint: string; highlight: string }> = {
+    dev: { body: '#d4af37', glow: '#8b0000', sprint: '#ff6b00', highlight: '#ffd700' },
+    art: { body: '#ff6b6b', glow: '#4ecdc4', sprint: '#feca57', highlight: '#00ffff' },
   };
 
   const worldType: WorldType = 'dev'; // TODO: get from context
   const c = colors[worldType];
+
+  // Enhanced emissive intensity when occluded
+  const occlusionIntensity = isOccluded ? 0.8 : (isSprinting ? 0.5 : 0.2);
+  const occlusionColor = isOccluded ? c.highlight : (isSprinting ? c.sprint : c.body);
 
   return (
     <>
@@ -35,11 +40,23 @@ export function CharacterModel({ isMoving, isSprinting }: CharacterModelProps) {
       <group position={[0, 0, 0]}>
         <mesh position={[0, 1.3, 0]} castShadow>
           <sphereGeometry args={[0.28, 16, 16]} />
-          <meshStandardMaterial color={c.body} roughness={0.3} metalness={0.5} emissive={isSprinting ? c.sprint : c.body} emissiveIntensity={isSprinting ? 0.5 : 0.2} />
+          <meshStandardMaterial
+            color={c.body}
+            roughness={0.3}
+            metalness={0.5}
+            emissive={occlusionColor}
+            emissiveIntensity={occlusionIntensity}
+          />
         </mesh>
         <mesh position={[0, 0.65, 0]} castShadow>
           <capsuleGeometry args={[0.22, 0.55, 8, 16]} />
-          <meshStandardMaterial color={c.body} roughness={0.3} metalness={0.5} />
+          <meshStandardMaterial
+            color={c.body}
+            roughness={0.3}
+            metalness={0.5}
+            emissive={occlusionColor}
+            emissiveIntensity={isOccluded ? 0.3 : 0}
+          />
         </mesh>
         <mesh position={[-0.28, 0.9, 0]} castShadow>
           <sphereGeometry args={[0.14, 8, 8]} />
