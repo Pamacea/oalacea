@@ -3,6 +3,7 @@
 
 import { ConcreteWall, NeonSign, ArtPedestal, SprayCan, GalleryFrame, NeonParticles } from './art/ArtComponents';
 import { UndergroundPortal } from '../portals';
+import { ArtProjectDisplays } from '../objects/ArtDisplay';
 
 interface ArtWorldProps {
   position?: [number, number, number];
@@ -59,6 +60,9 @@ export function ArtWorld({ position = [0, 0, 0] }: ArtWorldProps) {
 
       {/* Particules néon */}
       <NeonParticles count={250} />
+
+      {/* Projets exposés - Displays néon */}
+      <ArtProjectDisplays activeProjectId={undefined} />
 
       {/* Portail vers l'Imperium - AU CENTRE */}
       <UndergroundPortal position={[0, 0, 0]} targetWorld="dev" rotation={0} />

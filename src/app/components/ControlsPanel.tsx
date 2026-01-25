@@ -1,14 +1,25 @@
 // ControlsPanel - UI for camera and controls shortcuts
 'use client';
 
+import { ShareButton } from '@/components/ShareButton';
+
 interface ControlsPanelProps {
   showShortcuts: boolean;
   setShowShortcuts: React.Dispatch<React.SetStateAction<boolean>>;
   cameraMode: 'follow' | 'free';
   onToggleCamera: () => void;
+  cameraX?: number;
+  cameraZ?: number;
 }
 
-export function ControlsPanel({ showShortcuts, setShowShortcuts, cameraMode, onToggleCamera }: ControlsPanelProps) {
+export function ControlsPanel({
+  showShortcuts,
+  setShowShortcuts,
+  cameraMode,
+  onToggleCamera,
+  cameraX = 0,
+  cameraZ = 0,
+}: ControlsPanelProps) {
   return (
     <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2 items-end">
       {showShortcuts && (
@@ -68,6 +79,8 @@ export function ControlsPanel({ showShortcuts, setShowShortcuts, cameraMode, onT
           </svg>
         )}
       </button>
+
+      <ShareButton cameraX={cameraX} cameraZ={cameraZ} />
     </div>
   );
 }

@@ -7,9 +7,15 @@ import * as THREE from 'three';
 import type { WorldType } from '@/core/3d/scenes/types';
 import { TopDownScene } from '@/core/3d/scenes/TopDownScene';
 
+interface CameraPosition {
+  x: number;
+  z: number;
+}
+
 interface SceneCanvasProps {
   currentWorld: WorldType;
   cameraMode: 'follow' | 'free';
+  onCameraPositionChange?: (position: CameraPosition) => void;
 }
 
 const worldConfig: Record<WorldType, { bg: string; fog: string }> = {
@@ -17,7 +23,7 @@ const worldConfig: Record<WorldType, { bg: string; fog: string }> = {
   art: { bg: '#1a1a2e', fog: '#0f0f23' },
 };
 
-export function SceneCanvas({ currentWorld, cameraMode }: SceneCanvasProps) {
+export function SceneCanvas({ currentWorld, cameraMode, onCameraPositionChange }: SceneCanvasProps) {
   return (
     <Canvas
       shadows
@@ -51,7 +57,11 @@ export function SceneCanvas({ currentWorld, cameraMode }: SceneCanvasProps) {
         </>
       )}
 
-      <TopDownScene worldType={currentWorld} cameraMode={cameraMode} />
+      <TopDownScene
+        worldType={currentWorld}
+        cameraMode={cameraMode}
+        onCameraPositionChange={onCameraPositionChange}
+      />
       <Environment preset={currentWorld === 'dev' ? 'night' : 'city'} />
     </Canvas>
   );

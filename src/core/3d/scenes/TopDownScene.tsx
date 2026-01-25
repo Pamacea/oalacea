@@ -18,12 +18,18 @@ import { OcclusionManager } from '@/core/3d/camera/OcclusionManager';
 
 const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
 
+interface CameraPosition {
+  x: number;
+  z: number;
+}
+
 interface TopDownSceneProps {
   worldType: WorldType;
   cameraMode?: 'follow' | 'free';
+  onCameraPositionChange?: (position: CameraPosition) => void;
 }
 
-export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopDownSceneProps) {
+export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCameraPositionChange }: TopDownSceneProps) {
   const characterPositionRef = useRef(new Vector3(...INITIAL_POSITION));
   const characterGroupRef = useRef<Group | null>(null);
   const cameraRef = useRef<PerspectiveCameraType | null>(null);
@@ -129,7 +135,12 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode }: TopD
       )}
 
       {/* Caméra isométrique */}
-      <FollowCamera targetRef={characterPositionRef} mode={cameraMode} cameraRef={cameraRef} />
+      <FollowCamera
+        targetRef={characterPositionRef}
+        mode={cameraMode}
+        cameraRef={cameraRef}
+        onPositionChange={onCameraPositionChange}
+      />
 
       {/* Occlusion detection - renders objects transparent when blocking view */}
       <OcclusionManager
