@@ -175,5 +175,5 @@ export function useCharacterController(
     };
   }, [engine, startPosition, profileName]);
 
-  return controllerRef.current;
+  return controllerRef;
 }

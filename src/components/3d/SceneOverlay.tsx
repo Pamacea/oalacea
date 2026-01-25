@@ -1,7 +1,7 @@
 // SceneOverlay - Overlay qui affiche le contenu des pages au-dessus de la scène 3D
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useOverlayStore } from '@/store/3d-overlay-store';
@@ -9,9 +9,9 @@ import { useOverlayStore } from '@/store/3d-overlay-store';
 export function SceneOverlay() {
   const { isOpen, content, title, closeOverlay } = useOverlayStore();
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     closeOverlay();
-  };
+  }, [closeOverlay]);
 
   // Fermer avec Escape
   useEffect(() => {

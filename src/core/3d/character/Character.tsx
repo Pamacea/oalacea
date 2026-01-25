@@ -8,8 +8,6 @@ import { useCharacterControls } from './CharacterControls';
 import { CharacterModel } from './CharacterModel';
 import { PathVisualization } from './PathVisualization';
 
-const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
-
 export interface CharacterProps {
   worldType: WorldType;
   positionRef?: React.MutableRefObject<import('three').Vector3>;
@@ -20,7 +18,7 @@ export interface CharacterProps {
 export function Character({ worldType, positionRef, onTargetSet, onSprintChange }: CharacterProps) {
   const collisionZones: CollisionZone[] = worldType === 'dev' ? DEV_COLLISION_ZONES : ART_COLLISION_ZONES;
 
-  const controls = useCharacterControls({
+  const { groupRef, isMoving, isSprinting, displayPath } = useCharacterControls({
     worldType,
     collisionZones,
     positionRef,
@@ -29,9 +27,9 @@ export function Character({ worldType, positionRef, onTargetSet, onSprintChange 
   });
 
   return (
-    <group ref={controls.groupRef}>
-      <CharacterModel isMoving={controls.isMoving} isSprinting={controls.isSprinting} />
-      <PathVisualization path={controls.displayPath} isSprinting={controls.isSprinting} worldType={worldType} />
+    <group ref={groupRef}>
+      <CharacterModel isMoving={isMoving} isSprinting={isSprinting} />
+      <PathVisualization path={displayPath} isSprinting={isSprinting} worldType={worldType} />
     </group>
   );
 }

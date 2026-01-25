@@ -1,8 +1,33 @@
 // WorldTransitionScreen - Écran de transition entre mondes
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useWorldStore } from '@/store/3d-world-store';
+
+const PARTICLE_COUNT = 20;
+
+type Particle = {
+  x: number;
+  y: number;
+  endY: number;
+  duration: number;
+  delay: number;
+};
+
+const generateParticles = (): Particle[] => {
+  const width = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const height = typeof window !== 'undefined' ? window.innerHeight : 1080;
+
+  return Array.from({ length: PARTICLE_COUNT }, () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    endY: -100 - Math.random() * 200,
+    duration: 1 + Math.random(),
+    delay: Math.random() * 2,
+  }));
+};
+
+const particles = generateParticles();
 
 export function WorldTransitionScreen() {
   const { isTransitioning, loadingProgress, currentWorld } = useWorldStore();
@@ -90,24 +115,24 @@ export function WorldTransitionScreen() {
       </motion.div>
 
       {/* Particules de fond */}
-      {[...Array(20)].map((_, i) => (
+      {particles.map((particle, i) => (
         <motion.div
           key={i}
           className="absolute h-1 w-1 rounded-full bg-white/40"
           initial={{
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
+            x: particle.x,
+            y: particle.y,
             scale: 0,
           }}
           animate={{
-            y: [null, -100 - Math.random() * 200],
+            y: [particle.y, particle.endY],
             scale: [0, 1, 0],
             opacity: [0, 1, 0],
           }}
           transition={{
-            duration: 1 + Math.random(),
+            duration: particle.duration,
             repeat: Infinity,
-            delay: Math.random() * 2,
+            delay: particle.delay,
           }}
         />
       ))}
