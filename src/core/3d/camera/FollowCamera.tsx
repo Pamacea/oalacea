@@ -11,14 +11,16 @@ export interface FollowCameraProps {
   targetRef: React.MutableRefObject<Vector3>;
   mode: 'follow' | 'free';
   cameraRef?: React.MutableRefObject<PerspectiveCameraType | null>;
+  onPositionChange?: (position: { x: number; z: number }) => void;
 }
 
-export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef }: FollowCameraProps) {
+export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef, onPositionChange }: FollowCameraProps) {
   const ref = useRef<PerspectiveCameraType | null>(null);
 
   const isoOffset = { x: -15, y: 20, z: 15 };
   const cameraTarget = useRef({ x: -15, y: 20, z: 15 });
   const keys = useRef({ forward: false, backward: false, left: false, right: false });
+  const lastReportedPosition = useRef({ x: -15, z: 15 });
 
   // Sync external ref
   useEffect(() => {
@@ -26,6 +28,17 @@ export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef }: 
       externalCameraRef.current = ref.current;
     }
   });
+
+  // Report position change callback (throttled)
+  const reportPosition = (x: number, z: number) => {
+    if (!onPositionChange) return;
+    // Only report if position changed significantly (more than 0.5 units)
+    if (Math.abs(x - lastReportedPosition.current.x) > 0.5 ||
+        Math.abs(z - lastReportedPosition.current.z) > 0.5) {
+      lastReportedPosition.current = { x, z };
+      onPositionChange({ x, z });
+    }
+  };
 
   // Setup keyboard pour mode free
   useEffect(() => {
@@ -106,6 +119,9 @@ export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef }: 
       );
 
       ref.current.lookAt(target.x, 0, target.z);
+
+      // Report position in follow mode too
+      reportPosition(cameraTarget.current.x, cameraTarget.current.z);
     } else {
       const speed = 30;
       let dx = 0;
@@ -144,6 +160,9 @@ export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef }: 
         0,
         cameraTarget.current.z - isoOffset.z
       );
+
+      // Report position in free mode
+      reportPosition(cameraTarget.current.x, cameraTarget.current.z);
     }
   });
 

@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 import { ImperialPillar, GothicArch, DevTerminal, DustParticles } from './dev/DevComponents';
 import { ImperiumPortal } from '../portals';
+import { DevProjectPedestals } from '../objects/ProjectPedestal';
 
 interface DevWorldProps {
   position?: [number, number, number];
@@ -67,6 +68,9 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
 
       {/* Particules */}
       <DustParticles count={300} />
+
+      {/* Projets exposés - Pedestals impériaux */}
+      <DevProjectPedestals activeProjectId={undefined} />
 
       {/* Portail vers l'Underground - AU CENTRE */}
       <ImperiumPortal position={[0, 0, 0]} targetWorld="art" rotation={0} />
