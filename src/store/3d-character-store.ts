@@ -18,8 +18,6 @@ interface CharacterState {
   canInteract: boolean;
   interactTarget: { name: string; route: string; objectId: string; type?: 'portal' | 'route' | 'dialogue' | 'pickup' | 'admin'; targetWorld?: 'dev' | 'art' } | null;
   setCanInteract: (can: boolean, target?: { name: string; route: string; objectId: string; type?: 'portal' | 'route' | 'dialogue' | 'pickup' | 'admin'; targetWorld?: 'dev' | 'art' }) => void;
-  currentWorld: 'dev' | 'art';
-  setCurrentWorld: (world: 'dev' | 'art') => void;
   isMoving: boolean;
   setIsMoving: (moving: boolean) => void;
   isRunning: boolean;
@@ -60,8 +58,6 @@ export const useCharacterStore = create<CharacterState>((set) => ({
   canInteract: false,
   interactTarget: null,
   setCanInteract: (can, target) => set({ canInteract: can, interactTarget: target ?? null }),
-  currentWorld: 'dev',
-  setCurrentWorld: (world) => set({ currentWorld: world }),
   isMoving: false,
   setIsMoving: (moving) => set({ isMoving: moving }),
   isRunning: false,

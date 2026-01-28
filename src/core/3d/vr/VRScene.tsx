@@ -5,6 +5,7 @@ import { XR, createXRStore, XRButton, useXR } from '@react-three/xr';
 import { Group } from 'three';
 import { useXRStore } from '@/store/xr-store';
 import { useSettingsStore } from '@/store/settings-store';
+import { ThreeErrorBoundary } from '@/components/shared/error-boundary';
 
 const xrStore = createXRStore();
 
@@ -77,11 +78,22 @@ export function VRScene({ children, fallback }: VRSceneProps) {
   }
 
   return (
-    <XR store={xrStore}>
-      <XRSessionManager>
-        {children}
-      </XRSessionManager>
-    </XR>
+    <ThreeErrorBoundary
+      fallback={
+        <div className="flex items-center justify-center w-full h-full text-slate-400">
+          <div className="text-center">
+            <p className="text-sm">VR scene unavailable</p>
+            <p className="text-xs mt-2 text-slate-600">Please refresh the page</p>
+          </div>
+        </div>
+      }
+    >
+      <XR store={xrStore}>
+        <XRSessionManager>
+          {children}
+        </XRSessionManager>
+      </XR>
+    </ThreeErrorBoundary>
   );
 }
 
