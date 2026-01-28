@@ -34,6 +34,21 @@ const ART_COLORS = {
   neonYellow: 0xffe66d,
 };
 
+const CATEGORY_COLOR_MAP: Record<string, number> = {
+  technology: 0x00ff88,
+  dev: 0x00ff44,
+  design: 0xff6b6b,
+  art: 0x4ecdc4,
+  tutorial: 0xffe66d,
+  default: 0x4ecdc4,
+};
+
+function getCategoryColor(category: string | null, baseColor: number): number {
+  if (!category) return baseColor;
+  const normalized = category.toLowerCase();
+  return CATEGORY_COLOR_MAP[normalized] ?? CATEGORY_COLOR_MAP.default;
+}
+
 export function BlogDocument({ post, position, world, isActive = false, onInteract }: BlogDocumentProps) {
   const groupRef = useRef<Group>(null);
   const hologramRef = useRef<Mesh>(null);
@@ -41,7 +56,7 @@ export function BlogDocument({ post, position, world, isActive = false, onIntera
   const particlesRef = useRef<Group>(null);
 
   const colors = world === 'DEV' ? DEV_COLORS : ART_COLORS;
-  const categoryColor = colors.green; // TODO: Map category to color
+  const categoryColor = getCategoryColor(post.category, colors.green);
 
   // Particles
   const particles = useMemo(() => {

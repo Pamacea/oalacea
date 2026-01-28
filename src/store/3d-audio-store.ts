@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import type { WorldType } from '@/core/3d/scenes/types';
 import { WORLD_AUDIO_CONFIGS } from '@/config/3d/audio';
+import { useWorldStore } from './3d-world-store';
 
 interface AudioState {
   masterVolume: number;
@@ -16,8 +17,6 @@ interface AudioState {
   setPaused: (paused: boolean) => void;
   isMuted: boolean;
   setMuted: (muted: boolean) => void;
-  currentWorld: WorldType;
-  setCurrentWorld: (world: WorldType) => void;
   loadedTracks: Map<string, HTMLAudioElement>;
   loadWorldTracks: (world: WorldType) => Promise<void>;
   unloadWorldTracks: (world: WorldType) => void;
@@ -84,9 +83,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       audio.muted = muted;
     });
   },
-
-  currentWorld: 'dev',
-  setCurrentWorld: (world) => set({ currentWorld: world }),
 
   loadedTracks: new Map(),
 
@@ -198,6 +194,31 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   },
 }));
 
+// Hook to sync audio store with world store
+export function useAudioWorldSync() {
+  const currentWorld = useWorldStore((state) => state.currentWorld);
+  const isTransitioning = useWorldStore((state) => state.isTransitioning);
+  const previousWorldRef = { current: currentWorld as WorldType };
+
+  const loadWorldTracks = useAudioStore((state) => state.loadWorldTracks);
+  const crossfadeWorlds = useAudioStore((state) => state.crossfadeWorlds);
+  const isEnabled = useAudioStore((state) => state.isEnabled);
+
+  // Sync audio world with world store
+  if (typeof window !== 'undefined') {
+    const { useEffect } = require('react');
+    useEffect(() => {
+      if (!isEnabled) return;
+
+      const previousWorld = previousWorldRef.current;
+      if (previousWorld !== currentWorld && !isTransitioning) {
+        crossfadeWorlds(previousWorld, currentWorld, 2000);
+        previousWorldRef.current = currentWorld;
+      }
+    }, [currentWorld, isTransitioning, crossfadeWorlds, isEnabled]);
+  }
+}
+
 export const selectVolumes = (state: AudioState) => ({
   master: state.masterVolume,
   music: state.musicVolume,
@@ -208,5 +229,3 @@ export const selectPlaybackState = (state: AudioState) => ({
   enabled: state.isEnabled,
   paused: state.isPaused,
 });
-
-export const selectAudioWorld = (state: AudioState) => state.currentWorld;

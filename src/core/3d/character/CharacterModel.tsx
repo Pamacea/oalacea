@@ -1,6 +1,7 @@
 // Character 3D model
 'use client';
 
+import { useWorldStore } from '@/store';
 import type { WorldType } from '../scenes/types';
 
 interface CharacterModelProps {
@@ -10,13 +11,14 @@ interface CharacterModelProps {
 }
 
 export function CharacterModel({ isMoving, isSprinting, isOccluded = false }: CharacterModelProps) {
+  const currentWorld = useWorldStore((state) => state.currentWorld);
+
   const colors: Record<WorldType, { body: string; glow: string; sprint: string; highlight: string }> = {
     dev: { body: '#d4af37', glow: '#8b0000', sprint: '#ff6b00', highlight: '#ffd700' },
     art: { body: '#ff6b6b', glow: '#4ecdc4', sprint: '#feca57', highlight: '#00ffff' },
   };
 
-  const worldType: WorldType = 'dev'; // TODO: get from context
-  const c = colors[worldType];
+  const c = colors[currentWorld];
 
   // Enhanced emissive intensity when occluded
   const occlusionIntensity = isOccluded ? 0.8 : (isSprinting ? 0.5 : 0.2);
