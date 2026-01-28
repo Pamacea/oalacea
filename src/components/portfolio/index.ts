@@ -1,1 +1,2 @@
-export { ProjectCard } from "./project-card"
+export { ProjectCard } from "./ProjectCard"
+export { ProjectGrid } from "./ProjectGrid"

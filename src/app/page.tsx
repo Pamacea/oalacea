@@ -56,8 +56,6 @@ export default function HomePage() {
         setShowShortcuts={setShowShortcuts}
         cameraMode={cameraMode}
         onToggleCamera={toggleCamera}
-        cameraX={cameraPositionRef.current.x}
-        cameraZ={cameraPositionRef.current.z}
       />
     </div>
   );

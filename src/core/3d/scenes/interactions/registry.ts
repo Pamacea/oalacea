@@ -3,7 +3,7 @@
 
 import type { WorldType } from '../types';
 
-export type InteractionType = 'portal' | 'route' | 'dialogue' | 'pickup';
+export type InteractionType = 'portal' | 'route' | 'dialogue' | 'pickup' | 'admin';
 
 export interface InteractionConfig {
   id: string;
@@ -89,6 +89,26 @@ export const INTERACTIONS_REGISTRY: InteractionConfig[] = [
     type: 'route',
     label: 'About',
     route: '/about',
+  },
+
+  // =========================================
+  // TERMINAUX ADMIN (Seulement visible si admin)
+  // =========================================
+  {
+    id: 'admin-terminal-dev',
+    world: 'dev',
+    position: [8, 0, 8],
+    type: 'admin',
+    label: 'Admin Terminal',
+    radius: 2.5,
+  },
+  {
+    id: 'admin-terminal-art',
+    world: 'art',
+    position: [-8, 0, 8],
+    type: 'admin',
+    label: 'Admin Panel',
+    radius: 2.5,
   },
 ];
 

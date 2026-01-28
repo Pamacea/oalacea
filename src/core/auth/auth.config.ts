@@ -1,50 +1,43 @@
 import type { NextAuthConfig } from "next-auth"
-import Credentials from "next-auth/providers/credentials"
-import { loginSchema } from "@/lib/validations"
+import GitHub from "next-auth/providers/github"
+import Google from "next-auth/providers/google"
 
+// Edge-compatible auth config (no Prisma, no bcrypt)
+// Used by middleware.ts
 export const authConfig: NextAuthConfig = {
   providers: [
-    Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        const parsed = loginSchema.safeParse(credentials)
-        if (!parsed.success) return null
-
-        const { email, password } = parsed.data
-
-        const adminEmail = process.env.ADMIN_EMAIL
-        const adminPassword = process.env.ADMIN_PASSWORD
-
-        if (email === adminEmail && password === adminPassword) {
-          return {
-            id: "1",
-            email: adminEmail,
-            name: "Admin",
-          }
-        }
-
-        return null
-      },
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID ?? "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
+      allowDangerousEmailAccountLinking: true,
+    }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
-        token.isAdmin = true
+        token.role = user.role
       }
+
+      if (trigger === "update" && session) {
+        token = { ...token, ...session }
+      }
+
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string
-        session.user.isAdmin = token.isAdmin as boolean
+        session.user.role = token.role as "ADMIN" | "EDITOR" | "AUTHOR" | "VIEWER"
       }
       return session
     },

@@ -16,8 +16,8 @@ interface CharacterState {
   isGrounded: boolean;
   setIsGrounded: (grounded: boolean) => void;
   canInteract: boolean;
-  interactTarget: { name: string; route: string; objectId: string; targetWorld?: 'dev' | 'art' } | null;
-  setCanInteract: (can: boolean, target?: { name: string; route: string; objectId: string; targetWorld?: 'dev' | 'art' }) => void;
+  interactTarget: { name: string; route: string; objectId: string; type?: 'portal' | 'route' | 'dialogue' | 'pickup' | 'admin'; targetWorld?: 'dev' | 'art' } | null;
+  setCanInteract: (can: boolean, target?: { name: string; route: string; objectId: string; type?: 'portal' | 'route' | 'dialogue' | 'pickup' | 'admin'; targetWorld?: 'dev' | 'art' }) => void;
   currentWorld: 'dev' | 'art';
   setCurrentWorld: (world: 'dev' | 'art') => void;
   isMoving: boolean;

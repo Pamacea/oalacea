@@ -12,6 +12,7 @@ export interface ProximityObject {
   data: {
     name: string;
     route: string;
+    type?: 'portal' | 'route' | 'dialogue' | 'pickup' | 'admin';
     targetWorld?: 'dev' | 'art';
   };
 }
@@ -60,6 +61,7 @@ export function useProximity(
             name: closestObject.data.name,
             route: closestObject.data.route,
             objectId: closestObject.id,
+            type: closestObject.data.type,
             targetWorld: closestObject.data.targetWorld,
           }
         );

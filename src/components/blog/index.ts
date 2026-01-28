@@ -1,1 +1,3 @@
-export { PostCard } from "./post-card"
+export { PostCard } from "./PostCard"
+export { BlogGrid } from "./BlogGrid"
+export { Comments } from "./Comments"

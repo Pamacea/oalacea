@@ -1,53 +1,35 @@
-// WorldSwitch - Bouton pour changer entre les deux mondes
+// WorldSwitch - Simplified gray theme
 'use client';
 
-import { motion } from 'framer-motion';
 import { useWorldStore } from '@/store/3d-world-store';
 import type { WorldType } from '@/core/3d/scenes/types';
-import { Button } from '@/components/ui/button';
-
-const WORLDS: Array<{
-  id: WorldType;
-  label: string;
-  icon: string;
-  color: string;
-}> = [
-  { id: 'dev', label: 'Imperium', icon: '⚔️', color: 'text-yellow-500' },
-  { id: 'art', label: 'Underground', icon: '🎨', color: 'text-pink-500' },
-];
 
 export function WorldSwitch() {
   const { currentWorld, switchWorld, isTransitioning } = useWorldStore();
 
+  const worlds: Array<{ id: WorldType; label: string; icon: string }> = [
+    { id: 'dev', label: 'Dev', icon: '⚔️' },
+    { id: 'art', label: 'Art', icon: '🎨' },
+  ];
+
   return (
-    <div className="flex items-center gap-2 rounded-full bg-black/50 backdrop-blur-md p-1 border border-white/10">
-      {WORLDS.map((world) => (
-        <Button
-          key={world.id}
-          variant={currentWorld === world.id ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => switchWorld(world.id)}
-          disabled={isTransitioning}
-          className={`relative ${
-            currentWorld === world.id
-              ? world.id === 'dev'
-                ? 'bg-yellow-600 text-white hover:bg-yellow-700'
-                : 'bg-pink-600 text-white hover:bg-pink-700'
-              : 'text-white/70 hover:text-white'
-          }`}
-        >
-          <span className="mr-2">{world.icon}</span>
-          {world.label}
-          {isTransitioning && currentWorld === world.id && (
-            <motion.span
-              className="absolute inset-0 rounded-full bg-white/20"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-            />
-          )}
-        </Button>
-      ))}
+    <div className="flex items-center gap-2 rounded-full bg-zinc-900/80 backdrop-blur-md p-1 border border-zinc-800">
+      {worlds.map((world) => {
+        const isActive = currentWorld === world.id;
+        return (
+          <button
+            key={world.id}
+            onClick={() => switchWorld(world.id)}
+            disabled={isTransitioning}
+            className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              isActive ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400 hover:text-zinc-300'
+            }`}
+          >
+            <span className="mr-2">{world.icon}</span>
+            {world.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

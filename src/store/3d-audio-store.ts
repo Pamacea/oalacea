@@ -14,6 +14,8 @@ interface AudioState {
   setEnabled: (enabled: boolean) => void;
   isPaused: boolean;
   setPaused: (paused: boolean) => void;
+  isMuted: boolean;
+  setMuted: (muted: boolean) => void;
   currentWorld: WorldType;
   setCurrentWorld: (world: WorldType) => void;
   loadedTracks: Map<string, HTMLAudioElement>;
@@ -23,6 +25,7 @@ interface AudioState {
   footstepPlaying: boolean;
   playFootstep: () => void;
   isFading: boolean;
+  setIsFading: (fading: boolean) => void;
   crossfadeWorlds: (fromWorld: WorldType, toWorld: WorldType, duration: number) => Promise<void>;
 }
 
@@ -32,13 +35,17 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const clamped = Math.max(0, Math.min(1, volume));
     set({ masterVolume: clamped });
     get().loadedTracks.forEach((audio) => {
-      audio.volume = clamped * get().masterVolume;
+      audio.volume = clamped * get().musicVolume;
     });
   },
 
   musicVolume: 0.6,
   setMusicVolume: (volume) => {
-    set({ musicVolume: Math.max(0, Math.min(1, volume)) });
+    const clamped = Math.max(0, Math.min(1, volume));
+    set({ musicVolume: clamped });
+    get().loadedTracks.forEach((audio) => {
+      audio.volume = get().masterVolume * clamped;
+    });
   },
 
   sfxVolume: 0.8,
@@ -67,6 +74,15 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     } else {
       loadedTracks.forEach((audio) => audio.play().catch(() => {}));
     }
+  },
+
+  isMuted: false,
+  setMuted: (muted) => {
+    set({ isMuted: muted });
+    const { loadedTracks } = get();
+    loadedTracks.forEach((audio) => {
+      audio.muted = muted;
+    });
   },
 
   currentWorld: 'dev',
@@ -131,6 +147,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   },
 
   isFading: false,
+  setIsFading: (fading) => set({ isFading: fading }),
 
   crossfadeWorlds: async (fromWorld: WorldType, toWorld: WorldType, duration: number) => {
     if (get().isFading) return;

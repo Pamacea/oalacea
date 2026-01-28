@@ -1,6 +1,3 @@
-// TopDownScene - Scène isométrique style LoL
-// Contrôles: Clic droit pour se déplacer, Shift pour sprint
-// Barre espace: Toggle caméra follow vs free
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
@@ -12,6 +9,8 @@ import { useInteractionsRegistry } from './interactions/useInteractionsRegistry'
 import { useCharacterStore } from '@/store/3d-character-store';
 import { useOverlayStore } from '@/store/3d-overlay-store';
 import { useWorldStore } from '@/store/3d-world-store';
+import { useInWorldAdminStore } from '@/store/in-world-admin-store';
+import { useSettingsStore, selectQualitySettings } from '@/store/settings-store';
 import { Character } from '@/core/3d/character';
 import { FollowCamera } from '@/core/3d/camera';
 import { OcclusionManager } from '@/core/3d/camera/OcclusionManager';
@@ -39,7 +38,8 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
   const [isSprinting, setIsSprinting] = useState(false);
   const [isOccluded, setIsOccluded] = useState(false);
 
-  // Couleurs du monde
+  const qualitySettings = useSettingsStore(selectQualitySettings);
+
   const colors = {
     dev: {
       ground: '#1a1a1a',
@@ -57,22 +57,25 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
     },
   }[worldType];
 
-  // Utilise le registry d'interactions (PLUS DE CODE HARDCODÉ !)
   const { proximityObjects, visualInteractions } = useInteractionsRegistry(worldType);
 
-  // Store pour l'overlay et interactions
   const openOverlay = useOverlayStore((s) => s.openOverlay);
   const switchWorld = useWorldStore((s) => s.switchWorld);
+  const openAdmin = useInWorldAdminStore((s) => s.openAdmin);
+  const isAdminModalOpen = useInWorldAdminStore((s) => s.isOpen);
   const canInteract = useCharacterStore((s) => s.canInteract);
   const interactTarget = useCharacterStore((s) => s.interactTarget);
 
-  // Handler pour la touche E (interaction)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isAdminModalOpen) return;
+
       if (e.code === 'KeyE' && !e.repeat) {
         if (canInteract && interactTarget) {
           if (interactTarget.targetWorld) {
             switchWorld(interactTarget.targetWorld);
+          } else if (interactTarget.type === 'admin') {
+            openAdmin();
           } else if (interactTarget.route && interactTarget.name) {
             openOverlay(interactTarget.route, interactTarget.name);
           }
@@ -82,23 +85,28 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canInteract, interactTarget, openOverlay, switchWorld]);
+  }, [canInteract, interactTarget, openOverlay, switchWorld, openAdmin, isAdminModalOpen]);
+
+  const gridSize = qualitySettings.renderDistance;
+  const gridDivisions = Math.floor(gridSize / 2);
 
   return (
     <>
-      {/* Sol visuel */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]} receiveShadow>
-        <planeGeometry args={[100, 100]} />
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -0.1, 0]}
+        receiveShadow
+        role="presentation"
+        aria-label="Ground plane"
+      >
+        <planeGeometry args={[gridSize, gridSize]} />
         <meshStandardMaterial color={colors.ground} roughness={0.9} />
       </mesh>
 
-      {/* Monde spécifique selon le type */}
       {worldType === 'dev' ? <DevWorld /> : <ArtWorld />}
 
-      {/* Grille subtile pour repères visuels */}
-      <gridHelper args={[100, 50, colors.grid, colors.gridAlt]} position={[0, 0, 0]} />
+      <gridHelper args={[gridSize, gridDivisions, colors.grid, colors.gridAlt]} position={[0, 0, 0]} role="presentation" />
 
-      {/* Zones d'interaction visuelles (sans les portails qui ont leur propre visuel) */}
       {visualInteractions.map((zone) => (
         <InteractionZone
           key={zone.id}
@@ -112,7 +120,6 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
         />
       ))}
 
-      {/* Personnage contrôlable avec système maison */}
       <Character
         worldType={worldType}
         positionRef={characterPositionRef}
@@ -122,9 +129,13 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
         groupRef={characterGroupRef}
       />
 
-      {/* Indicateur de destination */}
-      {targetPosition && (
-        <mesh position={[targetPosition.x, 0.05, targetPosition.z]} rotation={[-Math.PI / 2, 0, 0]}>
+      {targetPosition && qualitySettings.particleQuality !== 'low' && (
+        <mesh
+          position={[targetPosition.x, 0.05, targetPosition.z]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          role="presentation"
+          aria-label="Movement destination indicator"
+        >
           <ringGeometry args={[0.5, 0.8, 32]} />
           <meshBasicMaterial
             color={isSprinting ? '#ff6b00' : worldType === 'dev' ? '#8b0000' : '#4ecdc4'}
@@ -134,7 +145,6 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
         </mesh>
       )}
 
-      {/* Caméra isométrique */}
       <FollowCamera
         targetRef={characterPositionRef}
         mode={cameraMode}
@@ -142,12 +152,13 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
         onPositionChange={onCameraPositionChange}
       />
 
-      {/* Occlusion detection - renders objects transparent when blocking view */}
-      <OcclusionManager
-        characterRef={characterGroupRef}
-        cameraRef={cameraRef}
-        onOcclusionChange={setIsOccluded}
-      />
+      {qualitySettings.particleQuality !== 'low' && (
+        <OcclusionManager
+          characterRef={characterGroupRef}
+          cameraRef={cameraRef}
+          onOcclusionChange={setIsOccluded}
+        />
+      )}
     </>
   );
 }

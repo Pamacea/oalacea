@@ -6,6 +6,7 @@ import { useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import { Vector3, PerspectiveCamera as PerspectiveCameraType } from 'three';
 import { clampCameraPosition, CAMERA_LIMITS } from './cameraBounds';
+import { useSettingsStore } from '@/store/settings-store';
 
 export interface FollowCameraProps {
   targetRef: React.MutableRefObject<Vector3>;
@@ -14,13 +15,18 @@ export interface FollowCameraProps {
   onPositionChange?: (position: { x: number; z: number }) => void;
 }
 
+const REDUCED_MOTION_SMOOTH_FACTOR = 0.02;
+const DEFAULT_SMOOTH_FACTOR = 0.08;
+
 export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef, onPositionChange }: FollowCameraProps) {
   const ref = useRef<PerspectiveCameraType | null>(null);
+  const reducedMotion = useSettingsStore((s) => s.reducedMotion);
 
   const isoOffset = { x: -15, y: 20, z: 15 };
   const cameraTarget = useRef({ x: -15, y: 20, z: 15 });
   const keys = useRef({ forward: false, backward: false, left: false, right: false });
   const lastReportedPosition = useRef({ x: -15, z: 15 });
+  const smoothFactor = reducedMotion ? REDUCED_MOTION_SMOOTH_FACTOR : DEFAULT_SMOOTH_FACTOR;
 
   // Sync external ref
   useEffect(() => {
@@ -108,9 +114,11 @@ export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef, on
       const targetY = isoOffset.y;
       const targetZ = target.z + isoOffset.z;
 
-      cameraTarget.current.x += (targetX - cameraTarget.current.x) * 0.08;
-      cameraTarget.current.y += (targetY - cameraTarget.current.y) * 0.08;
-      cameraTarget.current.z += (targetZ - cameraTarget.current.z) * 0.08;
+      const currentSmoothFactor = reducedMotion ? REDUCED_MOTION_SMOOTH_FACTOR : DEFAULT_SMOOTH_FACTOR;
+
+      cameraTarget.current.x += (targetX - cameraTarget.current.x) * currentSmoothFactor;
+      cameraTarget.current.y += (targetY - cameraTarget.current.y) * currentSmoothFactor;
+      cameraTarget.current.z += (targetZ - cameraTarget.current.z) * currentSmoothFactor;
 
       ref.current.position.set(
         cameraTarget.current.x,

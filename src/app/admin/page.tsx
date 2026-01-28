@@ -1,107 +1,133 @@
 import Link from 'next/link';
 import { getPosts } from '@/actions/blog';
 import { getProjects } from '@/actions/projects';
-import { FileText, FolderKanban, ArrowRight } from 'lucide-react';
+import { PenTool, FolderOpen, Plus } from 'lucide-react';
+
+export const revalidate = 30;
 
 export default async function AdminPage() {
   const [posts, projects] = await Promise.all([
-    getPosts({ published: false }),
+    getPosts({ published: false, page: 1, limit: 5 }),
     getProjects(),
   ]);
 
   const stats = [
     {
-      title: 'Articles de blog',
-      count: posts.pagination.total,
+      label: 'Articles',
+      value: posts.pagination.total,
       href: '/admin/blog',
-      icon: FileText,
-      color: 'from-violet-500 to-purple-600',
+      icon: PenTool,
+      color: 'text-zinc-400',
+      bgColor: 'bg-zinc-800/50',
     },
     {
-      title: 'Projets portfolio',
-      count: projects.length,
+      label: 'Projets',
+      value: projects.length,
       href: '/admin/projects',
-      icon: FolderKanban,
-      color: 'from-blue-500 to-cyan-600',
+      icon: FolderOpen,
+      color: 'text-zinc-400',
+      bgColor: 'bg-zinc-800/50',
     },
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Tableau de bord</h1>
-        <p className="mt-2 text-slate-400">
-          Gérez votre contenu et vos projets
-        </p>
+    <div>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-zinc-100">Tableau de bord</h1>
+        <p className="text-zinc-500 text-sm mt-1">Bienvenue dans le panneau d'administration</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Link
-              key={stat.title}
-              href={stat.href}
-              className="group relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/50 p-6 transition-all hover:border-white/20 hover:bg-slate-900/80"
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 transition-opacity group-hover:opacity-10`} />
-              <div className="relative">
-                <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${stat.color}`}>
-                  <Icon className="h-6 w-6 text-white" />
-                </div>
-                <p className="text-sm font-medium text-slate-400">{stat.title}</p>
-                <p className="mt-2 text-3xl font-bold text-white">{stat.count}</p>
-                <ArrowRight className="mt-4 h-5 w-5 text-slate-500 transition-transform group-hover:translate-x-1" />
-              </div>
-            </Link>
-          );
-        })}
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        {stats.map((stat) => (
+          <Link
+            key={stat.label}
+            href={stat.href}
+            className="block p-6 border border-zinc-800 rounded-xl bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">→</span>
+            </div>
+            <p className="text-2xl font-semibold text-zinc-100">{stat.value}</p>
+            <p className="text-sm text-zinc-500">{stat.label}</p>
+          </Link>
+        ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-white/10 bg-slate-900/50 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-white">
-            Actions rapides
-          </h2>
-          <div className="space-y-3">
-            <Link
-              href="/admin/blog/new"
-              className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
-            >
-              <span>Nouvel article de blog</span>
-              <span className="text-violet-400">+</span>
-            </Link>
-            <Link
-              href="/admin/projects/new"
-              className="flex items-center justify-between rounded-lg border border-white/10 bg-slate-800/50 px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
-            >
-              <span>Nouveau projet</span>
-              <span className="text-blue-400">+</span>
-            </Link>
+      {/* Quick Actions */}
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <Link
+          href="/admin/blog/new"
+          className="flex items-center gap-3 p-4 border border-zinc-800 rounded-xl bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
+        >
+          <div className="p-2 bg-zinc-800 rounded-lg group-hover:bg-zinc-700 transition-colors">
+            <Plus className="h-4 w-4 text-zinc-400" />
           </div>
-        </div>
+          <div>
+            <p className="font-medium text-zinc-200">Nouvel article</p>
+            <p className="text-xs text-zinc-500">Créer un article de blog</p>
+          </div>
+        </Link>
+        <Link
+          href="/admin/projects/new"
+          className="flex items-center gap-3 p-4 border border-zinc-800 rounded-xl bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
+        >
+          <div className="p-2 bg-zinc-800 rounded-lg group-hover:bg-zinc-700 transition-colors">
+            <Plus className="h-4 w-4 text-zinc-400" />
+          </div>
+          <div>
+            <p className="font-medium text-zinc-200">Nouveau projet</p>
+            <p className="text-xs text-zinc-500">Ajouter un projet portfolio</p>
+          </div>
+        </Link>
+      </div>
 
-        <div className="rounded-xl border border-white/10 bg-slate-900/50 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-white">Derniers articles</h2>
-          {posts.posts.length === 0 ? (
-            <p className="text-sm text-slate-500">Aucun article pour le moment</p>
-          ) : (
-            <div className="space-y-3">
-              {posts.posts.slice(0, 5).map((post) => (
+      {/* Recent Content */}
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Recent Posts */}
+        {posts.posts.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Articles récents</h2>
+            <div className="border border-zinc-800 rounded-xl divide-y divide-zinc-800 overflow-hidden">
+              {posts.posts.slice(0, 3).map((post) => (
                 <Link
                   key={post.id}
                   href={`/admin/blog/${post.id}`}
-                  className="block rounded-lg border border-white/5 bg-slate-800/30 px-4 py-3 text-sm transition-colors hover:bg-slate-800/50"
+                  className="block p-4 hover:bg-zinc-900/30 transition-colors"
                 >
-                  <p className="font-medium text-white">{post.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {new Date(post.createdAt).toLocaleDateString('fr-FR')}
+                  <p className="font-medium text-zinc-200 text-sm">{post.title}</p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {new Date(post.createdAt).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'short',
+                    })}
                   </p>
                 </Link>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Recent Projects */}
+        {projects.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Projets récents</h2>
+            <div className="border border-zinc-800 rounded-xl divide-y divide-zinc-800 overflow-hidden">
+              {projects.slice(0, 3).map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/admin/projects/${project.id}`}
+                  className="block p-4 hover:bg-zinc-900/30 transition-colors"
+                >
+                  <p className="font-medium text-zinc-200 text-sm">{project.title}</p>
+                  <p className="text-xs text-zinc-500 mt-1">{project.year} · {project.category}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

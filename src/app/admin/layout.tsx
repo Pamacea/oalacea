@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/core/auth';
 import Link from 'next/link';
-import { FileText, FolderKanban, LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, PenTool, FolderOpen, LogOut } from 'lucide-react';
 
 export default async function AdminLayout({
   children,
@@ -15,50 +15,58 @@ export default async function AdminLayout({
   }
 
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/blog', label: 'Blog', icon: FileText },
-    { href: '/admin/projects', label: 'Projets', icon: FolderKanban },
+    { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/admin/blog', icon: PenTool, label: 'Blog' },
+    { href: '/admin/projects', icon: FolderOpen, label: 'Projets' },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/10 bg-slate-900/50 backdrop-blur-sm">
-        <div className="flex h-16 items-center border-b border-white/10 px-6">
-          <h1 className="text-xl font-bold text-white">Admin</h1>
+    <div className="min-h-screen bg-zinc-950 flex">
+      {/* Sidebar */}
+      <aside className="w-16 lg:w-56 border-r border-zinc-800 bg-zinc-900/50 flex flex-col">
+        {/* Logo */}
+        <div className="p-4 lg:p-6 border-b border-zinc-800">
+          <h1 className="text-lg font-bold text-zinc-100">Admin</h1>
         </div>
-        <nav className="space-y-1 p-4">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
-              >
-                <Icon className="h-5 w-5" />
-                {item.label}
-              </Link>
-            );
-          })}
+
+        {/* Navigation */}
+        <nav className="flex-1 p-2 lg:p-4 space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all"
+            >
+              <item.icon className="h-4 w-4 shrink-0" />
+              <span className="hidden lg:inline">{item.label}</span>
+            </Link>
+          ))}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-sm font-semibold text-white">
-              {session.user.name?.[0] || 'U'}
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium text-white">
-                {session.user.name}
-              </p>
-              <p className="truncate text-xs text-slate-400">
-                {session.user.email}
-              </p>
-            </div>
+
+        {/* User */}
+        <div className="p-4 border-t border-zinc-800">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-zinc-500 hidden lg:block truncate max-w-[150px]">
+              {session.user?.email}
+            </p>
+            <form action="/api/auth/signout" method="POST">
+              <button
+                type="submit"
+                className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                title="Déconnexion"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </form>
           </div>
         </div>
       </aside>
-      <main className="pl-64">
-        <div className="min-h-screen p-8">{children}</div>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
+          {children}
+        </div>
       </main>
     </div>
   );

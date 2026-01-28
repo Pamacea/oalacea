@@ -1,61 +1,67 @@
-// FloatingUI - Interface flottante au-dessus de la scène 3D
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import { InteractionPrompt } from './InteractionPrompt';
 import { SceneOverlay } from './SceneOverlay';
+import { InWorldAdminModal } from './InWorldAdminModal';
+import { HelpModal } from './HelpModal';
+import { TouchInteraction, MobileUI, VirtualJoystick } from './mobile';
+import { PhotoMode } from './PhotoMode';
+import { VRToggle } from './VRToggle';
+import { useCharacterStore } from '@/store/3d-character-store';
 
 export function FloatingUI() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentWorld] = useState<'dev' | 'art'>('dev');
+
+  const canInteract = useCharacterStore((s) => s.canInteract);
+  const interactTarget = useCharacterStore((s) => s.interactTarget);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <>
-      {/* Top bar - Logo */}
-      <motion.header
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-        className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4"
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-amber-500 focus:text-white focus:p-4 focus:rounded-md focus:font-semibold"
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById('scene-container')?.focus();
+        }}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold tracking-tighter text-white">
-            OALACEA
-          </h1>
-        </div>
+        Skip to main content
+      </a>
 
-        {/* Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="text-white hover:bg-white/10"
-        >
-          <motion.svg
-            className="h-6 w-6"
-            animate={{ rotate: menuOpen ? 90 : 0 }}
-            transition={{ duration: 0.2 }}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </motion.svg>
-        </Button>
-      </motion.header>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {canInteract && interactTarget ? `Can interact with ${interactTarget.name}. Press E to interact.` : ''}
+      </div>
 
-      {/* Interaction Prompt */}
-      <InteractionPrompt />
+      {!isMobile && <InteractionPrompt />}
 
-      {/* Overlay pour afficher le contenu des pages */}
+      {isMobile && <TouchInteraction />}
+
+      {isMobile && <MobileUI currentWorld={currentWorld} />}
+
+      {isMobile && <VirtualJoystick />}
+
       <SceneOverlay />
+      <InWorldAdminModal />
+      <HelpModal />
+      <VRToggle />
+      <PhotoMode />
     </>
   );
 }

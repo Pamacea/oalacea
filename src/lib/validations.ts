@@ -6,8 +6,12 @@ export const postSchema = z.object({
   excerpt: z.string().max(500).optional(),
   published: z.boolean().default(false),
   categoryId: z.string().uuid().optional(),
-  coverImage: z.string().url().optional(),
+  coverImage: z.string().url().or(z.literal('')).optional(),
   slug: z.string().optional(),
+})
+
+export const postVersionSchema = z.object({
+  changeNote: z.string().max(500).optional(),
 })
 
 export type PostInput = z.infer<typeof postSchema>
@@ -54,3 +58,55 @@ export const projectSchema = z.object({
 })
 
 export type ProjectInput = z.infer<typeof projectSchema>
+
+export const commentSchema = z.object({
+  authorName: z.string().min(1, "Name is required").max(100, "Name too long"),
+  authorEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
+  content: z.string().min(3, "Comment must be at least 3 characters").max(2000, "Comment too long"),
+  postId: z.string().uuid().optional(),
+  projectId: z.string().uuid().optional(),
+  parentId: z.string().uuid().optional(),
+  consent: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the comment policy",
+  }),
+})
+
+export type CommentInput = z.infer<typeof commentSchema>
+
+export const newsletterSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  firstName: z.string().max(50).optional(),
+  consent: z.boolean().refine((val) => val === true, {
+    message: "You must consent to receive emails",
+  }),
+})
+
+export type NewsletterInput = z.infer<typeof newsletterSchema>
+
+export const shareCardSchema = z.object({
+  type: z.enum(["blog", "project", "profile"]),
+  title: z.string().max(100),
+  description: z.string().max(200).optional(),
+  imageUrl: z.string().url().optional(),
+  theme: z.enum(["imperium", "underground"]).default("imperium"),
+})
+
+export type ShareCardInput = z.infer<typeof shareCardSchema>
+
+export const collaborativeCommentSchema = z.object({
+  content: z.string().min(1, "Comment is required").max(2000, "Comment too long"),
+  entityType: z.enum(["Post", "Project", "Version"]),
+  entityId: z.string().cuid(),
+  mentions: z.array(z.string().cuid()).optional(),
+})
+
+export type CollaborativeCommentInput = z.infer<typeof collaborativeCommentSchema>
+
+export const updateUserSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  role: z.enum(["ADMIN", "EDITOR", "AUTHOR", "VIEWER"]).optional(),
+  isActive: z.boolean().optional(),
+  emailVerified: z.string().datetime().optional(),
+})
+
+export type UpdateUserInput = z.infer<typeof updateUserSchema>
