@@ -1,19 +1,20 @@
 import Link from 'next/link';
 import { Plus, Pencil, Trash2, Eye, Star } from 'lucide-react';
 import { getProjects, deleteProject } from '@/actions/projects';
-import { ProjectCategory } from '@/generated/prisma/enums';
+import { revalidatePath } from 'next/cache';
 
 function DeleteButton({ id }: { id: string }) {
+  'use server';
   async function handleDelete() {
-    'use server';
     await deleteProject(id);
+    revalidatePath('/admin/projects');
   }
 
   return (
     <form action={handleDelete}>
       <button
         type="submit"
-        className="rounded p-2 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
         title="Supprimer"
       >
         <Trash2 className="h-4 w-4" />
@@ -22,15 +23,7 @@ function DeleteButton({ id }: { id: string }) {
   );
 }
 
-const categoryColors: Record<ProjectCategory, string> = {
-  WEB: 'bg-blue-500/10 text-blue-400',
-  MOBILE: 'bg-green-500/10 text-green-400',
-  THREE_D: 'bg-purple-500/10 text-purple-400',
-  AI: 'bg-orange-500/10 text-orange-400',
-  OTHER: 'bg-slate-500/10 text-slate-400',
-};
-
-const categoryLabels: Record<ProjectCategory, string> = {
+const categoryLabels: Record<string, string> = {
   WEB: 'Web',
   MOBILE: 'Mobile',
   THREE_D: '3D',
@@ -38,116 +31,106 @@ const categoryLabels: Record<ProjectCategory, string> = {
   OTHER: 'Autre',
 };
 
+export const revalidate = 30;
+
 export default async function AdminProjectsPage() {
   const projects = await getProjects();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Projets</h1>
-          <p className="text-slate-400">
-            {projects.length} projet{projects.length > 1 ? 's' : ''}
-          </p>
+          <h1 className="text-2xl font-semibold text-zinc-100">Projets</h1>
+          <p className="text-zinc-500 text-sm mt-1">{projects.length} projet{projects.length > 1 ? 's' : ''}</p>
         </div>
         <Link
           href="/admin/projects/new"
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:border-zinc-700 transition-all"
         >
           <Plus className="h-4 w-4" />
           Nouveau projet
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {projects.length === 0 ? (
-          <div className="col-span-full rounded-xl border border-white/10 bg-slate-900/50 p-12 text-center text-slate-500">
-            Aucun projet. Créez votre premier projet !
-          </div>
-        ) : (
-          projects.map((project) => (
-            <div
-              key={project.id}
-              className="group rounded-xl border border-white/10 bg-slate-900/50 p-4 transition-all hover:border-white/20"
-            >
-              <div className="mb-4 aspect-video rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden">
-                {project.thumbnail ? (
-                  <img
-                    src={project.thumbnail}
-                    alt={project.title}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-slate-600">
-                    <Eye className="h-12 w-12" />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-white truncate">
-                      {project.title}
-                    </h3>
-                    {project.featured && (
-                      <Star className="h-4 w-4 text-yellow-500 shrink-0" />
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm text-slate-500 line-clamp-2">
-                    {project.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between">
-                <span
-                  className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    categoryColors[project.category]
-                  }`}
-                >
-                  {categoryLabels[project.category]}
-                </span>
-
-                <div className="flex items-center gap-1">
-                  <Link
-                    href={`/portfolio/${project.slug}`}
-                    target="_blank"
-                    className="rounded p-1.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
-                    title="Voir"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Link>
-                  <Link
-                    href={`/admin/projects/${project.id}`}
-                    className="rounded p-1.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
-                    title="Modifier"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Link>
-                  <DeleteButton id={project.id} />
-                </div>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-1">
-                {project.techStack.slice(0, 3).map((tech) => (
-                  <span
-                    key={tech}
-                    className="text-xs rounded bg-slate-800 px-2 py-0.5 text-slate-400"
-                  >
-                    {tech}
-                  </span>
-                ))}
-                {project.techStack.length > 3 && (
-                  <span className="text-xs rounded bg-slate-800 px-2 py-0.5 text-slate-400">
-                    +{project.techStack.length - 3}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      {/* Projects List */}
+      {projects.length === 0 ? (
+        <div className="text-center py-20 border-2 border-dashed border-zinc-800 rounded-xl">
+          <p className="text-zinc-500 mb-4">Aucun projet</p>
+          <Link
+            href="/admin/projects/new"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            Créer le premier
+          </Link>
+        </div>
+      ) : (
+        <div className="border border-zinc-800 rounded-xl overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-zinc-900/50 border-b border-zinc-800">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Projet</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Catégorie</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Année</th>
+                <th className="px-6 py-4 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800">
+              {projects.map((project) => (
+                <tr key={project.id} className="hover:bg-zinc-900/30 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-4">
+                      {project.thumbnail ? (
+                        <div className="h-12 w-16 rounded overflow-hidden bg-zinc-900 shrink-0">
+                          <img src={project.thumbnail} alt="" className="h-full w-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="h-12 w-16 rounded bg-zinc-900 flex items-center justify-center shrink-0">
+                          <span className="text-zinc-700 text-xs">No img</span>
+                        </div>
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-zinc-200">{project.title}</p>
+                          {project.featured && <Star className="h-3 w-3 text-amber-500" fill={'currentColor'} />}
+                        </div>
+                        <p className="text-xs text-zinc-500 line-clamp-1">{project.description}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                      {categoryLabels[project.category]}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-zinc-500">{project.year}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/portfolio/${project.slug}`}
+                        target="_blank"
+                        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                        title="Voir"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                      <Link
+                        href={`/admin/projects/${project.id}`}
+                        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                        title="Modifier"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                      <DeleteButton id={project.id} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

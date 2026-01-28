@@ -1,14 +1,113 @@
 // Server Actions pour les projets portfolio - Using Prisma in Server Components
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import type { Project } from '@/generated/prisma/client';
+import type { Project, WorldPosition } from '@/generated/prisma/client';
 import { ProjectCategory } from '@/generated/prisma/enums';
 
+type ProjectWithWorldPosition = Project & { worldPosition: WorldPosition | null };
+
 // =========================================
-// GET ACTIONS
+// GET ACTIONS (cached with unstable_cache)
 // =========================================
+
+const getCachedProjects = unstable_cache(
+  async ({ featured, category }: {
+    featured?: boolean;
+    category?: string;
+  }) => {
+    const where: any = {};
+    if (featured) where.featured = true;
+    if (category) where.category = category.toUpperCase();
+
+    return prisma.project.findMany({
+      where,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        thumbnail: true,
+        year: true,
+        category: true,
+        featured: true,
+        sortOrder: true,
+        techStack: true,
+      },
+      orderBy: [
+        { sortOrder: 'asc' },
+        { year: 'desc' },
+      ],
+    });
+  },
+  ['projects'],
+  { revalidate: 120 }
+);
+
+const getCachedProjectBySlug = unstable_cache(
+  async (slug: string) => {
+    return prisma.project.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        longDescription: true,
+        thumbnail: true,
+        year: true,
+        category: true,
+        featured: true,
+        techStack: true,
+        githubUrl: true,
+        liveUrl: true,
+      },
+    });
+  },
+  ['project'],
+  { revalidate: 120 }
+);
+
+const getCachedProjectById = unstable_cache(
+  async (id: string) => {
+    return prisma.project.findUnique({
+      where: { id },
+      include: { worldPosition: true },
+    });
+  },
+  ['project-by-id'],
+  { revalidate: 120, tags: ['project-by-id'] }
+);
+
+// Public API using cached functions
+type ProjectListItem = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  thumbnail: string | null;
+  year: number;
+  category: string;
+  featured: boolean;
+  sortOrder: number;
+  techStack: string[];
+};
+
+type ProjectDetail = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  longDescription: string | null;
+  thumbnail: string | null;
+  year: number;
+  category: string;
+  featured: boolean;
+  techStack: string[];
+  githubUrl: string | null;
+  liveUrl: string | null;
+};
 
 export async function getProjects({
   featured,
@@ -16,43 +115,16 @@ export async function getProjects({
 }: {
   featured?: boolean;
   category?: string;
-} = {}) {
-  const where: any = {};
-  if (featured) where.featured = true;
-  if (category) where.category = category.toUpperCase();
-
-  const projects = await prisma.project.findMany({
-    where,
-    include: { worldPosition: true },
-    orderBy: [
-      { sortOrder: 'asc' },
-      { year: 'desc' },
-    ],
-  });
-
-  return projects;
+} = {}): Promise<ProjectListItem[]> {
+  return getCachedProjects({ featured, category });
 }
 
-export async function getProjectBySlug(slug: string) {
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    include: { worldPosition: true },
-  });
-
-  if (!project) {
-    return null;
-  }
-
-  return project;
+export async function getProjectBySlug(slug: string): Promise<ProjectDetail | null> {
+  return getCachedProjectBySlug(slug);
 }
 
 export async function getProjectById(id: string) {
-  const project = await prisma.project.findUnique({
-    where: { id },
-    include: { worldPosition: true },
-  });
-
-  return project;
+  return getCachedProjectById(id);
 }
 
 export async function getProjectCategories() {
@@ -60,7 +132,7 @@ export async function getProjectCategories() {
 }
 
 // =========================================
-// MUTATION ACTIONS
+// MUTATION ACTIONS (invalidate cache)
 // =========================================
 
 export async function createProject(data: {

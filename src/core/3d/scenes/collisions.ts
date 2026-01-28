@@ -76,6 +76,22 @@ export const ART_COLLISION_ZONES: CollisionZone[] = [
   { id: 'frame-1', position: [0, 0, -20], radius: 2.3, name: 'Cadre 1' },
   { id: 'frame-2', position: [-15, 0, 0], radius: 2.3, name: 'Cadre 2' },
   { id: 'frame-3', position: [15, 0, 0], radius: 2.3, name: 'Cadre 3' },
+
+  // SprayCans - petits objets cylindriques, rayon ~0.3
+  { id: 'spray-1', position: [-18, 0, 15], radius: 0.4, name: 'Spray Can 1' },
+  { id: 'spray-2', position: [-20, 0, 18], radius: 0.4, name: 'Spray Can 2' },
+  { id: 'spray-3', position: [18, 0, 15], radius: 0.4, name: 'Spray Can 3' },
+  { id: 'spray-4', position: [22, 0, -10], radius: 0.4, name: 'Spray Can 4' },
+
+  // NeonSigns - panneaux sur les murs (moins critiques car en hauteur)
+  { id: 'neon-1', position: [0, 8, -25], radius: 2.0, name: 'Neon ART' },
+  { id: 'neon-2', position: [-15, 6, 10], radius: 2.0, name: 'Neon CREATE' },
+  { id: 'neon-3', position: [15, 6, 10], radius: 2.0, name: 'Neon EXPRESS' },
+  { id: 'neon-4', position: [0, 10, 20], radius: 2.5, name: 'Neon UNDERGROUND' },
+
+  // NPCs - zones de collision autour des guides
+  { id: 'npc-curator', position: [5, 0, 8], radius: 1.0, name: 'Art Curator' },
+  { id: 'npc-priest', position: [-5, 0, 8], radius: 1.0, name: 'Tech Priest' },
 ];
 
 // =========================================

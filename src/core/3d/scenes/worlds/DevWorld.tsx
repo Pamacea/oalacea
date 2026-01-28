@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import { ImperialPillar, GothicArch, DevTerminal, DustParticles } from './dev/DevComponents';
 import { ImperiumPortal } from '../portals';
 import { DevProjectPedestals } from '../objects/ProjectPedestal';
+import { BlogDocuments, AdminTerminalWrapper } from '../objects';
+import { TechPriestGuide } from '@/core/3d/npc';
 
 interface DevWorldProps {
   position?: [number, number, number];
@@ -74,6 +76,15 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
 
       {/* Portail vers l'Underground - AU CENTRE */}
       <ImperiumPortal position={[0, 0, 0]} targetWorld="art" rotation={0} />
+
+      {/* Blog Posts In-World */}
+      <BlogDocuments world="DEV" />
+
+      {/* Admin Terminal - Near center but not blocking */}
+      <AdminTerminalWrapper world="DEV" position={[8, 0, 8]} />
+
+      {/* AI Guide - Tech Priest */}
+      <TechPriestGuide position={[-5, 0, 8]} />
     </group>
   );
 }

@@ -146,7 +146,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-white">
+                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Titre
                 </label>
                 <input
@@ -163,13 +163,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                     }
                   }}
                   required
-                  className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
                   placeholder="Mon projet awesome"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-white">
+                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Slug
                 </label>
                 <input
@@ -178,7 +178,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
                   value={formData.slug}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
                   placeholder="mon-projet-awesome"
                 />
               </div>
@@ -186,14 +186,14 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-white">
+                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Catégorie
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 focus:border-zinc-700 focus:outline-none"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -204,7 +204,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-white">
+                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Année
                 </label>
                 <input
@@ -213,13 +213,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                   value={formData.year}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-white">
+              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Description courte
               </label>
               <textarea
@@ -228,13 +228,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 onChange={handleChange}
                 rows={2}
                 required
-                className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none resize-none"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none resize-none"
                 placeholder="Une brève description du projet..."
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-white">
+              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Description longue
               </label>
               <textarea
@@ -242,13 +242,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 value={formData.longDescription}
                 onChange={handleChange}
                 rows={6}
-                className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none resize-y"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none resize-y"
                 placeholder="Description détaillée du projet, challenges, solutions..."
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-white">
+              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Stack technique
               </label>
               <input
@@ -256,7 +256,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 name="techStack"
                 value={formData.techStack}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
                 placeholder="React, TypeScript, Tailwind..."
               />
               <p className="mt-1 text-xs text-slate-500">
@@ -266,7 +266,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-white">
+                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                   GitHub
                 </label>
                 <input
@@ -274,13 +274,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                   name="githubUrl"
                   value={formData.githubUrl}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
                   placeholder="https://github.com/..."
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-white">
+                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Site en ligne
                 </label>
                 <input
@@ -288,7 +288,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
                   name="liveUrl"
                   value={formData.liveUrl}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
                   placeholder="https://..."
                 />
               </div>
@@ -297,8 +297,8 @@ export function ProjectForm({ project }: ProjectFormProps) {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 space-y-4">
-            <h3 className="font-semibold text-white">Mise en avant</h3>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-4">
+            <h3 className="font-semibold text-zinc-100">Mise en avant</h3>
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -306,13 +306,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 name="featured"
                 checked={formData.featured}
                 onChange={handleChange}
-                className="h-4 w-4 rounded border-white/10 bg-slate-900/50 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-zinc-800 bg-zinc-900/50 text-zinc-500 focus:ring-zinc-700"
               />
-              <span className="text-sm text-white">Projets à la une</span>
+              <span className="text-sm text-zinc-100">Projets à la une</span>
             </label>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-white">
+              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Ordre d'affichage
               </label>
               <input
@@ -320,7 +320,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 name="sortOrder"
                 value={formData.sortOrder}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
               />
               <p className="mt-1 text-xs text-slate-500">
                 Plus bas = affiché en premier
@@ -328,21 +328,21 @@ export function ProjectForm({ project }: ProjectFormProps) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 space-y-4">
-            <h3 className="flex items-center gap-2 font-semibold text-white">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-4">
+            <h3 className="flex items-center gap-2 font-semibold text-zinc-100">
               <MapPin className="h-4 w-4" />
               Position 3D
             </h3>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-white">
+              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Monde
               </label>
               <select
                 name="world"
                 value={formData.world}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 focus:border-zinc-700 focus:outline-none"
               >
                 <option value="">Pas de position</option>
                 <option value="DEV">Dev World</option>
@@ -354,7 +354,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
                       X
                     </label>
                     <input
@@ -363,11 +363,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
                       value={formData.x}
                       onChange={handleChange}
                       step="0.1"
-                      className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 focus:border-zinc-700 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
                       Z
                     </label>
                     <input
@@ -376,13 +376,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
                       value={formData.z}
                       onChange={handleChange}
                       step="0.1"
-                      className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 focus:border-zinc-700 focus:outline-none"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
                       Y (hauteur)
                     </label>
                     <input
@@ -391,11 +391,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
                       value={formData.y}
                       onChange={handleChange}
                       step="0.1"
-                      className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 focus:border-zinc-700 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-400">
+                    <label className="mb-1 block text-xs font-medium text-zinc-400">
                       Rotation
                     </label>
                     <input
@@ -404,7 +404,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
                       value={formData.rotation}
                       onChange={handleChange}
                       step="1"
-                      className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 focus:border-zinc-700 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -412,8 +412,8 @@ export function ProjectForm({ project }: ProjectFormProps) {
             )}
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4 space-y-4">
-            <h3 className="font-semibold text-white">Miniature</h3>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-4">
+            <h3 className="font-semibold text-zinc-100">Miniature</h3>
 
             <div>
               <input
@@ -421,11 +421,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 name="thumbnail"
                 value={formData.thumbnail}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-white/10 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
                 placeholder="https://..."
               />
               {formData.thumbnail && (
-                <div className="mt-3 relative aspect-video rounded-lg overflow-hidden bg-slate-800">
+                <div className="mt-3 relative aspect-video rounded-lg overflow-hidden bg-zinc-800">
                   <img
                     src={formData.thumbnail}
                     alt="Preview"
@@ -436,7 +436,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
                     onClick={() =>
                       setFormData((prev) => ({ ...prev, thumbnail: '' }))
                     }
-                    className="absolute top-2 right-2 rounded bg-black/50 p-1 text-white hover:bg-black/70"
+                    className="absolute top-2 right-2 rounded bg-black/50 p-1 text-zinc-100 hover:bg-black/70"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -447,18 +447,18 @@ export function ProjectForm({ project }: ProjectFormProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-white/10 pt-6">
+      <div className="flex items-center justify-between border-t border-zinc-800 pt-6">
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5"
+          className="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/5"
         >
           Annuler
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-lg bg-zinc-700 px-6 py-2 text-sm font-medium text-zinc-100 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending
             ? 'Enregistrement...'

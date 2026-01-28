@@ -55,6 +55,11 @@ export const useWorldStore = create<WorldState>((set, get) => ({
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     clearInterval(loadingInterval);
+
+    // Reset character position to center when changing worlds
+    // This avoids the player being stuck in a wall or obstacle
+    // We need to access the character store but avoid circular dependency
+    // The character will be repositioned via an event or by the scene
     set({
       currentWorld: world,
       isTransitioning: false,

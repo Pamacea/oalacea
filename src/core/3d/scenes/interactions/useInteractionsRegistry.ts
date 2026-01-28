@@ -23,6 +23,7 @@ export function useInteractionsRegistry(world: WorldType) {
         data: {
           name: interaction.label,
           route: interaction.route ?? '',
+          type: interaction.type,
           targetWorld: interaction.targetWorld,
         },
       }));

@@ -4,6 +4,8 @@
 import { ConcreteWall, NeonSign, ArtPedestal, SprayCan, GalleryFrame, NeonParticles } from './art/ArtComponents';
 import { UndergroundPortal } from '../portals';
 import { ArtProjectDisplays } from '../objects/ArtDisplay';
+import { BlogDocuments, AdminTerminalWrapper } from '../objects';
+import { ArtCuratorGuide } from '@/core/3d/npc';
 
 interface ArtWorldProps {
   position?: [number, number, number];
@@ -66,6 +68,15 @@ export function ArtWorld({ position = [0, 0, 0] }: ArtWorldProps) {
 
       {/* Portail vers l'Imperium - AU CENTRE */}
       <UndergroundPortal position={[0, 0, 0]} targetWorld="dev" rotation={0} />
+
+      {/* Blog Posts In-World */}
+      <BlogDocuments world="ART" />
+
+      {/* Admin Terminal - Near center but not blocking */}
+      <AdminTerminalWrapper world="ART" position={[-8, 0, 8]} />
+
+      {/* AI Guide - Art Curator */}
+      <ArtCuratorGuide position={[5, 0, 8]} />
     </group>
   );
 }

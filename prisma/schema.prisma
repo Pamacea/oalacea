@@ -41,10 +41,36 @@ model Post {
   metaTitle   String?
   metaDescription String?
   readingTime Int      @default(5)
+  versions    PostVersion[]
+  comments    Comment[]
+  authorId    String?
+  author      User?     @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([published])
   @@index([publishDate])
   @@index([categoryId])
+  @@index([authorId])
+}
+
+model PostVersion {
+  id          String   @id @default(cuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  version     Int
+  title       String
+  excerpt     String?
+  content     String
+  coverImage  String?
+  tags        String[]
+  changeNote  String?
+  createdAt   DateTime @default(now())
+  createdById  String?
+  author      User?    @relation("VersionAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([postId, version])
+  @@index([postId])
+  @@index([createdAt])
+  @@index([createdById])
 }
 
 // =========================================
@@ -68,10 +94,14 @@ model Project {
   worldPosition WorldPosition?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  comments      Comment[]
+  authorId      String?
+  author        User?    @relation("ProjectAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([featured])
   @@index([year])
   @@index([category])
+  @@index([authorId])
 }
 
 model WorldPosition {
@@ -118,4 +148,472 @@ model AdminSettings {
   socialLinks     Json?    @default("{}")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// =========================================
+// USERS & AUTHENTICATION
+// =========================================
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  AUTHOR
+  VIEWER
+}
+
+model User {
+  id                String        @id @default(cuid())
+  email             String        @unique
+  emailVerified     DateTime?
+  name              String?
+  password          String?
+  image             String?
+  role              UserRole      @default(VIEWER)
+  isActive          Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  lastLoginAt       DateTime?
+
+  // OAuth accounts
+  accounts          Account[]
+  sessions          Session[]
+
+  // Password reset
+  passwordResetTokens PasswordResetToken[]
+
+  // Email verification
+  emailVerificationTokens EmailVerificationToken[]
+
+  // Activity logs (user's actions)
+  activityLogs      ActivityLog[]  @relation("UserActivities")
+
+  // Content locks
+  contentLocks      ContentLock[]  @relation("UserLocks")
+
+  // Created/updated content
+  createdPosts      Post[]        @relation("PostAuthor")
+  updatedVersions   PostVersion[] @relation("VersionAuthor")
+  createdProjects   Project[]     @relation("ProjectAuthor")
+
+  // Collaboration
+  comments          CollaborativeComment[] @relation("CommentAuthor")
+  notifications     Notification[] @relation("UserNotifications")
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+// =========================================
+// ACTIVITY LOG
+// =========================================
+
+enum ActivityAction {
+  CREATE
+  UPDATE
+  DELETE
+  PUBLISH
+  UNPUBLISH
+  LOGIN
+  LOGOUT
+  LOCK
+  UNLOCK
+  EXPORT
+}
+
+model ActivityLog {
+  id          String        @id @default(cuid())
+  userId      String?
+  user        User?         @relation("UserActivities", fields: [userId], references: [id], onDelete: SetNull)
+  action      ActivityAction
+  entityType  String        // Post, Project, Category, etc.
+  entityId    String?
+  description String?
+  metadata    Json?         @default("{}")
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime      @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// =========================================
+// CONTENT LOCKING
+// =========================================
+
+model ContentLock {
+  id          String   @id @default(cuid())
+  entityType  String   // Post, Project, etc.
+  entityId    String
+  userId      String
+  user        User     @relation("UserLocks", fields: [userId], references: [id], onDelete: Cascade)
+  lockedAt    DateTime @default(now())
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+
+  @@unique([entityType, entityId, isActive])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// =========================================
+// COMMENTS
+// =========================================
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+model Comment {
+  id          String        @id @default(cuid())
+  postId      String?
+  post        Post?         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorName  String
+  authorEmail String?
+  content     String        @db.Text
+  status      CommentStatus @default(PENDING)
+  parentId    String?
+  parent      Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[]     @relation("CommentReplies")
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([postId])
+  @@index([projectId])
+  @@index([status])
+  @@index([parentId])
+}
+
+// =========================================
+// NEWSLETTER
+// =========================================
+
+model NewsletterSubscriber {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  firstName     String?
+  consent       Boolean   @default(true)
+  consentDate   DateTime  @default(now())
+  verified      Boolean   @default(false)
+  verifyToken   String?   @unique
+  unsubscribed  Boolean   @default(false)
+  unsubscribedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+  @@index([verified])
+  @@index([unsubscribed])
+}
+
+model NewsletterEmail {
+  id          String   @id @default(cuid())
+  subject     String
+  previewText String?
+  content     String   @db.Text
+  sentAt      DateTime?
+  scheduledFor DateTime?
+  status      String   @default("draft")
+  sentCount   Int      @default(0)
+  openCount   Int      @default(0)
+  clickCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// =========================================
+// ANALYTICS
+// =========================================
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     AnalyticsSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  type        String   // pageView, projectView, blogRead, interaction3D, worldSwitch, etc.
+  path        String?
+  properties  Json?    @default("{}")
+  referrer    String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([path])
+}
+
+model AnalyticsSession {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  startTime   DateTime @default(now())
+  endTime     DateTime?
+  pageViews   Int      @default(0)
+  duration    Int?     // in seconds
+  referrer    String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+  bounce      Boolean  @default(true)
+  events      AnalyticsEvent[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([startTime])
+}
+
+model PageView {
+  id          String   @id @default(cuid())
+  path        String
+  title       String?
+  sessionId   String
+  referrer    String?
+  duration    Int?     // time spent on page in seconds
+  scrollDepth Float?   // max scroll depth percentage
+  exited      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([path])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model ContentMetrics {
+  id          String   @id @default(cuid())
+  entityType  String   // post, project
+  entityId    String
+  views       Int      @default(0)
+  uniqueViews Int      @default(0)
+  avgDuration Int?     // average time spent in seconds
+  avgScrollDepth Float?
+  bounceRate  Float?
+  totalShares Int      @default(0)
+  totalComments Int    @default(0)
+  lastViewedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([entityType, entityId])
+  @@index([entityType, entityId])
+  @@index([views])
+}
+
+model ReferrerStats {
+  id          String   @id @default(cuid())
+  referrer    String
+  visits      Int      @default(0)
+  uniqueVisits Int     @default(0)
+  bounceRate  Float?
+  avgDuration Int?
+  lastVisitAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([referrer])
+  @@index([referrer])
+  @@index([visits])
+}
+
+model GoalConversion {
+  id          String   @id @default(cuid())
+  goalType    String   // contactSubmit, newsletterSignup, projectClick, blogReadComplete
+  sessionId   String
+  steps       Json     @default("[]") // funnel steps
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  value       Float?   // goal value if applicable
+  metadata    Json?    @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([goalType])
+  @@index([sessionId])
+  @@index([completed])
+  @@index([createdAt])
+}
+
+// =========================================
+// VISITOR MEMORY (AI Guide Personalization)
+// =========================================
+
+model VisitorMemory {
+  id              String   @id @default(cuid())
+  visitorId       String   // Anonymous visitor identifier (fingerprinted or session-based)
+  sessionId       String   // Current session ID
+  npcId           String   // Which NPC this memory belongs to
+
+  // Conversation history
+  conversations   Conversation[]
+
+  // Visitor preferences (learned from interactions)
+  preferences     Json?    @default("{}") // e.g., {"preferredTopics": ["tech", "ai"], "language": "en"}
+
+  // Interaction stats
+  totalInteractions Int     @default(0)
+  lastInteractionAt DateTime?
+
+  // Consent tracking (GDPR)
+  dataConsent     Boolean  @default(false)
+  consentDate     DateTime?
+
+  // Anonymization
+  isAnonymous     Boolean  @default(true)
+  anonymizedAt    DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([visitorId, npcId])
+  @@index([visitorId])
+  @@index([npcId])
+  @@index([sessionId])
+  @@index([dataConsent])
+}
+
+model Conversation {
+  id          String   @id @default(cuid())
+  visitorMemoryId String
+  visitorMemory VisitorMemory @relation(fields: [visitorMemoryId], references: [id], onDelete: Cascade)
+
+  // Messages stored as JSON array for flexibility
+  messages    Json     @default("[]") // [{role: "user" | "assistant", content: "...", timestamp: "..."}]
+
+  // Summary for context compression
+  summary     String?  // AI-generated summary of the conversation
+
+  // Metadata
+  topic       String?  // Detected topic from conversation
+  sentiment   String?  // Detected sentiment (positive, neutral, negative)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([visitorMemoryId])
+  @@index([createdAt])
+}
+
+// =========================================
+// COLLABORATIVE EDITING
+// =========================================
+
+model CollaborativeComment {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  entityType  String   // Post, Project, Version
+  entityId    String
+  authorId    String
+  author      User     @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  mentions    String[] @default([])
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // COMMENT_MENTION, LOCK_RELEASED, VERSION_PUBLISHED, etc.
+  title       String
+  message     String
+  entityType  String?
+  entityId    String?
+  link        String?
+  read        Boolean  @default(false)
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([createdAt])
+  @@index([type])
 }

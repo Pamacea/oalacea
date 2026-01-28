@@ -31,3 +31,14 @@ export const WORLD_AUDIO_CONFIGS: Record<WorldType, AudioTrack[]> = {
     },
   ],
 };
+
+// Sound effect configurations
+export const SFX_CONFIGS = {
+  interaction: { volume: 0.3, path: '/3d/audio/sfx/interaction.mp3' },
+  hover: { volume: 0.15, path: '/3d/audio/sfx/hover.mp3' },
+  worldSwitch: { volume: 0.5, path: '/3d/audio/sfx/world-switch.mp3' },
+  click: { volume: 0.4, path: '/3d/audio/sfx/click.mp3' },
+  success: { volume: 0.5, path: '/3d/audio/sfx/success.mp3' },
+  error: { volume: 0.4, path: '/3d/audio/sfx/error.mp3' },
+  footstep: { volume: 0.3, path: '/3d/audio/sfx/footstep.mp3' },
+};
