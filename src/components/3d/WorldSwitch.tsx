@@ -13,7 +13,7 @@ export function WorldSwitch() {
   ];
 
   return (
-    <div className="flex items-center gap-2 rounded-full bg-zinc-900/80 backdrop-blur-md p-1 border border-zinc-800">
+    <div className="flex items-center gap-2 rounded-full bg-zinc-900/80 backdrop-blur-md p-1 border border-zinc-800" role="radiogroup" aria-label="Select world">
       {worlds.map((world) => {
         const isActive = currentWorld === world.id;
         return (
@@ -21,11 +21,15 @@ export function WorldSwitch() {
             key={world.id}
             onClick={() => switchWorld(world.id)}
             disabled={isTransitioning}
+            aria-pressed={isActive}
+            aria-label={`Switch to ${world.label} world`}
+            role="radio"
+            aria-checked={isActive}
             className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               isActive ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400 hover:text-zinc-300'
             }`}
           >
-            <span className="mr-2">{world.icon}</span>
+            <span className="mr-2" aria-hidden="true">{world.icon}</span>
             {world.label}
           </button>
         );

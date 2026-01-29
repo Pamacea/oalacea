@@ -3,8 +3,9 @@
 
 import { revalidatePath, unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import type { Project, WorldPosition } from '@/generated/prisma/client';
+import type { Project, WorldPosition, Prisma } from '@/generated/prisma/client';
 import { ProjectCategory } from '@/generated/prisma/enums';
+import { NotFoundError } from '@/core/errors';
 
 type ProjectWithWorldPosition = Project & { worldPosition: WorldPosition | null };
 
@@ -17,9 +18,12 @@ const getCachedProjects = unstable_cache(
     featured?: boolean;
     category?: string;
   }) => {
-    const where: any = {};
+    const where: Prisma.ProjectWhereInput = {};
     if (featured) where.featured = true;
-    if (category) where.category = category.toUpperCase();
+    if (category) {
+      const upperCategory = category.toUpperCase() as keyof typeof ProjectCategory;
+      where.category = ProjectCategory[upperCategory] ?? category;
+    }
 
     return prisma.project.findMany({
       where,
@@ -220,7 +224,7 @@ export async function updateProject(
   });
 
   if (!currentProject) {
-    throw new Error('Project non trouvé');
+    throw new NotFoundError('Project', id);
   }
 
   // Update world position if provided

@@ -6,6 +6,7 @@ import { getPosts, deletePost } from '@/actions/blog';
 import type { Post } from '@/generated/prisma/client';
 import { useInWorldAdminStore } from '@/store/in-world-admin-store';
 import { ConfirmDialog } from './ConfirmDialog';
+import { TableSkeleton } from '@/components/admin/TableSkeleton';
 
 export function PostsTab() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -40,11 +41,7 @@ export function PostsTab() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-zinc-500 text-sm">Chargement...</div>
-      </div>
-    );
+    return <TableSkeleton rows={5} columns={3} />;
   }
 
   return (
@@ -86,7 +83,7 @@ export function PostsTab() {
                 {posts.map((post) => (
                   <tr
                     key={post.id}
-                    className="hover:bg-zinc-900/30 transition-colors"
+                    className="hover:bg-zinc-900/30 transition-colors duration-200"
                   >
                     <td className="px-4 py-3">
                       <p className="font-medium text-zinc-200 text-sm">{post.title}</p>
@@ -110,27 +107,27 @@ export function PostsTab() {
                         {post.published && (
                           <button
                             onClick={() => setView('read-post', post.slug)}
-                            className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-colors"
-                            title="Lire"
+                            aria-label={`Read ${post.title}`}
+                            className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-all duration-200"
                           >
-                            <BookOpen className="h-4 w-4" />
+                            <BookOpen className="h-4 w-4" aria-hidden="true" />
                           </button>
                         )}
                         <button
                           onClick={() => setView('edit-post', post.id)}
-                          className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-colors"
-                          title="Modifier"
+                          aria-label={`Edit ${post.title}`}
+                          className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-all duration-200"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" aria-hidden="true" />
                         </button>
                         <button
                           onClick={() =>
                             setDeleteDialog({ open: true, slug: post.slug, title: post.title })
                           }
-                          className="p-2 text-zinc-500 hover:text-red-400 hover:bg-zinc-800 rounded transition-colors"
-                          title="Supprimer"
+                          aria-label={`Delete ${post.title}`}
+                          className="p-2 text-zinc-500 hover:text-red-400 hover:bg-zinc-800 rounded transition-all duration-200"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                     </td>

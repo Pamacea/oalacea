@@ -1,23 +1,27 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPost, updatePost } from '@/actions/blog';
-import { getAllCategories } from '@/actions/blog';
 import { X, Eye, EyeOff } from 'lucide-react';
+import { generateSlug } from '@/lib/utils/slug';
+import { htmlToMarkdown, uploadImage } from '@/services/contentService';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
-import { ImageUpload } from '@/components/admin/ImageUpload';
 import { MediaLibrary } from '@/components/admin/MediaLibrary';
 import { CollaborationStatus } from '@/components/admin/CollaborationStatus';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 
 interface BlogPostFormProps {
   post?: any;
   categories: (any & { postCount: number })[];
+}
+
+interface FormErrors {
+  title?: string;
+  content?: string;
 }
 
 type FormData = {
@@ -35,37 +39,11 @@ type FormData = {
   published: boolean;
 };
 
-const htmlToMarkdown = (html: string): string => {
-  return html
-    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n')
-    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
-    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
-    .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
-    .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
-    .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
-    .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
-    .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
-    .replace(/<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/gis, '```\n$1\n```\n\n')
-    .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
-    .replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (match, content) => {
-      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n') + '\n';
-    })
-    .replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match, content) => {
-      let i = 1;
-      return content.replace(/<li[^>]*>(.*?)<\/li>/gi, () => `${i++}. $1\n`) + '\n';
-    })
-    .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
-    .replace(/<br[^>]*>/gi, '\n')
-    .replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
-    .replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![]($1)')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-};
-
 export function BlogPostForm({ post, categories }: BlogPostFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState<FormData>({
     title: post?.title || '',
@@ -87,30 +65,32 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
 
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  };
+  const validateField = (name: string, value: string) => {
+    const newErrors: FormErrors = {};
 
-  const handleUploadImage = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Upload failed');
+    if (name === 'title' && !value.trim()) {
+      newErrors.title = 'Title is required';
+    }
+    if (name === 'content' && !value.trim()) {
+      newErrors.content = 'Content is required';
     }
 
-    const result = await response.json();
-    return result.url;
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateForm = (): boolean => {
+    const isValid =
+      validateField('title', formData.title) &&
+      validateField('content', formData.content);
+
+    return isValid;
+  };
+
+  const handleBlur = (name: string) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const value = String((formData as Record<string, unknown>)[name] || '');
+    validateField(name, value);
   };
 
   const handleSelectMedia = (item: any) => {
@@ -119,6 +99,11 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     startTransition(async () => {
       const data = {
         title: formData.title,
@@ -158,6 +143,14 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
           ? (e.target as HTMLInputElement).checked
           : value,
     }));
+
+    // Auto-generate slug when title changes
+    if (name === 'title' && !post) {
+      setFormData((prev) => ({
+        ...prev,
+        slug: generateSlug(value),
+      }));
+    }
   };
 
   return (
@@ -175,25 +168,25 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
         <div className="lg:col-span-3 space-y-6">
           <div className="space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
               <Input
                 id="title"
                 type="text"
                 name="title"
                 value={formData.title}
-                onChange={(e) => {
-                  handleChange(e);
-                  if (!post) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      slug: generateSlug(e.target.value),
-                    }));
-                  }
-                }}
+                onChange={handleChange}
+                onBlur={() => handleBlur('title')}
+                aria-invalid={!!errors.title && touched.title}
+                aria-describedby={errors.title && touched.title ? 'title-error' : undefined}
                 required
-                className="bg-zinc-900/50 border-zinc-800 text-zinc-100 focus:border-zinc-700"
+                className="bg-zinc-900/50 border-zinc-800 text-zinc-100 focus:border-zinc-700 focus:ring-2 focus:ring-amber-500/20"
                 placeholder="My interesting article"
               />
+              {errors.title && touched.title && (
+                <p id="title-error" className="mt-1 text-sm text-red-500" role="alert">
+                  {errors.title}
+                </p>
+              )}
             </div>
 
             <div>
@@ -204,7 +197,6 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
                 name="slug"
                 value={formData.slug}
                 onChange={handleChange}
-                required
                 className="bg-zinc-900/50 border-zinc-800 text-zinc-100 focus:border-zinc-700 font-mono text-sm"
                 placeholder="my-interesting-article"
               />
@@ -225,7 +217,7 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="content">Content</Label>
+                <Label htmlFor="content">Content <span className="text-red-500">*</span></Label>
                 <Button
                   type="button"
                   variant="ghost"
@@ -268,8 +260,13 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
                     setFormData((prev) => ({ ...prev, content: value }))
                   }
                   placeholder="Write your article content here..."
-                  onImageUpload={handleUploadImage}
+                  onImageUpload={uploadImage}
                 />
+              )}
+              {errors.content && touched.content && (
+                <p id="content-error" className="mt-1 text-sm text-red-500" role="alert">
+                  {errors.content}
+                </p>
               )}
             </div>
           </div>
@@ -378,7 +375,8 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
                   onClick={() =>
                     setFormData((prev) => ({ ...prev, coverImage: '' }))
                   }
-                  className="absolute top-2 right-2 rounded bg-black/50 p-1 text-zinc-100 hover:bg-black/70 transition-colors"
+                  className="absolute top-2 right-2 rounded bg-black/50 p-1 text-zinc-100 hover:bg-black/70 transition-all duration-200"
+                  aria-label="Remove cover image"
                 >
                   <X className="h-4 w-4" />
                 </button>

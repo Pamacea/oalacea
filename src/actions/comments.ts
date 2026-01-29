@@ -4,30 +4,27 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { commentSchema, type CommentInput } from '@/lib/validations';
-import type { Comment, CommentStatus } from '@/generated/prisma/client';
+import type { Comment, CommentStatus, Prisma } from '@/generated/prisma/client';
 import { cookies } from 'next/headers';
+import { RateLimitError } from '@/core/errors';
 
-// Rate limiting: store IP + timestamp in memory or use a proper rate limiter
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_COMMENTS_PER_WINDOW = 5;
 
-function checkRateLimit(ipAddress: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ipAddress);
+async function checkRateLimit(ipAddress: string): Promise<void> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW_MS);
 
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ipAddress, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return true;
+  const recentCount = await prisma.comment.count({
+    where: {
+      ipAddress,
+      createdAt: { gte: windowStart },
+    } as Prisma.CommentWhereInput,
+  });
+
+  if (recentCount >= MAX_COMMENTS_PER_WINDOW) {
+    throw new RateLimitError(`Too many comments. Maximum ${MAX_COMMENTS_PER_WINDOW} per hour.`);
   }
-
-  if (record.count >= MAX_COMMENTS_PER_WINDOW) {
-    return false;
-  }
-
-  record.count++;
-  return true;
 }
 
 async function getClientIp(): Promise<string> {
@@ -50,12 +47,13 @@ export async function getComments({
   status?: CommentStatus | 'ALL';
   includeReplies?: boolean;
 } = {}): Promise<Comment[]> {
-  const where: any = {};
+  const where: Prisma.CommentWhereInput = {
+    parentId: null, // Only get top-level comments
+  };
 
   if (postId) where.postId = postId;
   if (projectId) where.projectId = projectId;
   if (status !== 'ALL') where.status = status;
-  where.parentId = null; // Only get top-level comments
 
   const comments = await prisma.comment.findMany({
     where,
@@ -130,11 +128,13 @@ export async function getCommentsCount({
   projectId?: string;
   status?: CommentStatus;
 } = {}): Promise<number> {
-  const where: any = {};
+  const where: Prisma.CommentWhereInput = {
+    status,
+    parentId: null,
+  };
+
   if (postId) where.postId = postId;
   if (projectId) where.projectId = projectId;
-  where.status = status;
-  where.parentId = null;
 
   return prisma.comment.count({ where });
 }
@@ -164,11 +164,16 @@ export async function createComment(data: CommentInput & { ipAddress?: string; u
 
   const ipAddress = data.ipAddress || await getClientIp();
 
-  if (!checkRateLimit(ipAddress)) {
-    return {
-      success: false,
-      error: 'Too many comments. Please try again later.',
-    };
+  try {
+    await checkRateLimit(ipAddress);
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    throw error;
   }
 
   const comment = await prisma.comment.create({

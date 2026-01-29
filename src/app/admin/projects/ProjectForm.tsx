@@ -5,9 +5,17 @@ import { useRouter } from 'next/navigation';
 import { createProject, updateProject } from '@/actions/projects';
 import { ProjectCategory } from '@/generated/prisma/enums';
 import { X, MapPin } from 'lucide-react';
+import { generateSlug } from '@/lib/utils/slug';
+import { parseWorldPosition, parseTechStack } from '@/services/contentService';
 
 interface ProjectFormProps {
   project?: any;
+}
+
+interface FormErrors {
+  title?: string;
+  description?: string;
+  year?: string;
 }
 
 const categoryLabels: Record<ProjectCategory, string> = {
@@ -52,6 +60,8 @@ type FormData = {
 export function ProjectForm({ project }: ProjectFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState<FormData>({
     title: project?.title || '',
@@ -73,27 +83,52 @@ export function ProjectForm({ project }: ProjectFormProps) {
     rotation: project?.worldPosition?.rotation?.toString() || '0',
   });
 
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+  const validateField = (name: string, value: string) => {
+    const newErrors: FormErrors = {};
+
+    if (name === 'title' && !value.trim()) {
+      newErrors.title = 'Le titre est requis';
+    }
+    if (name === 'description' && !value.trim()) {
+      newErrors.description = 'La description est requise';
+    }
+    if (name === 'year' && (!value || isNaN(Number(value)))) {
+      newErrors.year = 'L\'année doit être un nombre valide';
+    }
+
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateForm = (): boolean => {
+    const isValid =
+      validateField('title', formData.title) &&
+      validateField('description', formData.description) &&
+      validateField('year', String(formData.year));
+
+    return isValid;
+  };
+
+  const handleBlur = (name: string) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const value = String((formData as Record<string, unknown>)[name] || '');
+    validateField(name, value);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     startTransition(async () => {
       const data: any = {
         title: formData.title,
         slug: formData.slug || generateSlug(formData.title),
         description: formData.description,
         longDescription: formData.longDescription || undefined,
-        techStack: formData.techStack
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
+        techStack: parseTechStack(formData.techStack),
         githubUrl: formData.githubUrl || undefined,
         liveUrl: formData.liveUrl || undefined,
         thumbnail: formData.thumbnail || undefined,
@@ -103,14 +138,9 @@ export function ProjectForm({ project }: ProjectFormProps) {
         category: formData.category,
       };
 
-      if (formData.world) {
-        data.worldPosition = {
-          world: formData.world as 'DEV' | 'ART',
-          x: parseFloat(formData.x) || 0,
-          z: parseFloat(formData.z) || 0,
-          y: parseFloat(formData.y) || 0,
-          rotation: parseFloat(formData.rotation) || 0,
-        };
+      const worldPosition = parseWorldPosition(formData);
+      if (worldPosition) {
+        data.worldPosition = worldPosition;
       }
 
       if (project) {
@@ -137,6 +167,14 @@ export function ProjectForm({ project }: ProjectFormProps) {
           ? parseFloat(value) || 0
           : value,
     }));
+
+    // Auto-generate slug when title changes
+    if (name === 'title' && !project) {
+      setFormData((prev) => ({
+        ...prev,
+        slug: generateSlug(value),
+      }));
+    }
   };
 
   return (
@@ -146,39 +184,40 @@ export function ProjectForm({ project }: ProjectFormProps) {
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
-                  Titre
+                <label htmlFor="title" className="mb-1.5 block text-sm font-medium text-zinc-100">
+                  Titre <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="title"
                   type="text"
                   name="title"
                   value={formData.title}
-                  onChange={(e) => {
-                    handleChange(e);
-                    if (!project) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        slug: generateSlug(e.target.value),
-                      }));
-                    }
-                  }}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('title')}
+                  aria-invalid={!!errors.title && touched.title}
+                  aria-describedby={errors.title && touched.title ? 'title-error' : undefined}
                   required
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   placeholder="Mon projet awesome"
                 />
+                {errors.title && touched.title && (
+                  <p id="title-error" className="mt-1 text-sm text-red-500" role="alert">
+                    {errors.title}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+                <label htmlFor="slug" className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Slug
                 </label>
                 <input
+                  id="slug"
                   type="text"
                   name="slug"
                   value={formData.slug}
                   onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none font-mono text-sm"
                   placeholder="mon-projet-awesome"
                 />
               </div>
@@ -186,10 +225,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+                <label htmlFor="category" className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Catégorie
                 </label>
                 <select
+                  id="category"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
@@ -204,40 +244,59 @@ export function ProjectForm({ project }: ProjectFormProps) {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
-                  Année
+                <label htmlFor="year" className="mb-1.5 block text-sm font-medium text-zinc-100">
+                  Année <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="year"
                   type="number"
                   name="year"
                   value={formData.year}
                   onChange={handleChange}
+                  onBlur={() => handleBlur('year')}
+                  aria-invalid={!!errors.year && touched.year}
+                  aria-describedby={errors.year && touched.year ? 'year-error' : undefined}
                   required
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 />
+                {errors.year && touched.year && (
+                  <p id="year-error" className="mt-1 text-sm text-red-500" role="alert">
+                    {errors.year}
+                  </p>
+                )}
               </div>
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
-                Description courte
+              <label htmlFor="description" className="mb-1.5 block text-sm font-medium text-zinc-100">
+                Description courte <span className="text-red-500">*</span>
               </label>
               <textarea
+                id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+                onBlur={() => handleBlur('description')}
                 rows={2}
+                aria-invalid={!!errors.description && touched.description}
+                aria-describedby={errors.description && touched.description ? 'description-error' : undefined}
                 required
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none resize-none"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-none"
                 placeholder="Une brève description du projet..."
               />
+              {errors.description && touched.description && (
+                <p id="description-error" className="mt-1 text-sm text-red-500" role="alert">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+              <label htmlFor="longDescription" className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Description longue
               </label>
               <textarea
+                id="longDescription"
                 name="longDescription"
                 value={formData.longDescription}
                 onChange={handleChange}
@@ -248,10 +307,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+              <label htmlFor="techStack" className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Stack technique
               </label>
               <input
+                id="techStack"
                 type="text"
                 name="techStack"
                 value={formData.techStack}
@@ -266,10 +326,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+                <label htmlFor="githubUrl" className="mb-1.5 block text-sm font-medium text-zinc-100">
                   GitHub
                 </label>
                 <input
+                  id="githubUrl"
                   type="url"
                   name="githubUrl"
                   value={formData.githubUrl}
@@ -280,10 +341,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+                <label htmlFor="liveUrl" className="mb-1.5 block text-sm font-medium text-zinc-100">
                   Site en ligne
                 </label>
                 <input
+                  id="liveUrl"
                   type="url"
                   name="liveUrl"
                   value={formData.liveUrl}
@@ -304,6 +366,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
               <input
                 type="checkbox"
                 name="featured"
+                id="featured"
                 checked={formData.featured}
                 onChange={handleChange}
                 className="h-4 w-4 rounded border-zinc-800 bg-zinc-900/50 text-zinc-500 focus:ring-zinc-700"
@@ -312,10 +375,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
             </label>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+              <label htmlFor="sortOrder" className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Ordre d'affichage
               </label>
               <input
+                id="sortOrder"
                 type="number"
                 name="sortOrder"
                 value={formData.sortOrder}
@@ -335,10 +399,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
             </h3>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-100">
+              <label htmlFor="world" className="mb-1.5 block text-sm font-medium text-zinc-100">
                 Monde
               </label>
               <select
+                id="world"
                 name="world"
                 value={formData.world}
                 onChange={handleChange}
@@ -354,10 +419,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                    <label htmlFor="x" className="mb-1 block text-xs font-medium text-zinc-400">
                       X
                     </label>
                     <input
+                      id="x"
                       type="number"
                       name="x"
                       value={formData.x}
@@ -367,10 +433,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                    <label htmlFor="z" className="mb-1 block text-xs font-medium text-zinc-400">
                       Z
                     </label>
                     <input
+                      id="z"
                       type="number"
                       name="z"
                       value={formData.z}
@@ -382,10 +449,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                    <label htmlFor="y" className="mb-1 block text-xs font-medium text-zinc-400">
                       Y (hauteur)
                     </label>
                     <input
+                      id="y"
                       type="number"
                       name="y"
                       value={formData.y}
@@ -395,10 +463,11 @@ export function ProjectForm({ project }: ProjectFormProps) {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-zinc-400">
+                    <label htmlFor="rotation" className="mb-1 block text-xs font-medium text-zinc-400">
                       Rotation
                     </label>
                     <input
+                      id="rotation"
                       type="number"
                       name="rotation"
                       value={formData.rotation}
@@ -419,6 +488,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
               <input
                 type="url"
                 name="thumbnail"
+                id="thumbnail"
                 value={formData.thumbnail}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-700 focus:outline-none"
@@ -437,6 +507,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
                       setFormData((prev) => ({ ...prev, thumbnail: '' }))
                     }
                     className="absolute top-2 right-2 rounded bg-black/50 p-1 text-zinc-100 hover:bg-black/70"
+                    aria-label="Remove thumbnail"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -451,14 +522,14 @@ export function ProjectForm({ project }: ProjectFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-white/5"
+          className="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 transition-all duration-200 hover:bg-white/5"
         >
           Annuler
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-lg bg-zinc-700 px-6 py-2 text-sm font-medium text-zinc-100 transition-colors hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-lg bg-zinc-700 px-6 py-2 text-sm font-medium text-zinc-100 transition-all duration-200 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending
             ? 'Enregistrement...'

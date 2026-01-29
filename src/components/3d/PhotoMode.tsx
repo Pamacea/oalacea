@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useXRStore, Screenshot } from '@/store/xr-store';
 import { Button } from '@/components/ui/button';
 
@@ -17,11 +18,15 @@ type ResolutionType = '1080p' | '4K';
  * All 3D capture logic is handled by PhotoModeScene inside Canvas
  */
 export function PhotoMode({ enabled = false, onCapture }: PhotoModeProps) {
-  const photoModeEnabled = useXRStore((s) => s.photoModeEnabled);
-  const screenshots = useXRStore((s) => s.screenshots);
-  const flash = useXRStore((s) => s.flash);
-  const handleCapture = useXRStore((s) => s.handleCapture);
-  const setPhotoModeEnabled = useXRStore((s) => s.setPhotoModeEnabled);
+  const { photoModeEnabled, screenshots, flash, handleCapture, setPhotoModeEnabled } = useXRStore(
+    useShallow((s) => ({
+      photoModeEnabled: s.photoModeEnabled,
+      screenshots: s.screenshots,
+      flash: s.flash,
+      handleCapture: s.handleCapture,
+      setPhotoModeEnabled: s.setPhotoModeEnabled,
+    }))
+  );
 
   const [currentFilter, setCurrentFilter] = useState<FilterType>('none');
   const [currentResolution, setCurrentResolution] = useState<ResolutionType>('1080p');
@@ -127,12 +132,18 @@ export function PhotoMode({ enabled = false, onCapture }: PhotoModeProps) {
 }
 
 function PhotoModeButton() {
-  const photoModeEnabled = useXRStore((s) => s.photoModeEnabled);
-  const setPhotoModeEnabled = useXRStore((s) => s.setPhotoModeEnabled);
+  const { photoModeEnabled, setPhotoModeEnabled } = useXRStore(
+    useShallow((s) => ({
+      photoModeEnabled: s.photoModeEnabled,
+      setPhotoModeEnabled: s.setPhotoModeEnabled,
+    }))
+  );
 
   return (
     <button
       onClick={() => setPhotoModeEnabled(!photoModeEnabled)}
+      aria-label={photoModeEnabled ? 'Exit photo mode' : 'Enter photo mode'}
+      aria-pressed={photoModeEnabled}
       className="fixed top-20 left-4 z-40 bg-slate-900/90 backdrop-blur-sm hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-slate-700"
     >
       {photoModeEnabled ? 'Exit Photo Mode' : 'Photo Mode'}
