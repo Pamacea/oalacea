@@ -39,18 +39,17 @@ export class PathfindingAdapter {
     characterRadius: number = 0.5
   ): Vector3[] {
     // Validate start position - if invalid, find nearest valid
-    // Note: hitboxes already include CHARACTER_MARGIN, so we pass 0 for radius
-    const safeStart = this.collisionDetector.isPositionValid(start, 0)
+    const safeStart = this.collisionDetector.isPositionValid(start)
       ? start
-      : this.collisionDetector.findNearestValidPosition(start, 0, 3);
+      : this.collisionDetector.findNearestValidPosition(start, this.characterRadius, 3);
 
     // Validate end position - if invalid, find nearest valid
-    const safeEnd = this.collisionDetector.isPositionValid(end, 0)
+    const safeEnd = this.collisionDetector.isPositionValid(end)
       ? end
-      : this.collisionDetector.findNearestValidPosition(end, 0, 5);
+      : this.collisionDetector.findNearestValidPosition(end, this.characterRadius, 5);
 
     // Direct path if line of sight
-    if (this.hasLineOfSight(safeStart, safeEnd, 0)) {
+    if (this.hasLineOfSight(safeStart, safeEnd)) {
       return [safeEnd.clone()];
     }
 
@@ -70,7 +69,7 @@ export class PathfindingAdapter {
     worldPath.push(safeEnd.clone());
 
     // Smooth path with collision validation
-    return this.smoothPath(worldPath, 0);
+    return this.smoothPath(worldPath, this.characterRadius);
   }
 
   /**
@@ -170,8 +169,8 @@ export class PathfindingAdapter {
   private isCellWalkableWithRadius(cellX: number, cellZ: number, radius: number): boolean {
     const cellCenter = this.cellToWorld(cellX, cellZ);
 
-    // Check only center - hitboxes already have CHARACTER_MARGIN built in, so pass 0
-    return this.collisionDetector.isPositionValid(cellCenter, 0);
+    // Check with default character radius - hitboxes include CHARACTER_MARGIN
+    return this.collisionDetector.isPositionValid(cellCenter);
   }
 
   private getNeighbors(x: number, z: number): { x: number; z: number }[] {
