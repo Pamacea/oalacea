@@ -108,6 +108,17 @@ export async function deletePost(slug: string) {
   return { success: true };
 }
 
+export async function deletePostWithRevalidate(slug: string) {
+  await prisma.post.delete({
+    where: { slug },
+  });
+
+  revalidatePath('/blog');
+  revalidatePath('/admin/blog');
+
+  return { success: true };
+}
+
 // =========================================
 // CATEGORY ACTIONS
 // =========================================

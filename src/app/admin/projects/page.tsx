@@ -1,17 +1,10 @@
 import Link from 'next/link';
 import { Plus, Pencil, Trash2, Eye, Star } from 'lucide-react';
-import { getProjects, deleteProject } from '@/actions/projects';
-import { revalidatePath } from 'next/cache';
+import { getProjects, deleteProjectWithRevalidate } from '@/actions/projects';
 
 function DeleteButton({ id }: { id: string }) {
-  'use server';
-  async function handleDelete() {
-    await deleteProject(id);
-    revalidatePath('/admin/projects');
-  }
-
   return (
-    <form action={handleDelete}>
+    <form action={deleteProjectWithRevalidate.bind(null, id)}>
       <button
         type="submit"
         className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"

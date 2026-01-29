@@ -39,17 +39,18 @@ export class PathfindingAdapter {
     characterRadius: number = 0.5
   ): Vector3[] {
     // Validate start position - if invalid, find nearest valid
-    const safeStart = this.collisionDetector.isPositionValid(start, characterRadius)
+    // Note: hitboxes already include CHARACTER_MARGIN, so we pass 0 for radius
+    const safeStart = this.collisionDetector.isPositionValid(start, 0)
       ? start
-      : this.collisionDetector.findNearestValidPosition(start, characterRadius, 3);
+      : this.collisionDetector.findNearestValidPosition(start, 0, 3);
 
     // Validate end position - if invalid, find nearest valid
-    const safeEnd = this.collisionDetector.isPositionValid(end, characterRadius)
+    const safeEnd = this.collisionDetector.isPositionValid(end, 0)
       ? end
-      : this.collisionDetector.findNearestValidPosition(end, characterRadius, 5);
+      : this.collisionDetector.findNearestValidPosition(end, 0, 5);
 
     // Direct path if line of sight
-    if (this.hasLineOfSight(safeStart, safeEnd, characterRadius)) {
+    if (this.hasLineOfSight(safeStart, safeEnd, 0)) {
       return [safeEnd.clone()];
     }
 
@@ -69,7 +70,7 @@ export class PathfindingAdapter {
     worldPath.push(safeEnd.clone());
 
     // Smooth path with collision validation
-    return this.smoothPath(worldPath, characterRadius);
+    return this.smoothPath(worldPath, 0);
   }
 
   /**
@@ -119,9 +120,6 @@ export class PathfindingAdapter {
 
         if (closedSet.has(neighborKey)) continue;
 
-        // CRITICAL: Validate with actual collision including radius
-        const worldPos = this.cellToWorld(neighbor.x, neighbor.z);
-
         // Add character radius offset in all directions for proper validation
         const isValid = this.isCellWalkableWithRadius(neighbor.x, neighbor.z, radius);
 
@@ -168,11 +166,12 @@ export class PathfindingAdapter {
    * Check if a cell is walkable accounting for character radius
    * Only checks center of cell - avoids double-margin issue that blocks narrow passages
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private isCellWalkableWithRadius(cellX: number, cellZ: number, radius: number): boolean {
     const cellCenter = this.cellToWorld(cellX, cellZ);
 
-    // Check only center with character radius - hitboxes already have CHARACTER_MARGIN built in
-    return this.collisionDetector.isPositionValid(cellCenter, radius);
+    // Check only center - hitboxes already have CHARACTER_MARGIN built in, so pass 0
+    return this.collisionDetector.isPositionValid(cellCenter, 0);
   }
 
   private getNeighbors(x: number, z: number): { x: number; z: number }[] {

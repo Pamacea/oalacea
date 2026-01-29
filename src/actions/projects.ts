@@ -283,3 +283,14 @@ export async function deleteProject(id: string) {
 
   return { success: true };
 }
+
+export async function deleteProjectWithRevalidate(id: string) {
+  await prisma.project.delete({
+    where: { id },
+  });
+
+  revalidatePath('/portfolio');
+  revalidatePath('/admin/projects');
+
+  return { success: true };
+}
