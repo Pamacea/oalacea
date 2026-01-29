@@ -1,4 +1,5 @@
 // usePhysicsEngine - React integration for the physics engine
+// Now supports unified ObstacleConfig with explicit hitbox types
 'use client';
 
 import { useRef, useEffect, useMemo } from 'react';
@@ -7,56 +8,95 @@ import {
   SpatialHashGrid,
   CollisionDetector,
   CharacterController,
-  PathfindingAdapter,
+  DynamicPathfinding,
   type Obstacle,
 } from '@/core/3d/physics/engine';
 import { CircleHitbox, BoxHitbox } from '@/core/3d/physics/engine/hitboxes';
+import type { ObstacleConfig, HitboxConfig } from '@/core/3d/physics/config/ObstacleConfig';
 import type { CollisionZone } from '@/core/3d/scenes/collisions';
+import { CollisionLayer } from '@/core/3d/physics/config/CollisionLayers';
 import { getControllerConfig } from '@/core/3d/physics/config/PhysicsConfig';
 
 interface PhysicsEngineConfig {
   cellSize?: number;
   worldBounds?: { min: number; max: number };
+  enableDebug?: boolean;
 }
 
 interface PhysicsEngineInstance {
   spatialGrid: SpatialHashGrid;
   collisionDetector: CollisionDetector;
-  pathfinding: PathfindingAdapter;
+  pathfinding: DynamicPathfinding;
   addObstacle: (obstacle: Obstacle) => void;
   removeObstacle: (id: string) => void;
   updateObstacle: (id: string, updates: Partial<Omit<Obstacle, 'id'>>) => void;
   checkCollision: (position: Vector3, radius?: number) => boolean;
   findPath: (from: Vector3, to: Vector3, radius?: number) => Vector3[];
-  getStats: () => { cellSize: number; cols: number; rows: number; totalCells: number; obstacleCount: number };
+  getStats: () => {
+    cellSize: number;
+    cols: number;
+    rows: number;
+    totalCells: number;
+    obstacleCount: number;
+  };
+  getPathfindingStats: () => {
+    nodesExplored: number;
+    pathLength: number;
+    calculationTime: number;
+    cacheHit: boolean;
+  };
+  getCacheStats: () => {
+    size: number;
+    hits: number;
+    misses: number;
+    hitRate: number;
+  };
 }
 
+// Character radius margin to add for collision
+const CHARACTER_MARGIN = 0.5;
+
 /**
- * Hook that initializes and manages the physics engine
- * Converts collision zones to obstacles with dynamic hitboxes
+ * Hook that initializes and manages the physics engine.
+ * Now supports both new ObstacleConfig and legacy CollisionZone formats.
  */
 export function usePhysicsEngine(
-  collisionZones: CollisionZone[],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  collisionZones: (ObstacleConfig | CollisionZone)[],
   config?: PhysicsEngineConfig
 ): PhysicsEngineInstance | null {
   const engineRef = useRef<PhysicsEngineInstance | null>(null);
 
   // Stable dependency for useEffect - only changes if zone data actually changes
   const zonesKey = useMemo(() => {
-    return JSON.stringify(collisionZones.map((z) => ({
-      id: z.id,
-      position: z.position,
-      radius: z.radius,
-      name: z.name,
-    })));
+    return JSON.stringify(
+      collisionZones.map((z) => {
+        // Handle both ObstacleConfig and CollisionZone
+        if ('hitbox' in z) {
+          // New ObstacleConfig format
+          return {
+            id: z.id,
+            position: z.position,
+            type: z.type,
+            hitbox: z.hitbox,
+          };
+        } else {
+          // Legacy CollisionZone format
+          return {
+            id: z.id,
+            position: z.position,
+            radius: z.radius,
+            name: z.name,
+          };
+        }
+      })
+    );
   }, [collisionZones]);
 
   useEffect(() => {
     // Initialize components
     const spatialGrid = new SpatialHashGrid();
     const collisionDetector = new CollisionDetector(spatialGrid);
-    const pathfinding = new PathfindingAdapter(spatialGrid, collisionDetector);
+    const pathfinding = new DynamicPathfinding(spatialGrid, collisionDetector);
 
     // Create engine instance with bound methods
     const instance: PhysicsEngineInstance = {
@@ -70,13 +110,17 @@ export function usePhysicsEngine(
         collisionDetector.checkCollision(position, radius).collided,
       findPath: pathfinding.findPath.bind(pathfinding),
       getStats: spatialGrid.getStats.bind(spatialGrid),
+      getPathfindingStats: () => pathfinding.getStats(),
+      getCacheStats: () => pathfinding.getCacheStats(),
     };
 
-    // Convert collision zones to obstacles with appropriate hitboxes
+    // Convert collision zones to obstacles
     console.log('[Physics] Initializing with', collisionZones.length, 'collision zones');
     collisionZones.forEach((zone) => {
       const obstacle = createObstacleFromZone(zone);
-      instance.addObstacle(obstacle);
+      if (obstacle) {
+        instance.addObstacle(obstacle);
+      }
     });
     console.log('[Physics] Added all obstacles. Total:', instance.getStats().obstacleCount);
 
@@ -88,32 +132,52 @@ export function usePhysicsEngine(
     };
   }, [zonesKey, collisionZones]);
 
-  // Return engine instance - will be null on first render, then available after effect
   return engineRef.current;
 }
 
 /**
- * Create an obstacle with appropriate hitbox from a collision zone
- * IMPORTANT: Hitbox size includes character radius margin for proper collision
+ * Create an obstacle with appropriate hitbox from a zone config.
+ * Supports both new ObstacleConfig and legacy CollisionZone formats.
  */
-function createObstacleFromZone(zone: CollisionZone): Obstacle {
+function createObstacleFromZone(zone: ObstacleConfig | CollisionZone): Obstacle | null {
   const center = new Vector3(...zone.position);
-  const nameLower = zone.name?.toLowerCase() || '';
+  const id = zone.id;
+  const name = zone.name || id;
 
-  // Character radius to add for collision margin
-  const CHARACTER_MARGIN = 0.5; // Character radius
+  // Check if this is the new ObstacleConfig format
+  if ('hitbox' in zone) {
+    // New format with explicit hitbox
+    const config = zone as ObstacleConfig;
+    const hitbox = createHitboxFromConfig(config.hitbox, center);
+
+    // Map CollisionLayer to Obstacle type
+    let obstacleType: 'static' | 'dynamic' | 'trigger' = 'static';
+    if (config.collisionLayer === CollisionLayer.TRIGGER) {
+      obstacleType = 'trigger';
+    } else if (config.collisionLayer === CollisionLayer.NPC) {
+      obstacleType = 'dynamic';
+    }
+
+    return {
+      id,
+      hitbox,
+      type: obstacleType,
+      name,
+    };
+  }
+
+  // Legacy format - infer hitbox from name/radius
+  const legacyZone = zone as CollisionZone;
+  const nameLower = name.toLowerCase();
 
   let hitbox;
 
-  // Choose hitbox type based on zone name/characteristics
-  if (nameLower.includes('pillar') || nameLower.includes('pilier') || nameLower.includes('monolith')) {
-    // Pillars: circle with radius margin for character
+  if (nameLower.includes('pillar') || nameLower.includes('pilier')) {
     hitbox = new CircleHitbox({
       center,
-      radius: zone.radius + CHARACTER_MARGIN, // Add character radius!
+      radius: legacyZone.radius + CHARACTER_MARGIN,
     });
   } else if (nameLower.includes('terminal')) {
-    // Terminals are rectangular - box with margin
     const width = 2 + CHARACTER_MARGIN * 2;
     const depth = 1 + CHARACTER_MARGIN * 2;
     hitbox = new BoxHitbox({
@@ -122,55 +186,101 @@ function createObstacleFromZone(zone: CollisionZone): Obstacle {
       rotation: 0,
     });
   } else if (nameLower.includes('arch') || nameLower.includes('arc')) {
-    // Arch pillars - box with margin
     hitbox = new BoxHitbox({
       center,
-      size: [(zone.radius * 1.5) + CHARACTER_MARGIN * 2, 3, (zone.radius * 1.5) + CHARACTER_MARGIN * 2],
+      size: [legacyZone.radius * 1.5 + CHARACTER_MARGIN * 2, 3, legacyZone.radius * 1.5 + CHARACTER_MARGIN * 2],
       rotation: 0,
     });
   } else if (nameLower.includes('pedestal')) {
-    // Pedestals - box with margin
     hitbox = new BoxHitbox({
       center,
-      size: [(zone.radius * 2) + CHARACTER_MARGIN * 2, 1, (zone.radius * 2) + CHARACTER_MARGIN * 2],
+      size: [legacyZone.radius * 2 + CHARACTER_MARGIN * 2, 1, legacyZone.radius * 2 + CHARACTER_MARGIN * 2],
       rotation: 0,
     });
   } else if (nameLower.includes('frame') || nameLower.includes('cadre')) {
-    // Gallery Frames - wide but thin (5x4x0.3) → use box with larger width, small depth
     hitbox = new BoxHitbox({
       center,
-      size: [(zone.radius * 2) + CHARACTER_MARGIN * 2, 4, 0.5], // Thin depth for frame
+      size: [legacyZone.radius * 2 + CHARACTER_MARGIN * 2, 4, 0.5],
       rotation: 0,
     });
   } else if (nameLower.includes('wall')) {
-    // Walls - elongated box with margin
-    const isWide = zone.radius > 3;
+    const isWide = legacyZone.radius > 3;
     hitbox = new BoxHitbox({
       center,
       size: isWide
-        ? [(zone.radius * 2) + CHARACTER_MARGIN * 2, 3, 1]
-        : [1, 3, (zone.radius * 2) + CHARACTER_MARGIN * 2],
+        ? [legacyZone.radius * 2 + CHARACTER_MARGIN * 2, 3, 1]
+        : [1, 3, legacyZone.radius * 2 + CHARACTER_MARGIN * 2],
       rotation: 0,
     });
+  } else if (nameLower.includes('npc')) {
+    // NPCs use the NPC layer
+    hitbox = new CircleHitbox({
+      center,
+      radius: legacyZone.radius,
+    });
+    return {
+      id,
+      hitbox,
+      type: 'dynamic' as const,
+      name,
+    };
   } else {
     // Default: box with margin
     hitbox = new BoxHitbox({
       center,
-      size: [(zone.radius * 2) + CHARACTER_MARGIN * 2, 2, (zone.radius * 2) + CHARACTER_MARGIN * 2],
+      size: [legacyZone.radius * 2 + CHARACTER_MARGIN * 2, 2, legacyZone.radius * 2 + CHARACTER_MARGIN * 2],
       rotation: 0,
     });
   }
 
   return {
-    id: zone.id,
+    id,
     hitbox,
     type: 'static' as const,
-    name: zone.name,
+    name,
   };
 }
 
 /**
- * Character controller hook
+ * Create a hitbox from HitboxConfig.
+ */
+function createHitboxFromConfig(hitboxConfig: HitboxConfig, center: Vector3) {
+  switch (hitboxConfig.shape) {
+    case 'circle':
+      return new CircleHitbox({
+        center,
+        radius: hitboxConfig.radius + CHARACTER_MARGIN,
+      });
+
+    case 'box':
+      return new BoxHitbox({
+        center,
+        size: [
+          hitboxConfig.size[0] + CHARACTER_MARGIN * 2,
+          hitboxConfig.size[1],
+          hitboxConfig.size[2] + CHARACTER_MARGIN * 2,
+        ],
+        rotation: hitboxConfig.rotation || 0,
+      });
+
+    case 'capsule':
+      // For capsules, use a circle for now (could implement CapsuleHitbox later)
+      return new CircleHitbox({
+        center,
+        radius: hitboxConfig.radius + CHARACTER_MARGIN,
+      });
+
+    default:
+      // Default to circle
+      return new CircleHitbox({
+        center,
+        radius: 1 + CHARACTER_MARGIN,
+      });
+  }
+}
+
+/**
+ * Character controller hook.
  */
 export function useCharacterController(
   engine: ReturnType<typeof usePhysicsEngine>,

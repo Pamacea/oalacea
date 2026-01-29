@@ -1,12 +1,385 @@
 // Collision zones pour les deux mondes
-// Zones de collision définies comme cercles (position, rayon)
+// Now with explicit hitbox configuration
 //
 // IMPORTANT: Les portails sont positionnés à [0, 0, 0] dans les deux mondes (AU CENTRE).
 // TOUJOURS laisser un rayon de sécurité d'au moins 10 unités autour du centre [0, 0].
 // Ne pas placer de zones de collision dans un rayon de 10m autour du centre.
 
 import { Vector3 } from 'three';
+import {
+  ObstacleConfig,
+  ObstacleType,
+  HitboxShape,
+  createObstacle,
+  createCircleHitbox,
+  createBoxHitbox,
+} from '@/core/3d/physics/config/ObstacleConfig';
+import { CollisionLayer } from '@/core/3d/physics/config/CollisionLayers';
 
+// Re-export for convenience
+export type { ObstacleConfig, ObstacleType, HitboxShape } from '@/core/3d/physics/config/ObstacleConfig';
+export { CollisionLayer } from '@/core/3d/physics/config/CollisionLayers';
+
+// =========================================
+// DEV WORLD - COLLISION ZONES
+// =========================================
+
+export const DEV_COLLISION_ZONES: ObstacleConfig[] = [
+  // Piliers (16 piliers en cercle)
+  ...Array.from({ length: 16 }, (_, i) => {
+    const angle = (i / 16) * Math.PI * 2;
+    const radius = 25;
+    const position: [number, number, number] = [
+      Math.cos(angle) * radius,
+      0,
+      Math.sin(angle) * radius,
+    ];
+    return createObstacle(`pillar-${i}`, ObstacleType.PILLAR, position, createCircleHitbox(2.0), {
+      name: `Pilier ${i}`,
+      collisionLayer: CollisionLayer.DEFAULT,
+    });
+  }),
+
+  // Arcs gothiques - 2 piliers séparés
+  // Arc Nord (z=18)
+  createObstacle(
+    'arch-north-left',
+    ObstacleType.ARCH,
+    [-3, 0, 18],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Nord Gauche', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'arch-north-right',
+    ObstacleType.ARCH,
+    [3, 0, 18],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Nord Droite', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  // Arc Sud (z=-18)
+  createObstacle(
+    'arch-south-left',
+    ObstacleType.ARCH,
+    [-3, 0, -18],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Sud Gauche', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'arch-south-right',
+    ObstacleType.ARCH,
+    [3, 0, -18],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Sud Droite', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  // Arc Est (x=18)
+  createObstacle(
+    'arch-east-left',
+    ObstacleType.ARCH,
+    [18, 0, -3],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Est Gauche', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'arch-east-right',
+    ObstacleType.ARCH,
+    [18, 0, 3],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Est Droite', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  // Arc Ouest (x=-18)
+  createObstacle(
+    'arch-west-left',
+    ObstacleType.ARCH,
+    [-18, 0, -3],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Ouest Gauche', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'arch-west-right',
+    ObstacleType.ARCH,
+    [-18, 0, 3],
+    createBoxHitbox([1.5, 3, 1.5]),
+    { name: 'Pilier Arc Ouest Droite', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Terminaux (box 2x1)
+  createObstacle(
+    'terminal-1',
+    ObstacleType.TERMINAL,
+    [-12, 0, -8],
+    createBoxHitbox([2.5, 1.5, 1.5]),
+    { name: 'Terminal 1', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'terminal-2',
+    ObstacleType.TERMINAL,
+    [12, 0, -8],
+    createBoxHitbox([2.5, 1.5, 1.5]),
+    { name: 'Terminal 2', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'terminal-3',
+    ObstacleType.TERMINAL,
+    [-8, 0, 8],
+    createBoxHitbox([2.5, 1.5, 1.5]),
+    { name: 'Terminal 3', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'terminal-4',
+    ObstacleType.TERMINAL,
+    [8, 0, 8],
+    createBoxHitbox([2.5, 1.5, 1.5]),
+    { name: 'Terminal 4', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Project Pedestals
+  createObstacle(
+    'pedestal-oalacea',
+    ObstacleType.PEDESTAL,
+    [15, 0, 10],
+    createBoxHitbox([5.5, 1.2, 5.5]),
+    { name: 'Pedestal Oalacea', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'pedestal-ecommerce',
+    ObstacleType.PEDESTAL,
+    [-15, 0, 15],
+    createBoxHitbox([5.5, 1.2, 5.5]),
+    { name: 'Pedestal E-commerce', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Admin Terminal
+  createObstacle(
+    'admin-terminal',
+    ObstacleType.TERMINAL,
+    [8, 0, 8],
+    createBoxHitbox([2.5, 1.5, 1.5]),
+    { name: 'Admin Terminal', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Blog Terminal
+  createObstacle(
+    'blog-terminal',
+    ObstacleType.TERMINAL,
+    [-20, 0, 0],
+    createBoxHitbox([3.5, 2, 3.5]),
+    { name: 'Blog Terminal', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // NPC Tech Priest - Trigger zone, not solid collision
+  createObstacle(
+    'npc-tech-priest',
+    ObstacleType.NPC,
+    [-5, 0, 8],
+    createCircleHitbox(0.8),
+    { name: 'Tech Priest Guide', collisionLayer: CollisionLayer.NPC }
+  ),
+];
+
+// =========================================
+// ART WORLD - COLLISION ZONES
+// =========================================
+
+export const ART_COLLISION_ZONES: ObstacleConfig[] = [
+  // Murs de béton
+  createObstacle(
+    'wall-1',
+    ObstacleType.WALL,
+    [-20, 0, -15],
+    createBoxHitbox([8.5, 3, 1.5]),
+    { name: 'Mur Béton 1', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'wall-2',
+    ObstacleType.WALL,
+    [20, 0, -15],
+    createBoxHitbox([8.5, 3, 1.5]),
+    { name: 'Mur Béton 2', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'wall-3',
+    ObstacleType.WALL,
+    [-25, 0, 5],
+    createBoxHitbox([1.5, 3, 6.5]),
+    { name: 'Mur Béton 3', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'wall-4',
+    ObstacleType.WALL,
+    [25, 0, 5],
+    createBoxHitbox([1.5, 3, 6.5]),
+    { name: 'Mur Béton 4', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'wall-5',
+    ObstacleType.WALL,
+    [0, 0, -30],
+    createBoxHitbox([8.5, 3, 1.5]),
+    { name: 'Mur du fond', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Pedestals
+  createObstacle(
+    'pedestal-1',
+    ObstacleType.PEDESTAL,
+    [-10, 0, -8],
+    createBoxHitbox([4.5, 1.2, 4.5]),
+    { name: 'Pedestal 1', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'pedestal-2',
+    ObstacleType.PEDESTAL,
+    [10, 0, -8],
+    createBoxHitbox([4.5, 1.2, 4.5]),
+    { name: 'Pedestal 2', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'pedestal-3',
+    ObstacleType.PEDESTAL,
+    [-8, 0, 12],
+    createBoxHitbox([4.5, 1.2, 4.5]),
+    { name: 'Pedestal 3', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'pedestal-4',
+    ObstacleType.PEDESTAL,
+    [8, 0, 12],
+    createBoxHitbox([4.5, 1.2, 4.5]),
+    { name: 'Pedestal 4', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Gallery frames
+  createObstacle(
+    'frame-1',
+    ObstacleType.FRAME,
+    [0, 0, -20],
+    createBoxHitbox([5.5, 4.5, 0.8]),
+    { name: 'Cadre 1', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'frame-2',
+    ObstacleType.FRAME,
+    [-15, 0, 0],
+    createBoxHitbox([5.5, 4.5, 0.8]),
+    { name: 'Cadre 2', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'frame-3',
+    ObstacleType.FRAME,
+    [15, 0, 0],
+    createBoxHitbox([5.5, 4.5, 0.8]),
+    { name: 'Cadre 3', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // SprayCans
+  createObstacle(
+    'spray-1',
+    ObstacleType.SPRAY,
+    [-18, 0, 15],
+    createCircleHitbox(0.4),
+    { name: 'Spray Can 1', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'spray-2',
+    ObstacleType.SPRAY,
+    [-20, 0, 18],
+    createCircleHitbox(0.4),
+    { name: 'Spray Can 2', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'spray-3',
+    ObstacleType.SPRAY,
+    [18, 0, 15],
+    createCircleHitbox(0.4),
+    { name: 'Spray Can 3', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'spray-4',
+    ObstacleType.SPRAY,
+    [22, 0, -10],
+    createCircleHitbox(0.4),
+    { name: 'Spray Can 4', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // NeonSigns - High up, minimal collision
+  createObstacle(
+    'neon-1',
+    ObstacleType.NEON,
+    [0, 8, -25],
+    createBoxHitbox([4.5, 1, 0.5]),
+    { name: 'Neon ART', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'neon-2',
+    ObstacleType.NEON,
+    [-15, 6, 10],
+    createBoxHitbox([4.5, 1, 0.5]),
+    { name: 'Neon CREATE', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'neon-3',
+    ObstacleType.NEON,
+    [15, 6, 10],
+    createBoxHitbox([4.5, 1, 0.5]),
+    { name: 'Neon EXPRESS', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'neon-4',
+    ObstacleType.NEON,
+    [0, 10, 20],
+    createBoxHitbox([5.5, 1.2, 0.5]),
+    { name: 'Neon UNDERGROUND', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Art Project Displays
+  createObstacle(
+    'art-display-mobile',
+    ObstacleType.PEDESTAL,
+    [12, 0, -18],
+    createBoxHitbox([6, 1.5, 6]),
+    { name: 'Mobile App Display', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+  createObstacle(
+    'art-display-ai',
+    ObstacleType.PEDESTAL,
+    [-18, 0, 12],
+    createBoxHitbox([6, 1.5, 6]),
+    { name: 'AI Chatbot Display', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Admin Terminal
+  createObstacle(
+    'admin-terminal',
+    ObstacleType.TERMINAL,
+    [-8, 0, 8],
+    createBoxHitbox([3.5, 2, 3.5]),
+    { name: 'Admin Terminal', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // Blog Terminal
+  createObstacle(
+    'blog-terminal',
+    ObstacleType.TERMINAL,
+    [20, 0, 0],
+    createBoxHitbox([3.5, 2, 3.5]),
+    { name: 'Blog Terminal', collisionLayer: CollisionLayer.DEFAULT }
+  ),
+
+  // NPCs
+  createObstacle(
+    'npc-curator',
+    ObstacleType.NPC,
+    [5, 0, 8],
+    createCircleHitbox(1.0),
+    { name: 'Art Curator', collisionLayer: CollisionLayer.NPC }
+  ),
+];
+
+// =========================================
+// LEGACY COMPATIBILITY
+// =========================================
+
+// Legacy interface for backward compatibility
 export interface CollisionZone {
   id: string;
   position: [number, number, number];
@@ -14,111 +387,51 @@ export interface CollisionZone {
   name: string;
 }
 
-// =========================================
-// DEV WORLD - COLLISION ZONES
-// =========================================
-export const DEV_COLLISION_ZONES: CollisionZone[] = [
-  // Monolithe central - DÉSACTIVÉ car portail au centre
-  // { id: 'monolith', position: [0, 0, -20], radius: 3.1, name: 'Monolithe' },
+/**
+ * Convert new ObstacleConfig to legacy CollisionZone format.
+ * Use this for gradual migration.
+ */
+export function toLegacyZone(config: ObstacleConfig): CollisionZone {
+  let radius: number;
 
-  // Piliers (16 piliers en cercle) - base rayon 2.0, avec petit écart
-  ...Array.from({ length: 16 }, (_, i) => {
-    const angle = (i / 16) * Math.PI * 2;
-    const radius = 25;
-    return {
-      id: `pillar-${i}`,
-      position: [Math.cos(angle) * radius, 0, Math.sin(angle) * radius],
-      radius: 2.0, // Plus proche de la base visuelle (2.0)
-      name: `Pilier ${i}`
-    } as CollisionZone;
-  }),
+  switch (config.hitbox.shape) {
+    case HitboxShape.CIRCLE:
+      radius = config.hitbox.radius;
+      break;
+    case HitboxShape.BOX:
+      radius = Math.max(config.hitbox.size[0], config.hitbox.size[2]) / 2;
+      break;
+    case HitboxShape.CAPSULE:
+      radius = config.hitbox.radius;
+      break;
+  }
 
-  // Arcs gothiques - 2 piliers séparés (passage au milieu possible)
-  // Box 1x12x1 → rayon effectif ~1.0 pour couvrir le pilier de 1 unité
-  // Arc Nord (z=18) : piliers à x=-3 et x=3
-  { id: 'arch-north-left', position: [-3, 0, 18], radius: 1.0, name: 'Pilier Arc Nord Gauche' },
-  { id: 'arch-north-right', position: [3, 0, 18], radius: 1.0, name: 'Pilier Arc Nord Droite' },
-  // Arc Sud (z=-18)
-  { id: 'arch-south-left', position: [-3, 0, -18], radius: 1.0, name: 'Pilier Arc Sud Gauche' },
-  { id: 'arch-south-right', position: [3, 0, -18], radius: 1.0, name: 'Pilier Arc Sud Droite' },
-  // Arc Est (x=18) : piliers à z=-3 et z=3
-  { id: 'arch-east-left', position: [18, 0, -3], radius: 1.0, name: 'Pilier Arc Est Gauche' },
-  { id: 'arch-east-right', position: [18, 0, 3], radius: 1.0, name: 'Pilier Arc Est Droite' },
-  // Arc Ouest (x=-18)
-  { id: 'arch-west-left', position: [-18, 0, -3], radius: 1.0, name: 'Pilier Arc Ouest Gauche' },
-  { id: 'arch-west-right', position: [-18, 0, 3], radius: 1.0, name: 'Pilier Arc Ouest Droite' },
+  return {
+    id: config.id,
+    position: config.position,
+    radius,
+    name: config.name || config.id,
+  };
+}
 
-  // Terminaux (box 2x1)
-  { id: 'terminal-1', position: [-12, 0, -8], radius: 0.91, name: 'Terminal 1' },
-  { id: 'terminal-2', position: [12, 0, -8], radius: 0.91, name: 'Terminal 2' },
-  { id: 'terminal-3', position: [-8, 0, 8], radius: 0.91, name: 'Terminal 3' },
-  { id: 'terminal-4', position: [8, 0, 8], radius: 0.91, name: 'Terminal 4' },
+/**
+ * Get collision zones in legacy format.
+ * Maintains backward compatibility.
+ */
+export function getDevCollisionZones(): CollisionZone[] {
+  return DEV_COLLISION_ZONES.map(toLegacyZone);
+}
 
-  // Project Pedestals - Oalacea et E-commerce (base 3.5, colonne 2.5)
-  { id: 'pedestal-oalacea', position: [15, 0, 10], radius: 2.5, name: 'Pedestal Oalacea' },
-  { id: 'pedestal-ecommerce', position: [-15, 0, 15], radius: 2.5, name: 'Pedestal E-commerce' },
-
-  // Admin Terminal (même taille que terminaux)
-  { id: 'admin-terminal', position: [8, 0, 8], radius: 0.91, name: 'Admin Terminal' },
-
-  // Blog Terminal
-  { id: 'blog-terminal', position: [-20, 0, 0], radius: 1.5, name: 'Blog Terminal' },
-
-  // NPC Tech Priest
-  { id: 'npc-tech-priest', position: [-5, 0, 8], radius: 0.8, name: 'Tech Priest Guide' },
-];
+/**
+ * Get collision zones in legacy format.
+ * Maintains backward compatibility.
+ */
+export function getArtCollisionZones(): CollisionZone[] {
+  return ART_COLLISION_ZONES.map(toLegacyZone);
+}
 
 // =========================================
-// ART WORLD - COLLISION ZONES
-// =========================================
-export const ART_COLLISION_ZONES: CollisionZone[] = [
-  // Murs de béton (box 1x8x1 avec scale) - rayon réduit
-  { id: 'wall-1', position: [-20, 0, -15], radius: 4.0, name: 'Mur Béton 1' },
-  { id: 'wall-2', position: [20, 0, -15], radius: 4.0, name: 'Mur Béton 2' },
-  { id: 'wall-3', position: [-25, 0, 5], radius: 3.0, name: 'Mur Béton 3' },
-  { id: 'wall-4', position: [25, 0, 5], radius: 3.0, name: 'Mur Béton 4' },
-  { id: 'wall-5', position: [0, 0, -30], radius: 3.8, name: 'Mur du fond' },
-
-  // Pedestals - base rayon 2.0, réduit
-  { id: 'pedestal-1', position: [-10, 0, -8], radius: 1.9, name: 'Pedestal 1' },
-  { id: 'pedestal-2', position: [10, 0, -8], radius: 1.9, name: 'Pedestal 2' },
-  { id: 'pedestal-3', position: [-8, 0, 12], radius: 1.9, name: 'Pedestal 3' },
-  { id: 'pedestal-4', position: [8, 0, 12], radius: 1.9, name: 'Pedestal 4' },
-
-  // Gallery frames - box 5x4x0.3 → rayon 2.7 pour couvrir les 5 unités de large
-  // On ne met collision que sur les bords
-  { id: 'frame-1', position: [0, 0, -20], radius: 2.7, name: 'Cadre 1' },
-  { id: 'frame-2', position: [-15, 0, 0], radius: 2.7, name: 'Cadre 2' },
-  { id: 'frame-3', position: [15, 0, 0], radius: 2.7, name: 'Cadre 3' },
-
-  // SprayCans - petits objets cylindriques, rayon ~0.3
-  { id: 'spray-1', position: [-18, 0, 15], radius: 0.4, name: 'Spray Can 1' },
-  { id: 'spray-2', position: [-20, 0, 18], radius: 0.4, name: 'Spray Can 2' },
-  { id: 'spray-3', position: [18, 0, 15], radius: 0.4, name: 'Spray Can 3' },
-  { id: 'spray-4', position: [22, 0, -10], radius: 0.4, name: 'Spray Can 4' },
-
-  // NeonSigns - panneaux sur les murs (moins critiques car en hauteur)
-  { id: 'neon-1', position: [0, 8, -25], radius: 2.0, name: 'Neon ART' },
-  { id: 'neon-2', position: [-15, 6, 10], radius: 2.0, name: 'Neon CREATE' },
-  { id: 'neon-3', position: [15, 6, 10], radius: 2.0, name: 'Neon EXPRESS' },
-  { id: 'neon-4', position: [0, 10, 20], radius: 2.5, name: 'Neon UNDERGROUND' },
-
-  // Art Project Displays - base 3.5x3.5 (radius ~2.7 avec marge)
-  { id: 'art-display-mobile', position: [12, 0, -18], radius: 2.7, name: 'Mobile App Display' },
-  { id: 'art-display-ai', position: [-18, 0, 12], radius: 2.7, name: 'AI Chatbot Display' },
-
-  // Admin Terminal
-  { id: 'admin-terminal', position: [-8, 0, 8], radius: 1.5, name: 'Admin Terminal' },
-
-  // Blog Terminal
-  { id: 'blog-terminal', position: [20, 0, 0], radius: 1.5, name: 'Blog Terminal' },
-
-  // NPCs - zones de collision autour des guides
-  { id: 'npc-curator', position: [5, 0, 8], radius: 1.0, name: 'Art Curator' },
-];
-
-// =========================================
-// COLLISION DETECTION
+// COLLISION DETECTION (LEGACY)
 // =========================================
 
 /**
@@ -138,7 +451,6 @@ export function checkCollision(
     const dz = position.z - zone.position[2];
     const distance = Math.sqrt(dx * dx + dz * dz);
 
-    // Collision quand les surfaces se touchent (distance < rayon objet + rayon personnage)
     if (distance < zone.radius + characterRadius) {
       return true;
     }
@@ -160,11 +472,8 @@ export function getSafePosition(
   zones: CollisionZone[],
   characterRadius: number = 0.5
 ): Vector3 {
-  // Direction normale du mouvement
   const direction = new Vector3().subVectors(to, from).normalize();
   const distance = from.distanceTo(to);
-
-  // Test par incréments le long du chemin
   const stepSize = 0.5;
   const steps = Math.ceil(distance / stepSize);
 
@@ -176,12 +485,10 @@ export function getSafePosition(
     if (!checkCollision(nextPos, zones, characterRadius)) {
       currentPos = nextPos;
     } else {
-      // Collision trouvée, retourner la dernière position valide
       return currentPos;
     }
   }
 
-  // Vérifier la destination finale
   if (!checkCollision(to, zones, characterRadius)) {
     return to;
   }

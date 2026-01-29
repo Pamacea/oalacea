@@ -21,13 +21,16 @@ export class PathfindingAdapter {
   private readonly CELL_SIZE = 0.5;
   private readonly WORLD_MIN = -50;
   private readonly WORLD_MAX = 50;
+  public readonly characterRadius: number = 0.5;
 
   constructor(
     spatialGrid: SpatialHashGrid,
-    collisionDetector: CollisionDetector
+    collisionDetector: CollisionDetector,
+    characterRadius: number = 0.5
   ) {
     this.spatialGrid = spatialGrid;
     this.collisionDetector = collisionDetector;
+    this.characterRadius = characterRadius;
   }
 
   /**
@@ -49,7 +52,7 @@ export class PathfindingAdapter {
       : this.collisionDetector.findNearestValidPosition(end, this.characterRadius, 5);
 
     // Direct path if line of sight
-    if (this.hasLineOfSight(safeStart, safeEnd)) {
+    if (this.hasLineOfSight(safeStart, safeEnd, characterRadius)) {
       return [safeEnd.clone()];
     }
 
