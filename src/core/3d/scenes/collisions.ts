@@ -34,18 +34,19 @@ export const DEV_COLLISION_ZONES: CollisionZone[] = [
   }),
 
   // Arcs gothiques - 2 piliers séparés (passage au milieu possible)
+  // Box 1x12x1 → rayon effectif ~1.0 pour couvrir le pilier de 1 unité
   // Arc Nord (z=18) : piliers à x=-3 et x=3
-  { id: 'arch-north-left', position: [-3, 0, 18], radius: 0.8, name: 'Pilier Arc Nord Gauche' },
-  { id: 'arch-north-right', position: [3, 0, 18], radius: 0.8, name: 'Pilier Arc Nord Droite' },
+  { id: 'arch-north-left', position: [-3, 0, 18], radius: 1.0, name: 'Pilier Arc Nord Gauche' },
+  { id: 'arch-north-right', position: [3, 0, 18], radius: 1.0, name: 'Pilier Arc Nord Droite' },
   // Arc Sud (z=-18)
-  { id: 'arch-south-left', position: [-3, 0, -18], radius: 0.8, name: 'Pilier Arc Sud Gauche' },
-  { id: 'arch-south-right', position: [3, 0, -18], radius: 0.8, name: 'Pilier Arc Sud Droite' },
+  { id: 'arch-south-left', position: [-3, 0, -18], radius: 1.0, name: 'Pilier Arc Sud Gauche' },
+  { id: 'arch-south-right', position: [3, 0, -18], radius: 1.0, name: 'Pilier Arc Sud Droite' },
   // Arc Est (x=18) : piliers à z=-3 et z=3
-  { id: 'arch-east-left', position: [18, 0, -3], radius: 0.8, name: 'Pilier Arc Est Gauche' },
-  { id: 'arch-east-right', position: [18, 0, 3], radius: 0.8, name: 'Pilier Arc Est Droite' },
+  { id: 'arch-east-left', position: [18, 0, -3], radius: 1.0, name: 'Pilier Arc Est Gauche' },
+  { id: 'arch-east-right', position: [18, 0, 3], radius: 1.0, name: 'Pilier Arc Est Droite' },
   // Arc Ouest (x=-18)
-  { id: 'arch-west-left', position: [-18, 0, -3], radius: 0.8, name: 'Pilier Arc Ouest Gauche' },
-  { id: 'arch-west-right', position: [-18, 0, 3], radius: 0.8, name: 'Pilier Arc Ouest Droite' },
+  { id: 'arch-west-left', position: [-18, 0, -3], radius: 1.0, name: 'Pilier Arc Ouest Gauche' },
+  { id: 'arch-west-right', position: [-18, 0, 3], radius: 1.0, name: 'Pilier Arc Ouest Droite' },
 
   // Terminaux (box 2x1)
   { id: 'terminal-1', position: [-12, 0, -8], radius: 0.91, name: 'Terminal 1' },
@@ -84,11 +85,11 @@ export const ART_COLLISION_ZONES: CollisionZone[] = [
   { id: 'pedestal-3', position: [-8, 0, 12], radius: 1.9, name: 'Pedestal 3' },
   { id: 'pedestal-4', position: [8, 0, 12], radius: 1.9, name: 'Pedestal 4' },
 
-  // Gallery frames - box 5x4, mais c'est un cadre (creux au milieu)
+  // Gallery frames - box 5x4x0.3 → rayon 2.7 pour couvrir les 5 unités de large
   // On ne met collision que sur les bords
-  { id: 'frame-1', position: [0, 0, -20], radius: 2.3, name: 'Cadre 1' },
-  { id: 'frame-2', position: [-15, 0, 0], radius: 2.3, name: 'Cadre 2' },
-  { id: 'frame-3', position: [15, 0, 0], radius: 2.3, name: 'Cadre 3' },
+  { id: 'frame-1', position: [0, 0, -20], radius: 2.7, name: 'Cadre 1' },
+  { id: 'frame-2', position: [-15, 0, 0], radius: 2.7, name: 'Cadre 2' },
+  { id: 'frame-3', position: [15, 0, 0], radius: 2.7, name: 'Cadre 3' },
 
   // SprayCans - petits objets cylindriques, rayon ~0.3
   { id: 'spray-1', position: [-18, 0, 15], radius: 0.4, name: 'Spray Can 1' },
@@ -102,9 +103,9 @@ export const ART_COLLISION_ZONES: CollisionZone[] = [
   { id: 'neon-3', position: [15, 6, 10], radius: 2.0, name: 'Neon EXPRESS' },
   { id: 'neon-4', position: [0, 10, 20], radius: 2.5, name: 'Neon UNDERGROUND' },
 
-  // Art Project Displays - base 3.5x3.5
-  { id: 'art-display-mobile', position: [12, 0, -18], radius: 2.0, name: 'Mobile App Display' },
-  { id: 'art-display-ai', position: [-18, 0, 12], radius: 2.0, name: 'AI Chatbot Display' },
+  // Art Project Displays - base 3.5x3.5 (radius ~2.7 avec marge)
+  { id: 'art-display-mobile', position: [12, 0, -18], radius: 2.7, name: 'Mobile App Display' },
+  { id: 'art-display-ai', position: [-18, 0, 12], radius: 2.7, name: 'AI Chatbot Display' },
 
   // Admin Terminal
   { id: 'admin-terminal', position: [-8, 0, 8], radius: 1.5, name: 'Admin Terminal' },

@@ -1,7 +1,7 @@
 // usePhysicsEngine - React integration for the physics engine
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { Vector3 } from 'three';
 import {
   SpatialHashGrid,
@@ -42,6 +42,16 @@ export function usePhysicsEngine(
 ): PhysicsEngineInstance | null {
   const engineRef = useRef<PhysicsEngineInstance | null>(null);
 
+  // Stable dependency for useEffect - only changes if zone data actually changes
+  const zonesKey = useMemo(() => {
+    return JSON.stringify(collisionZones.map((z) => ({
+      id: z.id,
+      position: z.position,
+      radius: z.radius,
+      name: z.name,
+    })));
+  }, [collisionZones]);
+
   useEffect(() => {
     // Initialize components
     const spatialGrid = new SpatialHashGrid();
@@ -63,20 +73,22 @@ export function usePhysicsEngine(
     };
 
     // Convert collision zones to obstacles with appropriate hitboxes
+    console.log('[Physics] Initializing with', collisionZones.length, 'collision zones');
     collisionZones.forEach((zone) => {
       const obstacle = createObstacleFromZone(zone);
       instance.addObstacle(obstacle);
     });
+    console.log('[Physics] Added all obstacles. Total:', instance.getStats().obstacleCount);
 
     engineRef.current = instance;
 
     return () => {
+      console.log('[Physics] Cleanup - clearing engine');
       engineRef.current = null;
     };
-    // Only re-initialize if collision zones change significantly
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(collisionZones.map((z) => ({ id: z.id, position: z.position, radius: z.radius, name: z.name })))]);
+  }, [zonesKey, collisionZones]);
 
+  // Return engine instance - will be null on first render, then available after effect
   return engineRef.current;
 }
 
@@ -121,6 +133,13 @@ function createObstacleFromZone(zone: CollisionZone): Obstacle {
     hitbox = new BoxHitbox({
       center,
       size: [(zone.radius * 2) + CHARACTER_MARGIN * 2, 1, (zone.radius * 2) + CHARACTER_MARGIN * 2],
+      rotation: 0,
+    });
+  } else if (nameLower.includes('frame') || nameLower.includes('cadre')) {
+    // Gallery Frames - wide but thin (5x4x0.3) → use box with larger width, small depth
+    hitbox = new BoxHitbox({
+      center,
+      size: [(zone.radius * 2) + CHARACTER_MARGIN * 2, 4, 0.5], // Thin depth for frame
       rotation: 0,
     });
   } else if (nameLower.includes('wall')) {

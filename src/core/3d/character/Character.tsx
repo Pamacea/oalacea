@@ -1,7 +1,7 @@
 // Character - Controllable character with pathfinding
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { WorldType } from '../scenes/types';
 import type { CollisionZone } from '../scenes/collisions';
 import { DEV_COLLISION_ZONES, ART_COLLISION_ZONES } from '../scenes/collisions';
@@ -27,7 +27,11 @@ export function Character({
   isOccluded = false,
   groupRef: externalGroupRef,
 }: CharacterProps) {
-  const collisionZones: CollisionZone[] = worldType === 'dev' ? DEV_COLLISION_ZONES : ART_COLLISION_ZONES;
+  // Memoize collision zones to prevent physics engine re-initialization on every render
+  const collisionZones: CollisionZone[] = useMemo(
+    () => (worldType === 'dev' ? DEV_COLLISION_ZONES : ART_COLLISION_ZONES),
+    [worldType]
+  );
 
   const { groupRef, isMoving, isSprinting, displayPath } = useCharacterControls({
     worldType,
