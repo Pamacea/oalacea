@@ -6,7 +6,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Vector3, Group } from 'three';
 import * as THREE from 'three';
 import type { WorldType } from '../scenes/types';
-import type { CollisionZone } from '../scenes/collisions';
+import type { CollisionZone, ObstacleConfig } from '../scenes/collisions';
 import { usePhysicsEngine, useCharacterController as usePhysicsController } from '@/hooks/usePhysicsEngine';
 import { useCharacterStore } from '@/store/3d-character-store';
 
@@ -14,10 +14,11 @@ const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
 
 export interface CharacterControlsProps {
   worldType: WorldType;
-  collisionZones: CollisionZone[];
+  collisionZones: (CollisionZone | ObstacleConfig)[];
   positionRef?: React.MutableRefObject<Vector3>;
   onTargetSet?: (pos: Vector3 | null) => void;
   onSprintChange?: (sprinting: boolean) => void;
+  onPathfindingStats?: (stats: { nodesExplored: number; pathLength: number; calculationTime: number; cacheHit: boolean }) => void;
 }
 
 export function useCharacterControls({
@@ -26,6 +27,7 @@ export function useCharacterControls({
   positionRef,
   onTargetSet,
   onSprintChange,
+  onPathfindingStats,
 }: CharacterControlsProps) {
   const groupRef = useRef<Group>(null);
   const { camera } = useThree();
@@ -97,6 +99,11 @@ export function useCharacterControls({
 
       // Use pathfinding to get full route (handles going around obstacles)
       const path = physicsEngine.findPath(currentPos, clickedPos);
+
+      // Report pathfinding statistics
+      if (physicsEngine.getPathfindingStats && onPathfindingStats) {
+        onPathfindingStats(physicsEngine.getPathfindingStats());
+      }
 
       if (path.length > 0) {
         pathRef.current = path;
