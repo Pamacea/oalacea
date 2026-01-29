@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { InteractionPrompt } from './InteractionPrompt';
 import { SceneOverlay } from './SceneOverlay';
 import { InWorldAdminModal } from './InWorldAdminModal';
@@ -14,8 +15,12 @@ export function FloatingUI() {
   const [isMobile, setIsMobile] = useState(false);
   const [currentWorld] = useState<'dev' | 'art'>('dev');
 
-  const canInteract = useCharacterStore((s) => s.canInteract);
-  const interactTarget = useCharacterStore((s) => s.interactTarget);
+  const { canInteract, interactTarget } = useCharacterStore(
+    useShallow((s) => ({
+      canInteract: s.canInteract,
+      interactTarget: s.interactTarget,
+    }))
+  );
 
   useEffect(() => {
     const checkMobile = () => {

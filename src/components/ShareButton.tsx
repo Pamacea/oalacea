@@ -58,6 +58,7 @@ export function ShareButton({
         <TooltipTrigger asChild>
           <button
             onClick={handleShare}
+            aria-label={copied ? 'Link copied to clipboard' : 'Share this view'}
             className={`
               w-10 h-10 rounded-lg backdrop-blur-md border
               flex items-center justify-center transition-all

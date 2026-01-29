@@ -7,6 +7,7 @@ import type { Project } from '@/generated/prisma/client';
 import { ProjectCategory } from '@/generated/prisma/enums';
 import { useInWorldAdminStore } from '@/store/in-world-admin-store';
 import { ConfirmDialog } from './ConfirmDialog';
+import { CardGridSkeleton } from '@/components/admin/TableSkeleton';
 
 const categoryLabels: Record<ProjectCategory, string> = {
   WEB: 'Web',
@@ -49,11 +50,7 @@ export function ProjectsTab() {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-zinc-500 text-sm">Chargement...</div>
-      </div>
-    );
+    return <CardGridSkeleton cards={4} />;
   }
 
   return (
@@ -86,7 +83,7 @@ export function ProjectsTab() {
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="group border border-zinc-800 rounded-xl bg-zinc-900/30 p-4 hover:bg-zinc-900/50 transition-colors"
+                className="group border border-zinc-800 rounded-xl bg-zinc-900/30 p-4 hover:bg-zinc-900/50 transition-colors duration-200"
               >
                 <div className="mb-3 aspect-video rounded-lg bg-zinc-950 overflow-hidden">
                   {project.thumbnail ? (
@@ -120,19 +117,19 @@ export function ProjectsTab() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setView('edit-project', project.id)}
-                      className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-colors"
-                      title="Modifier"
+                      aria-label={`Edit ${project.title}`}
+                      className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-all duration-200"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
                       onClick={() =>
                         setDeleteDialog({ open: true, id: project.id, title: project.title })
                       }
-                      className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-zinc-800 rounded transition-colors"
-                      title="Supprimer"
+                      aria-label={`Delete ${project.title}`}
+                      className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-zinc-800 rounded transition-all duration-200"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>

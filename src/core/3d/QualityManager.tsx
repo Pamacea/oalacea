@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, createContext, useContext, ReactNode } from 'react';
+import * as THREE from 'three';
 import { useSettingsStore, QualityPreset, QualitySettings } from '@/store/settings-store';
 
 interface QualityManagerContextValue {
@@ -46,7 +47,7 @@ export function QualityManager({ children, onQualityChange, showNotification = t
 
     canvas.style.imageRendering = quality === 'low' ? 'pixelated' : 'auto';
 
-    const renderer = (canvas as any).__threeRenderer;
+    const renderer = (canvas as { __threeRenderer?: THREE.WebGLRenderer }).__threeRenderer;
     if (renderer) {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality === 'low' ? 1 : 2));
       renderer.shadowMap.type = getShadowMapType(settings.shadowMapType);
@@ -118,13 +119,13 @@ function showQualityNotification(quality: QualityPreset) {
 function getShadowMapType(type: QualitySettings['shadowMapType']): THREE.ShadowMapType {
   switch (type) {
     case 'basic':
-      return 0 as any; // THREE.BasicShadowMap
+      return THREE.BasicShadowMap;
     case 'pcf':
-      return 1 as any; // THREE.PCFShadowMap
+      return THREE.PCFShadowMap;
     case 'pcfsoft':
-      return 2 as any; // THREE.PCFSoftShadowMap
+      return THREE.PCFSoftShadowMap;
     default:
-      return 2 as any;
+      return THREE.PCFSoftShadowMap;
   }
 }
 

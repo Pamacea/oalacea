@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 import { useCharacterStore } from '@/store/3d-character-store';
 import { useOverlayStore } from '@/store/3d-overlay-store';
 import { useWorldStore } from '@/store/3d-world-store';
@@ -8,8 +9,12 @@ import { useWorldStore } from '@/store/3d-world-store';
 export function InteractionPrompt() {
   const openOverlay = useOverlayStore((s) => s.openOverlay);
   const switchWorld = useWorldStore((s) => s.switchWorld);
-  const canInteract = useCharacterStore((s) => s.canInteract);
-  const interactTarget = useCharacterStore((s) => s.interactTarget);
+  const { canInteract, interactTarget } = useCharacterStore(
+    useShallow((s) => ({
+      canInteract: s.canInteract,
+      interactTarget: s.interactTarget,
+    }))
+  );
 
   const handleInteract = () => {
     if (interactTarget?.targetWorld) {

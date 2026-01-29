@@ -3,18 +3,20 @@
 
 import { Suspense, forwardRef, useEffect, useState } from 'react';
 import { useLoader } from '@react-three/fiber';
-import { GLTFLoader } from 'three-stdlib/loaders/GLTFLoader';
+import type { GLTF } from 'three-stdlib/loaders/GLTFLoader';
 import { TextureLoader } from 'three';
 import * as THREE from 'three';
 
+type AssetType = 'gltf' | 'glb' | 'texture' | 'audio';
+
 export interface AssetLoaderProps {
   url: string;
-  type: 'gltf' | 'glb' | 'texture' | 'audio';
-  onLoad?: (object: any) => void;
+  type: AssetType;
+  onLoad?: (object: GLTF | THREE.Texture) => void;
   onError?: (error: Error) => void;
   priority?: 'high' | 'normal' | 'low';
   placeholder?: React.ReactNode;
-  children: (object: any) => React.ReactNode;
+  children: (object: GLTF | THREE.Texture | null) => React.ReactNode;
 }
 
 interface LoadingState {
@@ -58,12 +60,13 @@ function AssetLoaderContent({
 
     const loadAsset = async () => {
       try {
-        let asset: any;
+        let asset: GLTF | THREE.Texture;
 
         switch (type) {
           case 'gltf':
-          case 'glb':
-            asset = await new Promise<void | GLTFLoader>((resolve, reject) => {
+          case 'glb': {
+            const { GLTFLoader } = await import('three-stdlib/loaders/GLTFLoader');
+            asset = await new Promise<GLTF>((resolve, reject) => {
               new GLTFLoader(loader).load(
                 url,
                 (gltf) => resolve(gltf),
@@ -72,8 +75,9 @@ function AssetLoaderContent({
               );
             });
             break;
+          }
           case 'texture':
-            asset = await new Promise<void | THREE.Texture>((resolve, reject) => {
+            asset = await new Promise<THREE.Texture>((resolve, reject) => {
               new TextureLoader(loader).load(
                 url,
                 (texture) => resolve(texture),
@@ -176,13 +180,17 @@ export function AssetLoader({
 }
 
 export function useGLTF(url: string) {
-  const gltf = useLoader(GLTFLoader, url);
-  return gltf;
+  const gltf = useLoader(
+    // @ts-ignore - GLTFLoader is dynamically imported
+    (await import('three-stdlib/loaders/GLTFLoader')).GLTFLoader,
+    url
+  );
+  return gltf as GLTF;
 }
 
 export function useTexture(url: string) {
   const texture = useLoader(TextureLoader, url);
-  return texture;
+  return texture as THREE.Texture;
 }
 
 export function ProgressiveAsset({
@@ -195,16 +203,16 @@ export function ProgressiveAsset({
   lowQualityUrl: string;
   highQualityUrl: string;
   type: 'gltf' | 'glb' | 'texture';
-  onLoad?: (object: any) => void;
-  children: (object: any, isHighQuality: boolean) => React.ReactNode;
+  onLoad?: (object: THREE.Texture) => void;
+  children: (object: THREE.Texture | null, isHighQuality: boolean) => React.ReactNode;
 }) {
   const [useHighQuality, setUseHighQuality] = useState(false);
-  const [asset, setAsset] = useState<any>(null);
+  const [asset, setAsset] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
     const loadLowQuality = async () => {
       try {
-        let lowAsset: any;
+        let lowAsset: THREE.Texture | null = null;
         if (type === 'texture') {
           lowAsset = await new Promise<THREE.Texture>((resolve) => {
             new TextureLoader().load(lowQualityUrl, resolve);
@@ -221,15 +229,17 @@ export function ProgressiveAsset({
     const loadHighQuality = async () => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        let highAsset: any;
+        let highAsset: THREE.Texture | null = null;
         if (type === 'texture') {
           highAsset = await new Promise<THREE.Texture>((resolve) => {
             new TextureLoader().load(highQualityUrl, resolve);
           });
         }
-        setAsset(highAsset);
-        setUseHighQuality(true);
-        onLoad?.(highAsset);
+        if (highAsset) {
+          setAsset(highAsset);
+          setUseHighQuality(true);
+          onLoad?.(highAsset);
+        }
       } catch (error) {
         console.error('Failed to load high quality asset:', error);
       }

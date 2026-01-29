@@ -127,6 +127,8 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
         <div className={`h-full bg-gradient-to-t ${worldColors.bg} backdrop-blur-md border-t border-white/10 rounded-t-2xl shadow-2xl`}>
           <motion.button
             onClick={toggleExpanded}
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? 'Collapse menu' : 'Expand menu'}
             className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-6 flex items-center justify-center touch-none"
             whileTap={{ scale: 0.95 }}
           >
@@ -162,9 +164,10 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
                     size="icon-sm"
                     variant="ghost"
                     onClick={handleSwitchWorld}
+                    aria-label="Switch world"
                     className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                   </Button>
@@ -195,9 +198,10 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
                   <Button
                     size="lg"
                     onClick={handleSwitchWorld}
+                    aria-label="Switch world"
                     className="h-14 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 flex flex-col items-center gap-1"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                     <span className="text-xs">Switch World</span>
@@ -206,9 +210,10 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
                   <Button
                     size="lg"
                     onClick={() => window.location.href = '/blog'}
+                    aria-label="Go to blog"
                     className="h-14 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 flex flex-col items-center gap-1"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                     </svg>
                     <span className="text-xs">Blog</span>
@@ -217,9 +222,10 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
                   <Button
                     size="lg"
                     onClick={() => window.location.href = '/projects'}
+                    aria-label="Go to projects"
                     className="h-14 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 flex flex-col items-center gap-1"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                     </svg>
                     <span className="text-xs">Projects</span>
@@ -228,9 +234,10 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
                   <Button
                     size="lg"
                     onClick={() => window.location.href = '/about'}
+                    aria-label="Go to about"
                     className="h-14 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 flex flex-col items-center gap-1"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     <span className="text-xs">About</span>
@@ -250,10 +257,11 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           onClick={closeOverlay}
+          aria-label="Close overlay"
           className="fixed top-20 right-4 z-50 w-12 h-12 rounded-full bg-black/70 backdrop-blur-md border border-white/10 flex items-center justify-center touch-none"
           whileTap={{ scale: 0.9 }}
         >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </motion.button>
