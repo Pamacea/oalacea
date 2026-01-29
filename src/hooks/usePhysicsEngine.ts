@@ -37,6 +37,7 @@ interface PhysicsEngineInstance {
  */
 export function usePhysicsEngine(
   collisionZones: CollisionZone[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   config?: PhysicsEngineConfig
 ): PhysicsEngineInstance | null {
   const engineRef = useRef<PhysicsEngineInstance | null>(null);
@@ -55,7 +56,7 @@ export function usePhysicsEngine(
       addObstacle: spatialGrid.addObstacle.bind(spatialGrid),
       removeObstacle: spatialGrid.removeObstacle.bind(spatialGrid),
       updateObstacle: spatialGrid.updateObstacle.bind(spatialGrid),
-      checkCollision: (position: Vector3, radius?: number) =>
+      checkCollision: (position: Vector3, radius: number = 0) =>
         collisionDetector.checkCollision(position, radius).collided,
       findPath: pathfinding.findPath.bind(pathfinding),
       getStats: spatialGrid.getStats.bind(spatialGrid),

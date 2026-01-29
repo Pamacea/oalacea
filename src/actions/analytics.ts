@@ -224,5 +224,3 @@ function getDateForPeriod(period: TimePeriod): Date {
 
   return now;
 }
-
-export type { TimePeriod };

@@ -91,8 +91,9 @@ export function useCharacterControls({
 
       // Validate clicked position - if inside obstacle, find nearest valid position
       // Pathfinding will handle routing around obstacles
+      // Note: hitboxes already include CHARACTER_MARGIN, so pass 0 for radius
       if (physicsEngine.checkCollision(clickedPos)) {
-        clickedPos = physicsEngine.collisionDetector.findNearestValidPosition(clickedPos, 0.5, 5);
+        clickedPos = physicsEngine.collisionDetector.findNearestValidPosition(clickedPos, 0, 5);
       }
 
       // Use pathfinding to get full route (handles going around obstacles)
@@ -145,7 +146,8 @@ export function useCharacterControls({
     const tentativePos = currentPos.clone().add(direction.clone().multiplyScalar(moveDistance));
 
     // Check if next position would collide
-    const collision = physicsEngine!.collisionDetector.checkCollision(tentativePos, 0.5);
+    // Note: hitboxes already include CHARACTER_MARGIN, so pass 0 for radius
+    const collision = physicsEngine!.collisionDetector.checkCollision(tentativePos, 0);
 
     if (collision.collided) {
       // Blocked - don't slide, let pathfinding handle it

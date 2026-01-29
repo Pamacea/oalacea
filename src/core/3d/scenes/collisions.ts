@@ -52,6 +52,19 @@ export const DEV_COLLISION_ZONES: CollisionZone[] = [
   { id: 'terminal-2', position: [12, 0, -8], radius: 0.91, name: 'Terminal 2' },
   { id: 'terminal-3', position: [-8, 0, 8], radius: 0.91, name: 'Terminal 3' },
   { id: 'terminal-4', position: [8, 0, 8], radius: 0.91, name: 'Terminal 4' },
+
+  // Project Pedestals - Oalacea et E-commerce (base 3.5, colonne 2.5)
+  { id: 'pedestal-oalacea', position: [15, 0, 10], radius: 2.5, name: 'Pedestal Oalacea' },
+  { id: 'pedestal-ecommerce', position: [-15, 0, 15], radius: 2.5, name: 'Pedestal E-commerce' },
+
+  // Admin Terminal (même taille que terminaux)
+  { id: 'admin-terminal', position: [8, 0, 8], radius: 0.91, name: 'Admin Terminal' },
+
+  // Blog Terminal
+  { id: 'blog-terminal', position: [-20, 0, 0], radius: 1.5, name: 'Blog Terminal' },
+
+  // NPC Tech Priest
+  { id: 'npc-tech-priest', position: [-5, 0, 8], radius: 0.8, name: 'Tech Priest Guide' },
 ];
 
 // =========================================
@@ -89,9 +102,18 @@ export const ART_COLLISION_ZONES: CollisionZone[] = [
   { id: 'neon-3', position: [15, 6, 10], radius: 2.0, name: 'Neon EXPRESS' },
   { id: 'neon-4', position: [0, 10, 20], radius: 2.5, name: 'Neon UNDERGROUND' },
 
+  // Art Project Displays - base 3.5x3.5
+  { id: 'art-display-mobile', position: [12, 0, -18], radius: 2.0, name: 'Mobile App Display' },
+  { id: 'art-display-ai', position: [-18, 0, 12], radius: 2.0, name: 'AI Chatbot Display' },
+
+  // Admin Terminal
+  { id: 'admin-terminal', position: [-8, 0, 8], radius: 1.5, name: 'Admin Terminal' },
+
+  // Blog Terminal
+  { id: 'blog-terminal', position: [20, 0, 0], radius: 1.5, name: 'Blog Terminal' },
+
   // NPCs - zones de collision autour des guides
   { id: 'npc-curator', position: [5, 0, 8], radius: 1.0, name: 'Art Curator' },
-  { id: 'npc-priest', position: [-5, 0, 8], radius: 1.0, name: 'Tech Priest' },
 ];
 
 // =========================================

@@ -9,8 +9,6 @@ import type { WorldType } from './types';
 import { useWorldStore } from '@/store/3d-world-store';
 import { useSettingsStore, selectQualitySettings } from '@/store/settings-store';
 import { DEV_WORLD, ART_WORLD } from '@/config/3d/worlds';
-import { PhotoModeScene } from '@/components/3d/PhotoModeScene';
-import { useXRStore } from '@/store/xr-store';
 
 interface SceneContainerProps {
   children?: React.ReactNode;
@@ -20,7 +18,6 @@ interface SceneContainerProps {
 function SceneContent({ children, currentWorld }: SceneContainerProps) {
   const worldConfig = currentWorld === 'art' ? ART_WORLD : DEV_WORLD;
   const qualitySettings = useSettingsStore(selectQualitySettings);
-  const photoModeEnabled = useXRStore((s) => s.photoModeEnabled);
 
   const fog = useMemo(
     () => new THREE.FogExp2(worldConfig.colors.fog, 0.02),
@@ -76,13 +73,6 @@ function SceneContent({ children, currentWorld }: SceneContainerProps) {
       />
 
       {children}
-
-      <PhotoModeScene
-        photoModeEnabled={photoModeEnabled}
-        onCapture={(dataUrl, screenshot) => {
-          console.log('Screenshot captured', screenshot);
-        }}
-      />
 
       <Preload all />
     </>

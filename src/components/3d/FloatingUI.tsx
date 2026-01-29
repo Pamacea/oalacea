@@ -7,8 +7,6 @@ import { SceneOverlay } from './SceneOverlay';
 import { InWorldAdminModal } from './InWorldAdminModal';
 import { HelpModal } from './HelpModal';
 import { TouchInteraction, MobileUI, VirtualJoystick } from './mobile';
-import { PhotoMode } from './PhotoMode';
-import { VRToggle } from './VRToggle';
 import { useCharacterStore } from '@/store/3d-character-store';
 
 export function FloatingUI() {
@@ -65,8 +63,6 @@ export function FloatingUI() {
       <SceneOverlay />
       <InWorldAdminModal />
       <HelpModal />
-      <VRToggle />
-      <PhotoMode />
     </>
   );
 }
