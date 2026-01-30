@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, LayoutDashboard, FileText, FolderKanban } from 'lucide-react';
 import { useInWorldAdminStore } from '@/store/in-world-admin-store';
+import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/store/3d-world-store';
 import { DashboardTab } from './admin/DashboardTab';
 import { PostsTab } from './admin/PostsTab';
@@ -20,18 +21,24 @@ const tabs = [
 
 export function InWorldAdminModal() {
   const { isOpen, view, selectedId, closeAdmin, setView } = useInWorldAdminStore();
+  const { close: closeModalStore } = useModalStore();
   const world = useWorldStore((s) => s.currentWorld);
   const isEditingForm = view === 'edit-post' || view === 'edit-project';
   const isReadingPost = view === 'read-post';
 
+  const handleClose = () => {
+    closeAdmin();
+    closeModalStore();
+  };
+
   useEffect(() => {
     if (isEditingForm || isReadingPost) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeAdmin();
+      if (e.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [closeAdmin, isEditingForm, isReadingPost]);
+  }, [handleClose, isEditingForm, isReadingPost]);
 
   return (
     <AnimatePresence>
@@ -42,7 +49,7 @@ export function InWorldAdminModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
-            onClick={isEditingForm || isReadingPost ? undefined : closeAdmin}
+            onClick={isEditingForm || isReadingPost ? undefined : handleClose}
           />
 
           <motion.div
@@ -75,7 +82,7 @@ export function InWorldAdminModal() {
                   })}
                 </div>
                 <button
-                  onClick={closeAdmin}
+                  onClick={handleClose}
                   className="rounded-lg p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
                 >
                   <X className="h-5 w-5" />

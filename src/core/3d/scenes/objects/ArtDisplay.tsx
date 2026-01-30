@@ -4,7 +4,7 @@ import { useRef, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import { Text } from '@react-three/drei';
-import { useRouter } from 'next/navigation';
+import { useModalStore } from '@/store/modal-store';
 import type { Project } from '@/store/project-store';
 
 const colors = {
@@ -30,7 +30,7 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
   const frameRef = useRef<Group>(null);
   const screenRef = useRef<Mesh>(null);
   const spotlightRef = useRef<Group>(null);
-  const router = useRouter();
+  const openProjectListing = useModalStore((s) => s.openProjectListing);
   const [hovered, setHovered] = useState(false);
 
   useFrame((state) => {
@@ -64,11 +64,9 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
   const neonColor = getNeonColor(project.category);
 
   const handleClick = useCallback(() => {
-    if (project.slug) {
-      router.push(`/projects/${project.slug}`);
-    }
+    openProjectListing();
     onInteract?.();
-  }, [project.slug, router, onInteract]);
+  }, [openProjectListing, onInteract]);
 
   const handlePointerOver = useCallback(() => {
     setHovered(true);

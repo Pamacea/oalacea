@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Eye, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Star, Globe } from 'lucide-react';
 import { getProjects, deleteProjectWithRevalidate } from '@/actions/projects';
+import { WorldFilterToggle } from './WorldFilterToggle';
 
 function DeleteButton({ id }: { id: string }) {
   return (
@@ -26,16 +27,24 @@ const categoryLabels: Record<string, string> = {
 
 export const revalidate = 30;
 
-export default async function AdminProjectsPage() {
-  const projects = await getProjects();
+interface AdminProjectsPageProps {
+  searchParams: { world?: 'all' | 'DEV' | 'ART' };
+}
+
+export default async function AdminProjectsPage({ searchParams }: AdminProjectsPageProps) {
+  const worldFilter = searchParams.world || 'all';
+  const projects = await getProjects(worldFilter === 'all' ? {} : { world: worldFilter });
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-100">Projets</h1>
-          <p className="text-zinc-500 text-sm mt-1">{projects.length} projet{projects.length > 1 ? 's' : ''}</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-100">Projets</h1>
+            <p className="text-zinc-500 text-sm mt-1">{projects.length} projet{projects.length > 1 ? 's' : ''}</p>
+          </div>
+          <WorldFilterToggle currentFilter={worldFilter} />
         </div>
         <Link
           href="/admin/projects/new"
@@ -49,7 +58,9 @@ export default async function AdminProjectsPage() {
       {/* Projects List */}
       {projects.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed border-zinc-800 rounded-xl">
-          <p className="text-zinc-500 mb-4">Aucun projet</p>
+          <p className="text-zinc-500 mb-4">
+            {worldFilter === 'all' ? 'Aucun projet' : `Aucun projet dans le monde ${worldFilter}`}
+          </p>
           <Link
             href="/admin/projects/new"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
@@ -65,6 +76,7 @@ export default async function AdminProjectsPage() {
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Projet</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Catégorie</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Monde</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Année</th>
                 <th className="px-6 py-4 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -96,6 +108,20 @@ export default async function AdminProjectsPage() {
                     <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
                       {categoryLabels[project.category]}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {project.worldPosition ? (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded border ${
+                        project.worldPosition.world === 'DEV'
+                          ? 'bg-emerald-950 text-emerald-400 border-emerald-900'
+                          : 'bg-pink-950 text-pink-400 border-pink-900'
+                      }`}>
+                        <Globe className="h-3 w-3" />
+                        {project.worldPosition.world}
+                      </span>
+                    ) : (
+                      <span className="text-zinc-600 text-xs">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-zinc-500">{project.year}</td>
                   <td className="px-6 py-4">

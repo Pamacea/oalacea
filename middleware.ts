@@ -37,7 +37,7 @@ export default auth((req) => {
 
   if (isAuthRoute || isPublicPath) {
     if (isLoggedIn && pathname === "/login") {
-      return NextResponse.redirect(new URL("/admin", req.url))
+      return NextResponse.redirect(new URL("/", req.url))
     }
     return
   }
@@ -49,12 +49,22 @@ export default auth((req) => {
   }
 
   const userRole = req.auth?.user?.role as UserRole | undefined
+  const isAdmin = req.auth?.user?.isAdmin === true
 
   if (!userRole) {
     return NextResponse.redirect(new URL("/login", req.url))
   }
 
+  // Admin redirection to 3D scene
   if (pathname.startsWith("/admin")) {
+    const url = req.nextUrl
+    const useFallback = url.searchParams.get("fallback") === "true"
+
+    // Redirect admins to 3D scene unless fallback is requested
+    if (isAdmin && pathname === "/admin" && !useFallback) {
+      return NextResponse.redirect(new URL("/", req.url))
+    }
+
     const cached = checkRoleCache(pathname, userRole)
 
     if (cached === false) {

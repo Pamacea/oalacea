@@ -2,9 +2,30 @@
 
 import { createContext, useContext, useMemo, useEffect, type ReactNode } from 'react';
 
+interface Colors {
+  background: string;
+  surface: string;
+  border: string;
+  text: {
+    primary: string;
+    secondary: string;
+  };
+}
+
 interface WorldThemeContextValue {
   isDark: boolean;
+  colors: Colors;
 }
+
+const darkColors: Colors = {
+  background: '#09090b',
+  surface: '#18181b',
+  border: '#27272a',
+  text: {
+    primary: '#f4f4f5',
+    secondary: '#a1a1aa',
+  },
+};
 
 const WorldThemeContext = createContext<WorldThemeContextValue | undefined>(undefined);
 
@@ -17,6 +38,7 @@ export function WorldThemeProvider({ children }: WorldThemeProviderProps) {
   const value = useMemo<WorldThemeContextValue>(
     () => ({
       isDark: true,
+      colors: darkColors,
     }),
     []
   );
@@ -37,7 +59,7 @@ export function WorldThemeProvider({ children }: WorldThemeProviderProps) {
 export function useWorldTheme(): WorldThemeContextValue {
   const context = useContext(WorldThemeContext);
   if (!context) {
-    return { isDark: true };
+    return { isDark: true, colors: darkColors };
   }
   return context;
 }
