@@ -3,9 +3,9 @@
 
 import { SceneContainer } from '@/core/3d/scenes/SceneContainer';
 import { TestScene } from '@/core/3d/scenes/TestScene';
-import { LoadingScreen } from '@/components/3d/LoadingScreen';
-import { FloatingUI } from '@/components/3d/FloatingUI';
-import { useWorldStore } from '@/store/3d-world-store';
+import { LoadingScreen } from '@/features/3d-world/components';
+import { FloatingUI } from '@/features/3d-world/components';
+import { useWorldStore } from '@/features/3d-world/store';
 
 export default function HomePage() {
   const currentWorld = useWorldStore((s) => s.currentWorld);

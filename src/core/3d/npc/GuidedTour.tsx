@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useCharacterStore } from '@/store/3d-character-store';
-import { useWorldStore } from '@/store/3d-world-store';
+import { useCharacterStore } from '@/features/3d-world/store';
+import { useWorldStore } from '@/features/3d-world/store';
 import type { WorldType } from '@/core/3d/scenes/types';
 
 export interface TourStop {

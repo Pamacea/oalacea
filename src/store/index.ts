@@ -1,14 +1,12 @@
-// UI Store
-export * from "./ui-store"
+// Store exports - UI state only
+// Server state should use TanStack Query + Server Actions
 
-// 3D Stores
-export * from "./3d-character-store"
-export * from "./3d-world-store"
-export * from "./3d-audio-store"
+// UI State
+export * from './ui-store'
+export * from './modal-store'
+export * from './settings-store'
 
-// Store sync utilities
-export * from "./store-sync"
-
-// Onboarding & Progression Stores
-export * from "./onboarding-store"
-export * from "./progression-store"
+// Re-export from features for backward compatibility
+export * from '@/features/3d-world/store';
+export * from '@/features/admin/store';
+export * from '@/features/onboarding/store';

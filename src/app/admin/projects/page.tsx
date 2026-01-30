@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Plus, Pencil, Trash2, Eye, Star, Globe } from 'lucide-react';
 import { getProjects, deleteProjectWithRevalidate } from '@/actions/projects';
-import { WorldFilterToggle } from './WorldFilterToggle';
 
 function DeleteButton({ id }: { id: string }) {
   return (
@@ -44,7 +43,6 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
             <h1 className="text-2xl font-semibold text-zinc-100">Projets</h1>
             <p className="text-zinc-500 text-sm mt-1">{projects.length} projet{projects.length > 1 ? 's' : ''}</p>
           </div>
-          <WorldFilterToggle currentFilter={worldFilter} />
         </div>
         <Link
           href="/admin/projects/new"

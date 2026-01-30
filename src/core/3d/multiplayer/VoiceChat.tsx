@@ -189,7 +189,6 @@ export function useVoiceChat(config: VoiceChatConfig = DEFAULT_CONFIG) {
       if (event.candidate) {
         // Send candidate through signaling server
         // This would be handled by the multiplayer client
-        console.log('[VoiceChat] ICE candidate:', event.candidate);
       }
     };
 
@@ -236,8 +235,6 @@ export function useVoiceChat(config: VoiceChatConfig = DEFAULT_CONFIG) {
     gain.gain.value = state.volume;
 
     spatial.sources.set(playerId, { source: source as unknown as AudioBufferSourceNode, panner, gain });
-
-    console.log('[VoiceChat] Connected audio for player:', playerId);
   }, [config.maxDistance, config.rolloffFactor, state.volume]);
 
   // Update player position for spatial audio

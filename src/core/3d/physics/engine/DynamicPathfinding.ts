@@ -190,6 +190,10 @@ export class DynamicPathfinding {
     end: Vector3,
     characterRadius: number = 0.5
   ): Vector3[] {
+    // Use reduced radius for pathfinding to avoid being too conservative
+    // This allows paths through tighter spaces while collision detection
+    // at runtime will prevent actual clipping
+    const pathfindingRadius = Math.max(0.3, characterRadius * 0.5);
     const startTime = performance.now();
 
     // Process any dirty cells before pathfinding
@@ -207,12 +211,12 @@ export class DynamicPathfinding {
       return cachedPath;
     }
 
-    // Validate and adjust positions
-    const safeStart = this.getSafeStart(start, characterRadius);
-    const safeEnd = this.getSafeEnd(end, characterRadius);
+    // Validate and adjust positions using pathfinding radius
+    const safeStart = this.getSafeStart(start, pathfindingRadius);
+    const safeEnd = this.getSafeEnd(end, pathfindingRadius);
 
     // Check direct line of sight
-    if (this.hasLineOfSight(safeStart, safeEnd, characterRadius)) {
+    if (this.hasLineOfSight(safeStart, safeEnd, pathfindingRadius)) {
       const directPath = [safeEnd.clone()];
       this.pathCache.set(safeStart, safeEnd, directPath);
       this.stats = {
@@ -225,11 +229,11 @@ export class DynamicPathfinding {
     }
 
     // Run A* pathfinding
-    const path = this.findAStarPath(safeStart, safeEnd, characterRadius);
+    const path = this.findAStarPath(safeStart, safeEnd, pathfindingRadius);
 
     if (path.length > 0) {
       // Smooth the path
-      const smoothedPath = this.smoothPath(path, characterRadius);
+      const smoothedPath = this.smoothPath(path, pathfindingRadius);
       this.pathCache.set(safeStart, safeEnd, smoothedPath);
       this.stats = {
         nodesExplored: this.stats.nodesExplored,
@@ -401,7 +405,7 @@ export class DynamicPathfinding {
 
       for (let i = currentIndex + 2; i < path.length; i++) {
         // Use reduced radius for LOS to be more permissive
-        const losRadius = Math.max(0.3, radius * 0.7);
+        const losRadius = Math.max(0.3, radius * 0.5);
         if (this.hasLineOfSight(path[currentIndex], path[i], losRadius)) {
           farthestIndex = i;
         } else {
@@ -471,7 +475,7 @@ export class DynamicPathfinding {
     // For narrow passage detection, use reduced radius during pathfinding
     // The hitboxes already include their collision bounds, so we use a smaller margin
     // This prevents double-margin issue that blocks valid passages
-    const pathfindingRadius = Math.max(0.3, radius * 0.6);
+    const pathfindingRadius = Math.max(0.3, radius * 0.5);
     const isWalkable = this.collisionDetector.isPositionValid(worldPos, pathfindingRadius);
     this.walkableCache.set(cacheKey, isWalkable);
     return isWalkable;

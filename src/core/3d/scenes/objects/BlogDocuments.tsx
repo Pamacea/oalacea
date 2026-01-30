@@ -1,69 +1,40 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { BlogDocument } from './BlogDocument';
 import { BlogTerminal } from './BlogTerminal';
-import { useBlogDocumentsStore } from '@/store/blog-documents-store';
+import { usePosts } from '@/features/blog/queries';
 import type { Post } from '@/generated/prisma/client';
-import { BlogPostReader } from '@/components/3d/BlogPostReader';
-import { getPosts } from '@/actions/blog';
+import { BlogPostReader } from '@/features/3d-world/components/admin';
 
 interface BlogDocumentsProps {
   world: 'DEV' | 'ART';
 }
 
 export function BlogDocuments({ world }: BlogDocumentsProps) {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts, isLoading } = usePosts();
   const [currentPage, setCurrentPage] = useState(0);
   const [activePost, setActivePost] = useState<Post | null>(null);
-  const [showTerminal, setShowTerminal] = useState(false);
   const postsPerPage = 10;
-  const { setActivePost: setStoreActivePost, getPrevPost, getNextPost } = useBlogDocumentsStore();
-
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const result = await getPosts({ published: true });
-        setPosts(result.posts);
-      } catch (error) {
-        console.error('Failed to fetch blog posts:', error);
-      }
-    }
-    fetchPosts();
-  }, []);
 
   const currentPagePosts = posts.slice(currentPage * postsPerPage, (currentPage + 1) * postsPerPage);
   const totalPages = Math.ceil(posts.length / postsPerPage);
 
   const handlePostSelect = useCallback((post: Post) => {
     setActivePost(post);
-    setStoreActivePost(post);
-  }, [setStoreActivePost]);
+  }, []);
 
   const handleClose = useCallback(() => {
     setActivePost(null);
-    setStoreActivePost(null);
-  }, [setStoreActivePost]);
+  }, []);
 
-  const handleNext = useCallback(() => {
-    if (activePost) {
-      const next = getNextPost(activePost);
-      if (next) {
-        setActivePost(next);
-        setStoreActivePost(next);
-      }
-    }
-  }, [activePost, getNextPost, setStoreActivePost]);
+  const handleNext = useCallback((nextPost: Post) => {
+    setActivePost(nextPost);
+  }, []);
 
-  const handlePrevious = useCallback(() => {
-    if (activePost) {
-      const prev = getPrevPost(activePost);
-      if (prev) {
-        setActivePost(prev);
-        setStoreActivePost(prev);
-      }
-    }
-  }, [activePost, getPrevPost, setStoreActivePost]);
+  const handlePrevious = useCallback((prevPost: Post) => {
+    setActivePost(prevPost);
+  }, []);
 
   const getTerminalPosition = (): [number, number, number] => {
     if (world === 'DEV') {
@@ -88,6 +59,10 @@ export function BlogDocuments({ world }: BlogDocumentsProps) {
       return [index * spacing - startOffset, 0, -20];
     }
   };
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <>
@@ -117,9 +92,10 @@ export function BlogDocuments({ world }: BlogDocumentsProps) {
       {activePost && (
         <BlogPostReader
           post={activePost}
+          allPosts={posts}
           onClose={handleClose}
-          onNext={posts.findIndex(p => p.id === activePost.id) < posts.length - 1 ? handleNext : undefined}
-          onPrevious={posts.findIndex(p => p.id === activePost.id) > 0 ? handlePrevious : undefined}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
         />
       )}
     </>

@@ -1,17 +1,54 @@
-export { useAuth } from "./useAuth"
-export { usePosts } from "./usePosts"
-export { useProjects } from "./useProjects"
-export { useMediaQuery } from "./useMediaQuery"
-export { useIsMobile } from "./use-mobile"
-export { useFirstVisit } from "./useFirstVisit"
-export { useHapticFeedback } from "./useHapticFeedback"
-export { useReducedMotion } from "./useReducedMotion"
-export { useScreenReader } from "./useScreenReader"
-export { useKeyboardNavigation, useKeyboardNavItem } from "./useKeyboardNavigation"
-export { usePerformanceMonitor, useDetailedPerformanceMonitor } from "./usePerformanceMonitor"
-export { useAnalytics, useScrollTracking, useTimeTracking } from "./useAnalytics"
-export { useWebSpeech } from "./useWebSpeech"
-export { useAIChat } from "./useAIChat"
-export { usePermissions } from "./usePermissions"
-export { useContentLock } from "./useContentLock"
-export { useBlogDocuments } from "./useBlogDocuments"
+// Re-export hooks from features and shared for backward compatibility
+
+// Auth
+export { useAuth, usePermissions, useContentLock } from '@/features/auth';
+
+// Blog
+export { useBlogPosts, useBlogPost, useBlogPostSuspense, usePosts, useBlogDocuments } from '@/features/blog/hooks';
+
+// Portfolio
+export { useProjects, useProject } from '@/features/portfolio/hooks';
+
+// 3D World
+export {
+  useHapticFeedback,
+  useJoystickActive,
+  setJoystickActive,
+  useKeyboardNavigation,
+  useKeyboardNavItem,
+  useProximity,
+  usePhysicsEngine,
+  useWorldStateSync,
+  getCurrentWorldState,
+} from '@/features/3d-world';
+
+// Onboarding
+export { useFirstVisit } from '@/features/onboarding';
+
+// Analytics
+export {
+  useAnalytics,
+  useScrollTracking,
+  useTimeTracking,
+  usePerformanceMonitor,
+  useDetailedPerformanceMonitor,
+} from '@/features/analytics';
+
+// AI Chat
+export { useAIChat } from '@/features/ai-chat';
+
+// Shared hooks
+export {
+  useMediaQuery,
+  useDebounce,
+  useFormState,
+  useLocalStorage,
+  useMobileDetection,
+  useKeyboardShortcuts,
+  useReducedMotion,
+  useScreenReader,
+  useWebSpeech,
+} from '@/shared/hooks';
+
+// Backward compatibility - useIsMobile
+export { useIsMobile } from './use-mobile';

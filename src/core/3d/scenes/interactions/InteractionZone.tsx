@@ -5,7 +5,7 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Mesh, Group } from 'three';
 import type { WorldType } from '../types';
-import type { ProximityObject } from '@/hooks/useProximity';
+import type { ProximityObject } from '@/features/3d-world/hooks';
 
 interface InteractionZoneProps {
   position: [number, number, number];

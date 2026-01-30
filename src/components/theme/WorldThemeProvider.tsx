@@ -6,6 +6,9 @@ interface Colors {
   background: string;
   surface: string;
   border: string;
+  primary: string;
+  secondary: string;
+  accent: string;
   text: {
     primary: string;
     secondary: string;
@@ -21,6 +24,9 @@ const darkColors: Colors = {
   background: '#09090b',
   surface: '#18181b',
   border: '#27272a',
+  primary: '#d4af37', // gold accent
+  secondary: '#6366f1', // indigo accent
+  accent: '#10b981', // emerald accent
   text: {
     primary: '#f4f4f5',
     secondary: '#a1a1aa',

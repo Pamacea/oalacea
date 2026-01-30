@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { AdminTerminal } from './AdminTerminal';
-import { useInWorldAdminStore } from '@/store/in-world-admin-store';
+import { useInWorldAdminStore } from '@/features/admin/store';
 
 interface AdminTerminalWrapperProps {
   world: 'DEV' | 'ART';

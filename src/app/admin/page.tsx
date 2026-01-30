@@ -1,7 +1,7 @@
 import { getPosts } from '@/actions/blog';
 import { getProjects } from '@/actions/projects';
 import { PenTool, FolderOpen } from 'lucide-react';
-import { AdminHeader, AdminStatsGrid, QuickActions, RecentContent } from '@/components/admin/dashboard';
+import { AdminHeader, AdminStatsGrid, QuickActions, RecentContent } from '@/features/admin/components/dashboard';
 import type { StatCard } from '@/types/component';
 
 export const revalidate = 30;

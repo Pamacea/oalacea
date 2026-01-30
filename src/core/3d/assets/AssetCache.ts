@@ -181,11 +181,9 @@ export async function fetchWithCache(
 ): Promise<Blob> {
   const cached = await AssetCache.get(url, version);
   if (cached) {
-    console.log(`[AssetCache] Cache hit: ${url}`);
     return cached;
   }
 
-  console.log(`[AssetCache] Cache miss, fetching: ${url}`);
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch asset: ${response.statusText}`);
