@@ -7,9 +7,8 @@ import { DevWorld, ArtWorld } from './worlds';
 import { InteractionZone } from './interactions';
 import { useInteractionsRegistry } from './interactions/useInteractionsRegistry';
 import { useCharacterStore } from '@/store/3d-character-store';
-import { useOverlayStore } from '@/store/3d-overlay-store';
+import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/store/3d-world-store';
-import { useInWorldAdminStore } from '@/store/in-world-admin-store';
 import { useSettingsStore, selectQualitySettings } from '@/store/settings-store';
 import { Character } from '@/core/3d/character';
 import { FollowCamera } from '@/core/3d/camera';
@@ -59,10 +58,12 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
 
   const { proximityObjects, visualInteractions } = useInteractionsRegistry(worldType);
 
-  const openOverlay = useOverlayStore((s) => s.openOverlay);
+  const openBlogListing = useModalStore((s) => s.openBlogListing);
+  const openProjectListing = useModalStore((s) => s.openProjectListing);
+  const openAboutListing = useModalStore((s) => s.openAboutListing);
+  const openAdminListing = useModalStore((s) => s.openAdminListing);
   const switchWorld = useWorldStore((s) => s.switchWorld);
-  const openAdmin = useInWorldAdminStore((s) => s.openAdmin);
-  const isAdminModalOpen = useInWorldAdminStore((s) => s.isOpen);
+  const isAdminModalOpen = useModalStore((s) => s.isOpen);
   const canInteract = useCharacterStore((s) => s.canInteract);
   const interactTarget = useCharacterStore((s) => s.interactTarget);
 
@@ -74,10 +75,16 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
         if (canInteract && interactTarget) {
           if (interactTarget.targetWorld) {
             switchWorld(interactTarget.targetWorld);
+          } else if (interactTarget.route) {
+            if (interactTarget.route === '/blog') {
+              openBlogListing();
+            } else if (interactTarget.route === '/portfolio') {
+              openProjectListing();
+            } else if (interactTarget.route === '/about') {
+              openAboutListing();
+            }
           } else if (interactTarget.type === 'admin') {
-            openAdmin();
-          } else if (interactTarget.route && interactTarget.name) {
-            openOverlay(interactTarget.route, interactTarget.name);
+            openAdminListing();
           }
         }
       }
@@ -85,7 +92,7 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canInteract, interactTarget, openOverlay, switchWorld, openAdmin, isAdminModalOpen]);
+  }, [canInteract, interactTarget, openBlogListing, openProjectListing, openAboutListing, openAdminListing, switchWorld, isAdminModalOpen]);
 
   const gridSize = qualitySettings.renderDistance;
   const gridDivisions = Math.floor(gridSize / 2);

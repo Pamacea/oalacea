@@ -5,9 +5,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCharacterStore } from '@/store/3d-character-store';
-import { useOverlayStore } from '@/store/3d-overlay-store';
+import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/store/3d-world-store';
-import { useInWorldAdminStore } from '@/store/in-world-admin-store';
 
 interface TouchInteractionProps {
   className?: string;
@@ -22,11 +21,13 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
 
   const canInteract = useCharacterStore((s) => s.canInteract);
   const interactTarget = useCharacterStore((s) => s.interactTarget);
-  const isAdminModalOpen = useInWorldAdminStore((s) => s.isOpen);
+  const isAdminModalOpen = useModalStore((s) => s.isOpen);
 
-  const openOverlay = useOverlayStore((s) => s.openOverlay);
+  const openBlogListing = useModalStore((s) => s.openBlogListing);
+  const openProjectListing = useModalStore((s) => s.openProjectListing);
+  const openAboutListing = useModalStore((s) => s.openAboutListing);
+  const openAdminListing = useModalStore((s) => s.openAdminListing);
   const switchWorld = useWorldStore((s) => s.switchWorld);
-  const openAdmin = useInWorldAdminStore((s) => s.openAdmin);
 
   const isPortal = !!interactTarget?.targetWorld;
   const actionText = isPortal ? 'enter' : 'view';
@@ -37,17 +38,21 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
     if (canInteract && interactTarget) {
       if (interactTarget.targetWorld) {
         switchWorld(interactTarget.targetWorld);
+      } else if (interactTarget.route === '/blog') {
+        openBlogListing();
+      } else if (interactTarget.route === '/portfolio') {
+        openProjectListing();
+      } else if (interactTarget.route === '/about') {
+        openAboutListing();
       } else if (interactTarget.type === 'admin') {
-        openAdmin();
-      } else if (interactTarget.route && interactTarget.name) {
-        openOverlay(interactTarget.route, interactTarget.name);
+        openAdminListing();
       }
 
       if (navigator.vibrate) {
         navigator.vibrate(50);
       }
     }
-  }, [canInteract, interactTarget, openOverlay, switchWorld, openAdmin, isAdminModalOpen]);
+  }, [canInteract, interactTarget, openBlogListing, openProjectListing, openAboutListing, openAdminListing, switchWorld, isAdminModalOpen]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (isAdminModalOpen) return;

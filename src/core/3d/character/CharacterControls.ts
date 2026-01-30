@@ -131,7 +131,7 @@ export function useCharacterControls({
 
   /**
    * Move towards a target with collision checking at each step
-   * Returns the new position - stops if blocked (no sliding)
+   * Uses sliding along obstacles to navigate through narrow passages
    */
   const moveTowardsWithCollision = (
     currentPos: Vector3,
@@ -152,15 +152,51 @@ export function useCharacterControls({
     const tentativePos = currentPos.clone().add(direction.clone().multiplyScalar(moveDistance));
 
     // Check if next position would collide
-    // Use default characterRadius (0.5) for proper collision detection
     const collision = physicsEngine!.collisionDetector.checkCollision(tentativePos);
 
-    if (collision.collided) {
-      // Blocked - don't slide, let pathfinding handle it
-      return { position: currentPos.clone(), blocked: true };
+    if (!collision.collided) {
+      return { position: tentativePos, blocked: false };
     }
 
-    return { position: tentativePos, blocked: false };
+    // Collision detected - try sliding along the obstacle
+    const normal = collision.normal;
+
+    // Project direction onto the collision plane (perpendicular to normal)
+    // This makes the character slide along the wall instead of stopping
+    const dot = direction.dot(normal);
+    const slideDirection = direction.clone().sub(normal.clone().multiplyScalar(dot));
+
+    // If slide direction is valid, try moving along it
+    if (slideDirection.length() > 0.01) {
+      slideDirection.normalize();
+      const slidePos = currentPos.clone().add(slideDirection.multiplyScalar(moveDistance * 0.8));
+
+      // Check if sliding position is valid
+      const slideCollision = physicsEngine!.collisionDetector.checkCollision(slidePos);
+
+      if (!slideCollision.collided) {
+        // Verify we're still making progress toward target
+        const newDist = slidePos.distanceTo(targetPos);
+        if (newDist < distance * 1.1) { // Allow 10% tolerance for longer sliding path
+          return { position: slidePos, blocked: false };
+        }
+      }
+
+      // Try perpendicular sliding if direct slide failed
+      const perpSlide = new Vector3(-normal.z, 0, normal.x).normalize();
+      const perpPos = currentPos.clone().add(perpSlide.multiplyScalar(moveDistance * 0.6));
+
+      const perpCollision = physicsEngine!.collisionDetector.checkCollision(perpPos);
+      if (!perpCollision.collided) {
+        const perpDist = perpPos.distanceTo(targetPos);
+        if (perpDist < distance * 1.1) {
+          return { position: perpPos, blocked: false };
+        }
+      }
+    }
+
+    // All sliding attempts failed - truly blocked
+    return { position: currentPos.clone(), blocked: true };
   };
 
   useFrame((_, delta) => {
@@ -194,8 +230,8 @@ export function useCharacterControls({
         if (blocked) {
           blockedFramesRef.current++;
 
-          // If blocked for more than 10 frames, recalculate path
-          if (blockedFramesRef.current > 10 && finalDestinationRef.current) {
+          // If blocked for more than 5 frames, recalculate path (faster reaction)
+          if (blockedFramesRef.current > 5 && finalDestinationRef.current) {
             const newPath = physicsEngine.findPath(currentPos, finalDestinationRef.current);
             if (newPath.length > 0) {
               pathRef.current = newPath;

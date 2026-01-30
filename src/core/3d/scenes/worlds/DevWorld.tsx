@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { ImperialPillar, GothicArch, DevTerminal, DustParticles } from './dev/DevComponents';
 import { ImperiumPortal } from '../portals';
 import { DevProjectPedestals } from '../objects/ProjectPedestal';
-import { BlogDocuments, AdminTerminalWrapper } from '../objects';
+import { BlogDocuments, AdminTerminalWrapper, BlogContentTerminal, ProjectContentTerminal } from '../objects';
 import { TechPriestGuide } from '@/core/3d/npc';
 
 interface DevWorldProps {
@@ -85,6 +85,10 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
 
       {/* AI Guide - Tech Priest */}
       <TechPriestGuide position={[-5, 0, 8]} />
+
+      {/* Content Terminals - For reading blogs and projects */}
+      <BlogContentTerminal position={[-12, 0, 12]} world="DEV" />
+      <ProjectContentTerminal position={[12, 0, 12]} world="DEV" />
     </group>
   );
 }

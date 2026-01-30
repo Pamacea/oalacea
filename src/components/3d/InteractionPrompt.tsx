@@ -3,11 +3,14 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import { useCharacterStore } from '@/store/3d-character-store';
-import { useOverlayStore } from '@/store/3d-overlay-store';
+import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/store/3d-world-store';
 
 export function InteractionPrompt() {
-  const openOverlay = useOverlayStore((s) => s.openOverlay);
+  const openBlogListing = useModalStore((s) => s.openBlogListing);
+  const openProjectListing = useModalStore((s) => s.openProjectListing);
+  const openAboutListing = useModalStore((s) => s.openAboutListing);
+  const openAdminListing = useModalStore((s) => s.openAdminListing);
   const switchWorld = useWorldStore((s) => s.switchWorld);
   const { canInteract, interactTarget } = useCharacterStore(
     useShallow((s) => ({
@@ -19,8 +22,14 @@ export function InteractionPrompt() {
   const handleInteract = () => {
     if (interactTarget?.targetWorld) {
       switchWorld(interactTarget.targetWorld);
-    } else if (interactTarget?.route && interactTarget?.name) {
-      openOverlay(interactTarget.route, interactTarget.name);
+    } else if (interactTarget?.route === '/blog') {
+      openBlogListing();
+    } else if (interactTarget?.route === '/portfolio') {
+      openProjectListing();
+    } else if (interactTarget?.route === '/about') {
+      openAboutListing();
+    } else if (interactTarget?.type === 'admin') {
+      openAdminListing();
     }
   };
 

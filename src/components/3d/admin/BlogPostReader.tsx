@@ -1,151 +1,154 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Calendar, Clock, Eye, Tag } from 'lucide-react';
 import { getPostBySlug } from '@/actions/blog';
 import { useInWorldAdminStore } from '@/store/in-world-admin-store';
-import { IMPERIUM } from '@/config/theme/imperium';
 
-// Simple markdown renderer for basic content
-function renderMarkdown(content: string): React.ReactNode {
-  if (!content) return null;
+// Simple markdown renderer for basic content with proper React keys
+function MarkdownRenderer({ content }: { content: string }) {
+  const elements = useMemo(() => {
+    if (!content) return [];
 
-  const lines = content.split('\n');
-  const elements: React.ReactNode[] = [];
-  let key = 0;
+    const lines = content.split('\n');
+    const result: React.ReactNode[] = [];
+    let inCodeBlock = false;
+    let inList = false;
+    let codeContent = '';
+    let listItems: React.ReactNode[] = [];
+    let listIndex = 0;
 
-  const processInline = (text: string): React.ReactNode => {
-    // Bold **text** or __text__
-    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
-    // Italic *text* or _text_
-    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    text = text.replace(/_(.+?)_/g, '<em>$1</em>');
-    // Code `text`
-    text = text.replace(/`(.+?)`/g, '<code class="bg-amber-950/50 text-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
-    // Links [text](url)
-    text = text.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-zinc-100 hover:text-amber-300 underline" target="_blank" rel="noopener noreferrer">$1</a>');
-    return <span dangerouslySetInnerHTML={{ __html: text }} />;
-  };
+    const processInline = (text: string): React.ReactNode => {
+      let processed = text;
+      processed = processed.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      processed = processed.replace(/__(.+?)__/g, '<strong>$1</strong>');
+      processed = processed.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      processed = processed.replace(/_(.+?)_/g, '<em>$1</em>');
+      processed = processed.replace(/`(.+?)`/g, '<code class="bg-amber-950/50 text-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
+      processed = processed.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-zinc-100 hover:text-amber-300 underline" target="_blank" rel="noopener noreferrer">$1</a>');
+      return <span dangerouslySetInnerHTML={{ __html: processed }} />;
+    };
 
-  let inCodeBlock = false;
-  let inList = false;
-  let codeContent = '';
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+      if (line.startsWith('```')) {
+        if (inList) {
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          listItems = [];
+          inList = false;
+        }
+        if (inCodeBlock) {
+          result.push(
+            <pre key={`code-${i}`} className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 my-4 overflow-x-auto">
+              <code className="text-sm text-emerald-400 font-mono whitespace-pre-wrap">{codeContent}</code>
+            </pre>
+          );
+          codeContent = '';
+          inCodeBlock = false;
+        } else {
+          inCodeBlock = true;
+        }
+        continue;
+      }
 
-    // Code blocks
-    if (line.startsWith('```')) {
       if (inCodeBlock) {
-        elements.push(
-          <pre key={key++} className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 my-4 overflow-x-auto">
-            <code className="text-sm text-emerald-400 font-mono whitespace-pre-wrap">{codeContent}</code>
-          </pre>
+        codeContent += line + '\n';
+        continue;
+      }
+
+      if (line.startsWith('# ')) {
+        if (inList) {
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          listItems = [];
+          inList = false;
+        }
+        result.push(
+          <h2 key={`h2-${i}`} className="text-2xl font-bold text-zinc-100 mt-8 mb-4 first:mt-0">
+            {processInline(line.substring(2))}
+          </h2>
         );
-        codeContent = '';
-        inCodeBlock = false;
-      } else {
-        inCodeBlock = true;
+        continue;
       }
-      continue;
-    }
 
-    if (inCodeBlock) {
-      codeContent += line + '\n';
-      continue;
-    }
+      if (line.startsWith('## ')) {
+        if (inList) {
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          listItems = [];
+          inList = false;
+        }
+        result.push(
+          <h3 key={`h3-${i}`} className="text-xl font-semibold text-zinc-100 mt-6 mb-3 first:mt-0">
+            {processInline(line.substring(3))}
+          </h3>
+        );
+        continue;
+      }
 
-    // Headers
-    if (line.startsWith('# ')) {
-      if (inList) {
-        elements.push(<br key={key++} />);
+      if (line.startsWith('### ')) {
+        if (inList) {
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          listItems = [];
+          inList = false;
+        }
+        result.push(
+          <h4 key={`h4-${i}`} className="text-lg font-semibold text-amber-300 mt-4 mb-2 first:mt-0">
+            {processInline(line.substring(4))}
+          </h4>
+        );
+        continue;
+      }
+
+      if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+        if (!inList) {
+          inList = true;
+          listIndex = 0;
+        }
+        listItems.push(<li key={`li-${i}-${listIndex++}`}>{processInline(line.trim().substring(2))}</li>);
+        continue;
+      }
+
+      if (/^\d+\.\s/.test(line.trim())) {
+        if (inList && listItems.length > 0) {
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          listItems = [];
+        }
+        if (!inList) {
+          inList = true;
+          listIndex = 0;
+        }
+        listItems.push(<li key={`li-${i}-${listIndex++}`}>{processInline(line.trim().replace(/^\d+\.\s/, ''))}</li>);
+        continue;
+      }
+
+      if (inList && listItems.length > 0) {
+        result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+        listItems = [];
         inList = false;
       }
-      elements.push(
-        <h2 key={key++} className="text-2xl font-bold text-zinc-100 mt-8 mb-4 first:mt-0">
-          {processInline(line.substring(2))}
-        </h2>
-      );
-      continue;
-    }
 
-    if (line.startsWith('## ')) {
-      if (inList) {
-        elements.push(<br key={key++} />);
-        inList = false;
+      if (line.trim() === '') {
+        result.push(<br key={`br-${i}`} />);
+        continue;
       }
-      elements.push(
-        <h3 key={key++} className="text-xl font-semibold text-zinc-100 mt-6 mb-3 first:mt-0">
-          {processInline(line.substring(3))}
-        </h3>
-      );
-      continue;
-    }
 
-    if (line.startsWith('### ')) {
-      if (inList) {
-        elements.push(<br key={key++} />);
-        inList = false;
+      if (line.trim() !== '') {
+        result.push(
+          <p key={`p-${i}`} className="text-zinc-300 leading-relaxed my-3">
+            {processInline(line)}
+          </p>
+        );
       }
-      elements.push(
-        <h4 key={key++} className="text-lg font-semibold text-amber-300 mt-4 mb-2 first:mt-0">
-          {processInline(line.substring(4))}
-        </h4>
-      );
-      continue;
     }
 
-    // Lists
-    if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-      if (!inList) {
-        elements.push(<ul key={key++} className="list-disc list-inside space-y-2 my-4 text-zinc-300" />);
-        inList = true;
-      }
-      const lastUl = elements[elements.length - 1] as any;
-      if (lastUl && lastUl.type === 'ul') {
-        const newItems = [...(lastUl.props.children || []), <li key={key++}>{processInline(line.trim().substring(2))}</li>];
-        elements[elements.length - 1] = <ul key={elements.length - 1} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{newItems}</ul>;
-      }
-      continue;
+    if (inList && listItems.length > 0) {
+      result.push(<ul key={`ul-final`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
     }
 
-    // Numbered lists
-    if (/^\d+\.\s/.test(line.trim())) {
-      if (!inList) {
-        elements.push(<ol key={key++} className="list-decimal list-inside space-y-2 my-4 text-zinc-300" />);
-        inList = true;
-      }
-      const lastOl = elements[elements.length - 1] as any;
-      if (lastOl && lastOl.type === 'ol') {
-        const newItems = [...(lastOl.props.children || []), <li key={key++}>{processInline(line.trim().replace(/^\d+\.\s/, ''))}</li>];
-        elements[elements.length - 1] = <ol key={elements.length - 1} className="list-decimal list-inside space-y-2 my-4 text-zinc-300">{newItems}</ol>;
-      }
-      continue;
-    }
+    return result;
+  }, [content]);
 
-    // End list on empty line or non-list item
-    if (inList && line.trim() !== '') {
-      inList = false;
-    }
-
-    // Empty line
-    if (line.trim() === '') {
-      elements.push(<br key={key++} />);
-      continue;
-    }
-
-    // Paragraph
-    if (line.trim() !== '') {
-      elements.push(
-        <p key={key++} className="text-zinc-300 leading-relaxed my-3">
-          {processInline(line)}
-        </p>
-      );
-    }
-  }
-
-  return elements;
+  return <>{elements}</>;
 }
 
 export function BlogPostReader({ postSlug }: { postSlug: string }) {
@@ -258,7 +261,7 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
 
       {/* Content */}
       <div className="prose prose-invert prose prose-invert max-w-none">
-        {renderMarkdown(post.content)}
+        <MarkdownRenderer content={post.content} />
       </div>
 
       {/* Footer */}

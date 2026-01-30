@@ -14,15 +14,19 @@ type ProjectWithWorldPosition = Project & { worldPosition: WorldPosition | null 
 // =========================================
 
 const getCachedProjects = unstable_cache(
-  async ({ featured, category }: {
+  async ({ featured, category, world }: {
     featured?: boolean;
     category?: string;
+    world?: 'DEV' | 'ART';
   }) => {
     const where: Prisma.ProjectWhereInput = {};
     if (featured) where.featured = true;
     if (category) {
       const upperCategory = category.toUpperCase() as keyof typeof ProjectCategory;
       where.category = ProjectCategory[upperCategory] ?? category;
+    }
+    if (world) {
+      where.worldPosition = { world };
     }
 
     return prisma.project.findMany({
@@ -38,6 +42,13 @@ const getCachedProjects = unstable_cache(
         featured: true,
         sortOrder: true,
         techStack: true,
+        worldPosition: {
+          select: {
+            world: true,
+            x: true,
+            z: true,
+          },
+        },
       },
       orderBy: [
         { sortOrder: 'asc' },
@@ -96,6 +107,11 @@ type ProjectListItem = {
   featured: boolean;
   sortOrder: number;
   techStack: string[];
+  worldPosition?: {
+    world: 'DEV' | 'ART';
+    x: number;
+    z: number;
+  } | null;
 };
 
 type ProjectDetail = {
@@ -116,11 +132,13 @@ type ProjectDetail = {
 export async function getProjects({
   featured,
   category,
+  world,
 }: {
   featured?: boolean;
   category?: string;
+  world?: 'DEV' | 'ART';
 } = {}): Promise<ProjectListItem[]> {
-  return getCachedProjects({ featured, category });
+  return getCachedProjects({ featured, category, world });
 }
 
 export async function getProjectBySlug(slug: string): Promise<ProjectDetail | null> {

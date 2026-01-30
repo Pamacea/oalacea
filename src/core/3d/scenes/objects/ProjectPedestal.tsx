@@ -4,7 +4,7 @@ import { useRef, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, DoubleSide, Vector3 } from 'three';
 import { Text } from '@react-three/drei';
-import { useRouter } from 'next/navigation';
+import { useModalStore } from '@/store/modal-store';
 import type { Project } from '@/store/project-store';
 
 const COLORS = {
@@ -25,7 +25,7 @@ export function ProjectPedestal({ project, position, isActive = false, onInterac
   const groupRef = useRef<Group>(null);
   const hologramRef = useRef<Mesh>(null);
   const plaqueRef = useRef<Mesh>(null);
-  const router = useRouter();
+  const openProjectListing = useModalStore((s) => s.openProjectListing);
   const [hovered, setHovered] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
 
@@ -46,11 +46,9 @@ export function ProjectPedestal({ project, position, isActive = false, onInterac
   });
 
   const handleClick = useCallback(() => {
-    if (project.slug) {
-      router.push(`/projects/${project.slug}`);
-    }
+    openProjectListing();
     onInteract?.();
-  }, [project.slug, router, onInteract]);
+  }, [openProjectListing, onInteract]);
 
   const handlePointerOver = useCallback(() => {
     setHovered(true);
@@ -257,7 +255,7 @@ export function ProjectPedestal({ project, position, isActive = false, onInterac
             anchorX="center"
             anchorY="middle"
           >
-            [E] VIEW
+            [E] READ
           </Text>
 
           <pointLight position={[0, 5, 0]} color={COLORS.glow} intensity={2} distance={8} decay={2} />

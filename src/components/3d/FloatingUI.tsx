@@ -1,34 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { InteractionPrompt } from './InteractionPrompt';
-import { SceneOverlay } from './SceneOverlay';
-import { InWorldAdminModal } from './InWorldAdminModal';
+import { AboutListingModal, AdminListingModal, BlogListingModal, ProjectListingModal } from './readers';
 import { HelpModal } from './HelpModal';
-import { TouchInteraction, MobileUI, VirtualJoystick } from './mobile';
-import { useCharacterStore } from '@/store/3d-character-store';
+import { useModalStore } from '@/store/modal-store';
 
 export function FloatingUI() {
-  const [isMobile, setIsMobile] = useState(false);
-  const [currentWorld] = useState<'dev' | 'art'>('dev');
-
-  const { canInteract, interactTarget } = useCharacterStore(
-    useShallow((s) => ({
-      canInteract: s.canInteract,
-      interactTarget: s.interactTarget,
-    }))
-  );
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const { isOpen, type } = useModalStore();
 
   return (
     <>
@@ -43,26 +20,20 @@ export function FloatingUI() {
         Skip to main content
       </a>
 
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
+      <button
+        onClick={() => window.open('https://github.com/oalacea', '_blank')}
+        className="fixed top-4 right-4 z-30 h-8 w-8 rounded-full bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold"
+        aria-label="GitHub repository"
       >
-        {canInteract && interactTarget ? `Can interact with ${interactTarget.name}. Press E to interact.` : ''}
-      </div>
+        GH
+      </button>
 
-      {!isMobile && <InteractionPrompt />}
-
-      {isMobile && <TouchInteraction />}
-
-      {isMobile && <MobileUI currentWorld={currentWorld} />}
-
-      {isMobile && <VirtualJoystick />}
-
-      <SceneOverlay />
-      <InWorldAdminModal />
       <HelpModal />
+
+      {isOpen && type === 'blog-listing' && <BlogListingModal />}
+      {isOpen && type === 'project-listing' && <ProjectListingModal />}
+      {isOpen && type === 'about-listing' && <AboutListingModal />}
+      {isOpen && type === 'admin-listing' && <AdminListingModal />}
     </>
   );
 }

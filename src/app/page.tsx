@@ -18,7 +18,6 @@ interface CameraPosition {
 export default function HomePage() {
   const currentWorld = useWorldStore((s) => s.currentWorld);
   const [cameraMode, setCameraMode] = useState<'follow' | 'free'>('follow');
-  const [showShortcuts, setShowShortcuts] = useState(false);
   const cameraPositionRef = useRef<CameraPosition>({ x: -15, z: 15 });
 
   const toggleCamera = useCallback(() => {
@@ -52,8 +51,6 @@ export default function HomePage() {
       <WorldTransitionScreen />
       <FloatingUI />
       <ControlsPanel
-        showShortcuts={showShortcuts}
-        setShowShortcuts={setShowShortcuts}
         cameraMode={cameraMode}
         onToggleCamera={toggleCamera}
       />

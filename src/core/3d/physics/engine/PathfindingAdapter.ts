@@ -172,8 +172,10 @@ export class PathfindingAdapter {
   private isCellWalkableWithRadius(cellX: number, cellZ: number, radius: number): boolean {
     const cellCenter = this.cellToWorld(cellX, cellZ);
 
-    // Check with default character radius - hitboxes include CHARACTER_MARGIN
-    return this.collisionDetector.isPositionValid(cellCenter);
+    // Use reduced radius for pathfinding to avoid double-margin issue
+    // Hitboxes already include their collision bounds, so we don't need full character radius
+    const pathfindingRadius = Math.max(0.3, radius * 0.6);
+    return this.collisionDetector.isPositionValid(cellCenter, pathfindingRadius);
   }
 
   private getNeighbors(x: number, z: number): { x: number; z: number }[] {
@@ -246,6 +248,7 @@ export class PathfindingAdapter {
 
   /**
    * Smooth path with collision validation
+   * Uses reduced radius for LOS to be more permissive in tight spaces
    */
   private smoothPath(path: Vector3[], radius: number): Vector3[] {
     if (path.length <= 2) return path;
@@ -257,7 +260,9 @@ export class PathfindingAdapter {
       let farthestIndex = currentIndex + 1;
 
       for (let i = currentIndex + 2; i < path.length; i++) {
-        if (this.hasLineOfSight(path[currentIndex], path[i], radius)) {
+        // Use reduced radius for LOS to be more permissive
+        const losRadius = Math.max(0.3, radius * 0.7);
+        if (this.hasLineOfSight(path[currentIndex], path[i], losRadius)) {
           farthestIndex = i;
         } else {
           break;

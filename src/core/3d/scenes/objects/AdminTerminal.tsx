@@ -4,13 +4,13 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import { Text } from '@react-three/drei';
-import { useSession } from 'next-auth/react';
 
 interface AdminTerminalProps {
   position: [number, number, number];
   world: 'DEV' | 'ART';
   isActive?: boolean;
   onInteract?: () => void;
+  isAdmin?: boolean; // Passed from wrapper instead of using useSession
 }
 
 const DEV_COLORS = {
@@ -34,11 +34,9 @@ const ART_COLORS = {
   concrete: 0x3a3a4a,
 };
 
-export function AdminTerminal({ position, world, isActive = false, onInteract }: AdminTerminalProps) {
+export function AdminTerminal({ position, world, isActive = false, onInteract, isAdmin = false }: AdminTerminalProps) {
   const groupRef = useRef<Group>(null);
   const screenRef = useRef<Mesh>(null);
-  const { data: session } = useSession();
-  const isAdmin = session?.user?.isAdmin === true;
 
   const colors = world === 'DEV' ? DEV_COLORS : ART_COLORS;
   const pi = Math.PI;
@@ -85,9 +83,39 @@ export function AdminTerminal({ position, world, isActive = false, onInteract }:
   if (world === 'DEV') {
     return (
       <group ref={groupRef} position={position}>
+        {/* Floating Light Beam - makes terminal visible from afar */}
+        <mesh position={[0, 12, 0]} rotation={[0, 0, 0]}>
+          <coneGeometry args={[0.6, 18, 8, 1, true]} />
+          <meshBasicMaterial
+            color={colors.green}
+            transparent
+            opacity={0.1}
+            side={2}
+          />
+        </mesh>
+
+        {/* Top Beacon Light */}
+        <pointLight
+          position={[0, 14, 0]}
+          color={colors.green}
+          intensity={3}
+          distance={20}
+        />
+
+        {/* Floating Ring Animation */}
+        <mesh position={[0, 6, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[1, 1.2, 32]} />
+          <meshBasicMaterial
+            color={colors.gold}
+            transparent
+            opacity={0.4}
+            side={2}
+          />
+        </mesh>
+
         {/* Imperial Gothic Base */}
         <mesh position={[0, 0.5, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[1.2, 1.4, 1, 8]} />
+          <cylinderGeometry args={[1.4, 1.6, 1, 8]} />
           <meshStandardMaterial color={colors.base} metalness={0.8} roughness={0.2} />
         </mesh>
 
@@ -219,9 +247,39 @@ export function AdminTerminal({ position, world, isActive = false, onInteract }:
   // Art World Admin Panel
   return (
     <group ref={groupRef} position={position}>
+      {/* Floating Light Beam - makes terminal visible from afar */}
+      <mesh position={[0, 12, 0]} rotation={[0, 0, 0]}>
+        <coneGeometry args={[0.6, 18, 8, 1, true]} />
+        <meshBasicMaterial
+          color={colors.neonTeal}
+          transparent
+          opacity={0.1}
+          side={2}
+        />
+      </mesh>
+
+      {/* Top Beacon Light */}
+      <pointLight
+        position={[0, 14, 0]}
+        color={colors.neonTeal}
+        intensity={3}
+        distance={20}
+      />
+
+      {/* Floating Ring Animation */}
+      <mesh position={[0, 6, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[1, 1.2, 32]} />
+        <meshBasicMaterial
+          color={colors.neonPink}
+          transparent
+          opacity={0.4}
+          side={2}
+        />
+      </mesh>
+
       {/* Brutalist Concrete Base */}
       <mesh position={[0, 0.5, 0]} castShadow receiveShadow>
-        <boxGeometry args={[2, 1, 1.5]} />
+        <boxGeometry args={[2.2, 1, 1.5]} />
         <meshStandardMaterial color={colors.base} roughness={0.95} />
       </mesh>
 

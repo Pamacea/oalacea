@@ -388,6 +388,7 @@ export class DynamicPathfinding {
   /**
    * Smooth path by removing unnecessary waypoints.
    * Uses line-of-sight checks to skip intermediate points.
+   * Preserves tight turns by checking intermediate waypoints.
    */
   private smoothPath(path: Vector3[], radius: number): Vector3[] {
     if (path.length <= 2) return path;
@@ -399,7 +400,9 @@ export class DynamicPathfinding {
       let farthestIndex = currentIndex + 1;
 
       for (let i = currentIndex + 2; i < path.length; i++) {
-        if (this.hasLineOfSight(path[currentIndex], path[i], radius)) {
+        // Use reduced radius for LOS to be more permissive
+        const losRadius = Math.max(0.3, radius * 0.7);
+        if (this.hasLineOfSight(path[currentIndex], path[i], losRadius)) {
           farthestIndex = i;
         } else {
           break;
@@ -421,14 +424,29 @@ export class DynamicPathfinding {
     if (this.collisionDetector.isPositionValid(start, radius)) {
       return start.clone();
     }
-    return this.collisionDetector.findNearestValidPosition(start, radius, 3);
+
+    // Try with reduced radius first
+    const reducedRadius = Math.max(0.3, radius * 0.6);
+    if (this.collisionDetector.isPositionValid(start, reducedRadius)) {
+      return start.clone();
+    }
+
+    return this.collisionDetector.findNearestValidPosition(start, radius, 5);
   }
 
   private getSafeEnd(end: Vector3, radius: number): Vector3 {
     if (this.collisionDetector.isPositionValid(end, radius)) {
       return end.clone();
     }
-    return this.collisionDetector.findNearestValidPosition(end, radius, 5);
+
+    // First try with reduced radius for more permissive pathfinding
+    const reducedRadius = Math.max(0.3, radius * 0.6);
+    if (this.collisionDetector.isPositionValid(end, reducedRadius)) {
+      return end.clone();
+    }
+
+    // Find nearest valid position with extended search
+    return this.collisionDetector.findNearestValidPosition(end, radius, 8);
   }
 
   // ============================================
@@ -450,8 +468,11 @@ export class DynamicPathfinding {
       return cached;
     }
 
-    // Calculate and cache
-    const isWalkable = this.collisionDetector.isPositionValid(worldPos, radius);
+    // For narrow passage detection, use reduced radius during pathfinding
+    // The hitboxes already include their collision bounds, so we use a smaller margin
+    // This prevents double-margin issue that blocks valid passages
+    const pathfindingRadius = Math.max(0.3, radius * 0.6);
+    const isWalkable = this.collisionDetector.isPositionValid(worldPos, pathfindingRadius);
     this.walkableCache.set(cacheKey, isWalkable);
     return isWalkable;
   }

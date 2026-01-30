@@ -4,7 +4,7 @@
 import { ConcreteWall, NeonSign, ArtPedestal, SprayCan, GalleryFrame, NeonParticles } from './art/ArtComponents';
 import { UndergroundPortal } from '../portals';
 import { ArtProjectDisplays } from '../objects/ArtDisplay';
-import { BlogDocuments, AdminTerminalWrapper } from '../objects';
+import { BlogDocuments, AdminTerminalWrapper, BlogContentTerminal, ProjectContentTerminal } from '../objects';
 import { ArtCuratorGuide } from '@/core/3d/npc';
 
 interface ArtWorldProps {
@@ -77,6 +77,10 @@ export function ArtWorld({ position = [0, 0, 0] }: ArtWorldProps) {
 
       {/* AI Guide - Art Curator */}
       <ArtCuratorGuide position={[5, 0, 8]} />
+
+      {/* Content Terminals - For reading blogs and projects */}
+      <BlogContentTerminal position={[-15, 0, 15]} world="ART" />
+      <ProjectContentTerminal position={[15, 0, 15]} world="ART" />
     </group>
   );
 }

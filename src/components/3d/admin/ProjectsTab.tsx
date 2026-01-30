@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, Globe } from 'lucide-react';
 import { getProjects, deleteProject } from '@/actions/projects';
 import type { Project } from '@/generated/prisma/client';
 import { ProjectCategory } from '@/generated/prisma/enums';
@@ -17,6 +17,12 @@ const categoryLabels: Record<ProjectCategory, string> = {
   OTHER: 'Autre',
 };
 
+const worldFilters = [
+  { value: 'all' as const, label: 'Tous', icon: Globe },
+  { value: 'DEV' as const, label: 'Dev', icon: Globe },
+  { value: 'ART' as const, label: 'Art', icon: Globe },
+] as const;
+
 export function ProjectsTab() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,13 +31,13 @@ export function ProjectsTab() {
     id: '',
     title: '',
   });
-  const { setView } = useInWorldAdminStore();
+  const { setView, worldFilter, setWorldFilter } = useInWorldAdminStore();
 
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const result = await getProjects();
-      setProjects(result);
+      const result = await getProjects(worldFilter === 'all' ? {} : { world: worldFilter });
+      setProjects(result as Project[]);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     } finally {
@@ -41,7 +47,7 @@ export function ProjectsTab() {
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [worldFilter]);
 
   const handleDelete = async () => {
     await deleteProject(deleteDialog.id);
@@ -57,7 +63,29 @@ export function ProjectsTab() {
     <>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-zinc-100">Projets</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-semibold text-zinc-100">Projets</h2>
+            <div className="flex items-center rounded-lg bg-zinc-900/50 border border-zinc-800 p-1">
+              {worldFilters.map((filter) => {
+                const Icon = filter.icon;
+                const isActive = worldFilter === filter.value;
+                return (
+                  <button
+                    key={filter.value}
+                    onClick={() => setWorldFilter(filter.value)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                      isActive
+                        ? 'bg-zinc-800 text-zinc-100'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <button
             onClick={() => setView('edit-project')}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-600 transition-all"
@@ -69,7 +97,9 @@ export function ProjectsTab() {
 
         {projects.length === 0 ? (
           <div className="border border-zinc-800 border-dashed rounded-xl p-12 text-center">
-            <p className="text-zinc-500 text-sm mb-4">Aucun projet</p>
+            <p className="text-zinc-500 text-sm mb-4">
+              {worldFilter === 'all' ? 'Aucun projet' : `Aucun projet dans le monde ${worldFilter}`}
+            </p>
             <button
               onClick={() => setView('edit-project')}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
@@ -110,9 +140,20 @@ export function ProjectsTab() {
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-                    {categoryLabels[project.category]}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                      {categoryLabels[project.category]}
+                    </span>
+                    {(project as any).worldPosition?.world && (
+                      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded border ${
+                        (project as any).worldPosition.world === 'DEV'
+                          ? 'bg-emerald-950 text-emerald-400 border-emerald-900'
+                          : 'bg-pink-950 text-pink-400 border-pink-900'
+                      }`}>
+                        {(project as any).worldPosition.world}
+                      </span>
+                    )}
+                  </div>
 
                   <div className="flex items-center gap-1">
                     <button

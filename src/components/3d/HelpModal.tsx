@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useHelpModal } from '@/hooks/useKeyboardShortcuts';
 
 interface ControlInfo {
   keys: string[];
@@ -28,13 +27,27 @@ const categoryLabels = {
 };
 
 export function HelpModal() {
-  const [open, setOpen] = useState(false);
-  useHelpModal(open, setOpen);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '?') {
+        e.preventDefault();
+        setIsOpen(!isOpen);
+      }
+      if (e.key === 'Escape' && isOpen) {
+        e.preventDefault();
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => setIsOpen(true)}
         className="fixed top-4 right-4 z-30 h-8 w-8 rounded-full bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold"
         aria-label="Open help (press ?)"
       >
@@ -42,7 +55,7 @@ export function HelpModal() {
       </button>
 
       <AnimatePresence>
-        {open && (
+        {isOpen && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
@@ -50,7 +63,7 @@ export function HelpModal() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-              onClick={() => setOpen(false)}
+              onClick={() => setIsOpen(false)}
             />
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -63,7 +76,7 @@ export function HelpModal() {
                 <div className="mb-4 flex items-center justify-between border-b border-zinc-800 pb-4">
                   <h2 className="text-xl font-bold text-zinc-100">CONTROLS</h2>
                   <button
-                    onClick={() => setOpen(false)}
+                    onClick={() => setIsOpen(false)}
                     className="h-8 w-8 rounded text-zinc-400 hover:text-zinc-200 transition-colors"
                     aria-label="Close help"
                   >
@@ -105,7 +118,7 @@ export function HelpModal() {
 
                 <div className="mt-6 pt-4 border-t border-zinc-800 flex justify-end">
                   <button
-                    onClick={() => setOpen(false)}
+                    onClick={() => setIsOpen(false)}
                     className="px-4 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
                   >
                     Close (ESC)

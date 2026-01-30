@@ -161,7 +161,7 @@ export class CollisionDetector {
 
   /**
    * Find nearest valid position to target
-   * Useful for pathfinding when target is inside an obstacle
+   * Improved with cardinal directions first for narrow passages
    */
   findNearestValidPosition(
     target: Vector3,
@@ -172,10 +172,27 @@ export class CollisionDetector {
       return target.clone();
     }
 
+    // Try cardinal and diagonal directions first (better for narrow passages)
+    const primaryAngles = [0, Math.PI/4, Math.PI/2, 3*Math.PI/4, Math.PI, 5*Math.PI/4, 3*Math.PI/2, 7*Math.PI/4];
+    const fineAngles = [];
+
+    // Fill in finer angles between primary ones
+    for (let i = 0; i < 8; i++) {
+      fineAngles.push(primaryAngles[i]);
+      if (i < 7) {
+        fineAngles.push(primaryAngles[i] + Math.PI/8);
+      }
+    }
+
     const step = 0.5;
 
+    // Search in expanding circles
     for (let r = step; r <= maxSearchRadius; r += step) {
-      for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
+      // Use finer angles for smaller radii, coarser for larger
+      const angles = r <= 2 ? fineAngles : primaryAngles;
+      const angleStep = r <= 2 ? Math.PI / 8 : Math.PI / 4;
+
+      for (let angle = 0; angle < Math.PI * 2; angle += angleStep) {
         const offset = new Vector3(
           Math.cos(angle) * r,
           0,
