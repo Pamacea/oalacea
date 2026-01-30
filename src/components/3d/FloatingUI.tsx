@@ -2,6 +2,7 @@
 
 import { AboutListingModal, AdminListingModal, BlogListingModal, ProjectListingModal } from './readers';
 import { HelpModal } from './HelpModal';
+import { InteractionPrompt } from './InteractionPrompt';
 import { useModalStore } from '@/store/modal-store';
 
 export function FloatingUI() {
@@ -29,6 +30,7 @@ export function FloatingUI() {
       </button>
 
       <HelpModal />
+      <InteractionPrompt />
 
       {isOpen && type === 'blog-listing' && <BlogListingModal />}
       {isOpen && type === 'project-listing' && <ProjectListingModal />}
