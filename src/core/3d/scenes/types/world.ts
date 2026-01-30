@@ -1,6 +1,7 @@
 // World type definitions
+import type { WorldType } from '@/types/3d';
 
-export type WorldType = 'dev' | 'art';
+export type { WorldType };
 
 export interface WorldColors {
   background: string;

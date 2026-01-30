@@ -3,7 +3,6 @@
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, Vector3 } from 'three';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 export interface InteractionHighlightProps {
   position: [number, number, number];
@@ -25,7 +24,6 @@ export function InteractionHighlight({
   const groupRef = useRef<Group>(null);
   const ringRef = useRef<Mesh>(null);
   const particlesRef = useRef<Group>(null);
-  const { trigger } = useHapticFeedback();
 
   const particles = useMemo(() => {
     return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
@@ -36,12 +34,6 @@ export function InteractionHighlight({
       phase: Math.random() * Math.PI * 2,
     }));
   }, [radius]);
-
-  useEffect(() => {
-    if (isActive) {
-      trigger('light');
-    }
-  }, [isActive, trigger]);
 
   useFrame((state) => {
     if (!isActive) return;

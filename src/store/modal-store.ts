@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useInWorldAdminStore } from './in-world-admin-store';
+import { useInWorldAdminStore } from '@/features/admin/store';
 
 type ModalType = 'blog-listing' | 'project-listing' | 'about-listing' | 'admin-listing' | null;
 

@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/core/auth';
 import Link from 'next/link';
-import { LayoutDashboard, PenTool, FolderOpen, LogOut, X, Info } from 'lucide-react';
-import { AdminBanner } from './AdminBanner';
+import { LayoutDashboard, PenTool, FolderOpen, LogOut } from 'lucide-react';
 
 export default async function AdminLayout({
   children,
@@ -23,9 +22,6 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-zinc-950 flex">
-      {/* Admin Banner - Info about 3D interface */}
-      <AdminBanner />
-
       {/* Sidebar */}
       <aside className="w-16 lg:w-56 border-r border-zinc-800 bg-zinc-900/50 flex flex-col">
         {/* Logo */}

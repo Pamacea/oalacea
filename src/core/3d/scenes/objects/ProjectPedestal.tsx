@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, DoubleSide, Vector3 } from 'three';
 import { Text } from '@react-three/drei';
 import { useModalStore } from '@/store/modal-store';
-import type { Project } from '@/store/project-store';
+import type { Project } from '@/generated/prisma/client';
 
 const COLORS = {
   black: '#1a1a1a',

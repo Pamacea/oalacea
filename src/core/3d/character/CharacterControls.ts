@@ -7,9 +7,9 @@ import { Vector3, Group } from 'three';
 import * as THREE from 'three';
 import type { WorldType } from '../scenes/types';
 import type { CollisionZone, ObstacleConfig } from '../scenes/collisions';
-import { usePhysicsEngine, useCharacterController as usePhysicsController } from '@/hooks/usePhysicsEngine';
-import { useCharacterStore } from '@/store/3d-character-store';
-import { useWorldStore } from '@/store/3d-world-store';
+import { usePhysicsEngine, useCharacterController as usePhysicsController } from '@/features/3d-world/hooks';
+import { useCharacterStore } from '@/features/3d-world/store';
+import { useWorldStore } from '@/features/3d-world/store';
 
 const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
 
@@ -37,23 +37,31 @@ export function useCharacterControls({
   const finalDestinationRef = useRef<Vector3 | null>(null); // Store original destination
   const blockedFramesRef = useRef(0); // Count consecutive blocked frames
 
-  const [rotation, setRotation] = useState(0);
+  // Use refs for values that change every frame to avoid re-renders
+  const rotationRef = useRef(0);
+  const localPositionRef = useRef(new Vector3(...INITIAL_POSITION));
+
   const [isMoving, setIsMoving] = useState(false);
   const [isSprinting, setIsSprinting] = useState(false);
   const [displayPath, setDisplayPath] = useState<Vector3[]>([]);
-  const [localPosition, setLocalPosition] = useState(new Vector3(...INITIAL_POSITION));
 
   // Initialize new physics engine
   const physicsEngine = usePhysicsEngine(collisionZones);
-  const characterController = usePhysicsController(physicsEngine, localPosition);
+  const characterController = usePhysicsController(physicsEngine, localPositionRef.current);
 
   const setPosition = useCharacterStore((s) => s.setPosition);
   const setPlayerPosition = useWorldStore((s) => s.setPlayerPosition);
   const lastSyncedPositionRef = useRef(new Vector3(...INITIAL_POSITION));
   const keys = useRef({ sprint: false });
+  const prevSprintingRef = useRef(false);
+  const prevIsMovingRef = useRef(false);
 
+  // Initialize position in stores once on mount
   useEffect(() => {
-    const initialPos = positionRef?.current || localPosition;
+    const initialPos = positionRef?.current || localPositionRef.current;
+    if (positionRef) {
+      localPositionRef.current.copy(positionRef.current);
+    }
     setPosition([initialPos.x, initialPos.y, initialPos.z]);
   }, []);
 
@@ -91,7 +99,7 @@ export function useCharacterControls({
       const x = Math.max(-45, Math.min(45, intersection.x));
       const z = Math.max(-45, Math.min(45, intersection.z));
       let clickedPos = new Vector3(x, 0.5, z);
-      const currentPos = positionRef?.current || localPosition;
+      const currentPos = positionRef?.current || localPositionRef.current;
 
       // Validate clicked position - if inside obstacle, find nearest valid position
       // Pathfinding will handle routing around obstacles
@@ -129,11 +137,12 @@ export function useCharacterControls({
       window.removeEventListener('mousedown', handleClick);
       window.removeEventListener('contextmenu', handleContextMenu);
     };
-  }, [camera, collisionZones, positionRef, localPosition, onTargetSet, physicsEngine]);
+  }, [camera, collisionZones, positionRef, onTargetSet, physicsEngine]);
 
   /**
    * Move towards a target with collision checking at each step
    * Uses sliding along obstacles to navigate through narrow passages
+   * Enhanced with strafing and nudging for better obstacle avoidance
    */
   const moveTowardsWithCollision = (
     currentPos: Vector3,
@@ -171,30 +180,61 @@ export function useCharacterControls({
     // If slide direction is valid, try moving along it
     if (slideDirection.length() > 0.01) {
       slideDirection.normalize();
-      const slidePos = currentPos.clone().add(slideDirection.multiplyScalar(moveDistance * 0.8));
+      const slidePos = currentPos.clone().add(slideDirection.multiplyScalar(moveDistance * 0.95));
 
       // Check if sliding position is valid
       const slideCollision = physicsEngine!.collisionDetector.checkCollision(slidePos);
 
       if (!slideCollision.collided) {
-        // Verify we're still making progress toward target
+        // Verify we're still making progress toward target (more lenient check)
         const newDist = slidePos.distanceTo(targetPos);
-        if (newDist < distance * 1.1) { // Allow 10% tolerance for longer sliding path
+        if (newDist < distance * 1.25) { // Allow 25% tolerance for longer sliding path
           return { position: slidePos, blocked: false };
         }
       }
+    }
 
-      // Try perpendicular sliding if direct slide failed
-      const perpSlide = new Vector3(-normal.z, 0, normal.x).normalize();
-      const perpPos = currentPos.clone().add(perpSlide.multiplyScalar(moveDistance * 0.6));
+    // Try perpendicular sliding (strafing along obstacle)
+    const perpSlide = new Vector3(-normal.z, 0, normal.x).normalize();
+    // Try both directions along the perpendicular
+    for (const sign of [1, -1]) {
+      const perpDir = perpSlide.clone().multiplyScalar(sign);
+      const perpPos = currentPos.clone().add(perpDir.multiplyScalar(moveDistance * 0.7));
 
       const perpCollision = physicsEngine!.collisionDetector.checkCollision(perpPos);
       if (!perpCollision.collided) {
         const perpDist = perpPos.distanceTo(targetPos);
-        if (perpDist < distance * 1.1) {
+        if (perpDist < distance * 1.2) {
           return { position: perpPos, blocked: false };
         }
       }
+    }
+
+    // Try small "nudge" movements in multiple directions to find a way through
+    const nudgeDirs = [
+      new Vector3(0.3, 0, 0).add(direction).normalize(),
+      new Vector3(-0.3, 0, 0).add(direction).normalize(),
+      new Vector3(0, 0, 0.3).add(direction).normalize(),
+      new Vector3(0, 0, -0.3).add(direction).normalize(),
+    ];
+
+    for (const nudgeDir of nudgeDirs) {
+      const nudgePos = currentPos.clone().add(nudgeDir.multiplyScalar(moveDistance * 0.5));
+      const nudgeCollision = physicsEngine!.collisionDetector.checkCollision(nudgePos);
+      if (!nudgeCollision.collided) {
+        const nudgeDist = nudgePos.distanceTo(targetPos);
+        if (nudgeDist < distance * 1.15) {
+          return { position: nudgePos, blocked: false };
+        }
+      }
+    }
+
+    // All sliding attempts failed - try minimal movement to avoid getting stuck
+    // Sometimes moving slightly closer to obstacle allows next frame to slide
+    const minimalMove = currentPos.clone().add(direction.multiplyScalar(moveDistance * 0.1));
+    const minimalCollision = physicsEngine!.collisionDetector.checkCollision(minimalMove);
+    if (!minimalCollision.collided) {
+      return { position: minimalMove, blocked: false };
     }
 
     // All sliding attempts failed - truly blocked
@@ -205,25 +245,34 @@ export function useCharacterControls({
     if (!groupRef.current || !physicsEngine) return;
 
     const sprinting = keys.current.sprint;
-    setIsSprinting(sprinting);
-    onSprintChange?.(sprinting);
+    // Only update state when sprint value actually changes to avoid infinite loop
+    if (sprinting !== prevSprintingRef.current) {
+      prevSprintingRef.current = sprinting;
+      setIsSprinting(sprinting);
+      onSprintChange?.(sprinting);
+    }
 
-    const currentPos = positionRef?.current || localPosition;
+    const currentPos = positionRef?.current || localPositionRef.current;
+    const rotation = rotationRef.current;
 
     if (currentWaypointRef.current) {
       const targetPos = currentWaypointRef.current;
       const distance = currentPos.distanceTo(targetPos);
 
       if (distance > 0.3) {
-        setIsMoving(true);
+        // Update isMoving state only when it actually changes
+        if (!prevIsMovingRef.current) {
+          prevIsMovingRef.current = true;
+          setIsMoving(true);
+        }
 
-        // Calculate rotation
+        // Calculate rotation - use ref instead of state
         const dx = targetPos.x - currentPos.x;
         const dz = targetPos.z - currentPos.z;
         const targetRotation = Math.atan2(dx, dz);
         const rotDiff = targetRotation - rotation;
         const shortestRot = ((rotDiff + Math.PI) % (2 * Math.PI)) - Math.PI;
-        setRotation(r => r + shortestRot * delta * 15);
+        rotationRef.current += shortestRot * delta * 15;
 
         // Move WITH collision checking
         const speed = sprinting ? 8 : 4;
@@ -232,8 +281,8 @@ export function useCharacterControls({
         if (blocked) {
           blockedFramesRef.current++;
 
-          // If blocked for more than 5 frames, recalculate path (faster reaction)
-          if (blockedFramesRef.current > 5 && finalDestinationRef.current) {
+          // If blocked for more than 3 frames, recalculate path (faster reaction)
+          if (blockedFramesRef.current > 3 && finalDestinationRef.current) {
             const newPath = physicsEngine.findPath(currentPos, finalDestinationRef.current);
             if (newPath.length > 0) {
               pathRef.current = newPath;
@@ -246,14 +295,15 @@ export function useCharacterControls({
               pathRef.current = [];
               setDisplayPath([]);
               setIsMoving(false);
+              prevIsMovingRef.current = false;
             }
           }
         } else {
           blockedFramesRef.current = 0; // Reset when moving
         }
 
-        // Update position
-        setLocalPosition(newPos.clone());
+        // Update position - use ref instead of state
+        localPositionRef.current.copy(newPos);
         if (positionRef) positionRef.current.copy(newPos);
       } else {
         // Reached waypoint, get next one
@@ -273,10 +323,14 @@ export function useCharacterControls({
           blockedFramesRef.current = 0;
           onTargetSet?.(null);
           setIsMoving(false);
+          prevIsMovingRef.current = false;
         }
       }
     } else if (pathRef.current.length === 0) {
-      setIsMoving(false);
+      if (prevIsMovingRef.current) {
+        prevIsMovingRef.current = false;
+        setIsMoving(false);
+      }
     }
 
     // Sync position to store
@@ -288,13 +342,13 @@ export function useCharacterControls({
     }
 
     groupRef.current.position.copy(currentPos);
-    groupRef.current.rotation.y = rotation;
+    groupRef.current.rotation.y = rotationRef.current;
   });
 
   return {
     groupRef,
-    localPosition,
-    rotation,
+    localPosition: localPositionRef.current,
+    rotation: rotationRef.current,
     isMoving,
     isSprinting,
     displayPath,

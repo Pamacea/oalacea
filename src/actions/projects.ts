@@ -96,7 +96,7 @@ const getCachedProjectById = unstable_cache(
 );
 
 // Public API using cached functions
-type ProjectListItem = {
+export type ProjectListItem = {
   id: string;
   slug: string;
   title: string;
@@ -302,13 +302,11 @@ export async function deleteProject(id: string) {
   return { success: true };
 }
 
-export async function deleteProjectWithRevalidate(id: string) {
+export async function deleteProjectWithRevalidate(id: string): Promise<void> {
   await prisma.project.delete({
     where: { id },
   });
 
   revalidatePath('/portfolio');
   revalidatePath('/admin/projects');
-
-  return { success: true };
 }

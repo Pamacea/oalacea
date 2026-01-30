@@ -1,4 +1,5 @@
-export { cn } from "./formatters"
+// Re-export cn from shared for backward compatibility
+export { cn } from "@/shared/utils"
 export * from "./validations"
 export * from "./constants"
 export * from "./analytics"

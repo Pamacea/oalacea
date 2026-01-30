@@ -1,0 +1,352 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { formatDistanceToNow } from 'date-fns'
+import {
+  MessageSquare as MessageSquareIcon,
+  Reply as ReplyIcon,
+  Send as SendIcon,
+  User as UserIcon,
+  AlertCircle as AlertCircleIcon,
+} from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Checkbox } from '@/components/ui/checkbox'
+import { createComment, getComments } from '@/actions/comments'
+import { commentSchema, type CommentInput } from '@/lib/validations'
+import { cn } from '@/shared/utils'
+import type { Comment } from '@/generated/prisma/client'
+
+interface CommentWithReplies extends Comment {
+  replies?: CommentWithReplies[]
+}
+
+interface CommentsProps {
+  postId?: string
+  projectId?: string
+  initialComments?: CommentWithReplies[]
+  count?: number
+}
+
+export function Comments({
+  postId,
+  projectId,
+  initialComments = [],
+  count = 0,
+}: CommentsProps) {
+  const [comments, setComments] = useState<CommentWithReplies[]>(initialComments)
+  const [replyTo, setReplyTo] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  const form = useForm<CommentInput>({
+    resolver: zodResolver(commentSchema),
+    defaultValues: {
+      authorName: '',
+      authorEmail: '',
+      content: '',
+      postId,
+      projectId,
+      consent: false,
+    },
+  })
+
+  const onSubmit = async (data: CommentInput) => {
+    startTransition(async () => {
+      const result = await createComment({
+        ...data,
+        postId,
+        projectId,
+        parentId: replyTo || undefined,
+      })
+
+      if (result.success) {
+        toast.success('Comment submitted for moderation')
+        form.reset()
+        setReplyTo(null)
+      } else {
+        if (result.error) {
+          toast.error(result.error)
+        } else if (result.errors) {
+          Object.entries(result.errors).forEach(([field, errors]) => {
+            form.setError(field as keyof CommentInput, {
+              type: 'manual',
+              message: errors?.[0],
+            })
+          })
+        }
+      }
+    })
+  }
+
+  const handleReply = (commentId: string) => {
+    setReplyTo(commentId)
+    document.getElementById('comment-form')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <MessageSquareIcon className="size-5 text-imperium-gold" />
+        <h2 className="text-xl font-semibold">
+          Comments {count > 0 && `(${count})`}
+        </h2>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Leave a Comment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form
+              id="comment-form"
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4"
+            >
+              {replyTo && (
+                <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm">
+                  <span>Replying to comment</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => setReplyTo(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="authorName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="authorEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email (optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="your@email.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Only used for Gravatar
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Comment</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Share your thoughts..."
+                        className="min-h-24"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="consent"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        I agree to the comment policy
+                      </FormLabel>
+                      <FormDescription>
+                        Comments are moderated and may be edited for clarity.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full sm:w-auto"
+              >
+                {isPending ? (
+                  <>
+                    <AlertCircleIcon className="mr-2 size-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <SendIcon className="mr-2 size-4" />
+                    Submit Comment
+                  </>
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-4">
+        {comments.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center text-muted-foreground">
+              <MessageSquareIcon className="mx-auto mb-2 size-8 opacity-50" />
+              <p>No comments yet. Be the first to share your thoughts!</p>
+            </CardContent>
+          </Card>
+        ) : (
+          comments.map((comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              onReply={handleReply}
+              getInitials={getInitials}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
+interface CommentItemProps {
+  comment: CommentWithReplies
+  onReply: (id: string) => void
+  getInitials: (name: string) => string
+  depth?: number
+}
+
+function CommentItem({
+  comment,
+  onReply,
+  getInitials,
+  depth = 0,
+}: CommentItemProps) {
+  const isReply = depth > 0
+  const maxDepth = 3
+
+  return (
+    <div
+      className={cn(
+        'rounded-lg border bg-card/50 p-4',
+        isReply && 'ml-4 border-l-2 border-l-imperium-gold/30'
+      )}
+    >
+      <div className="flex gap-3">
+        <Avatar size="sm">
+          <AvatarImage src={`https://www.gravatar.com/avatar/${comment.authorEmail}?d=mp&s=40`} />
+          <AvatarFallback className="bg-imperium-crimson text-white">
+            {getInitials(comment.authorName)}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex-1 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold">{comment.authorName}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(comment.createdAt), {
+                addSuffix: true,
+              })}
+            </span>
+          </div>
+
+          <p className="text-sm leading-relaxed text-foreground/80">
+            {comment.content}
+          </p>
+
+          {comment.status === 'PENDING' && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-500">
+              <AlertCircleIcon className="size-3" />
+              Awaiting moderation
+            </span>
+          )}
+
+          {depth < maxDepth && (
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => onReply(comment.id)}
+              className="gap-1"
+            >
+              <ReplyIcon className="size-3" />
+              Reply
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              onReply={onReply}
+              getInitials={getInitials}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default Comments

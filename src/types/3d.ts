@@ -1,5 +1,11 @@
 // 3D Scene types
-export type { WorldType, AnimationType, TransitionState, LoadingState } from '@/core/3d/scenes/types';
+export type WorldType = 'dev' | 'art';
+
+export type AnimationType = 'idle' | 'walk' | 'run' | 'jump' | 'fall';
+
+export type TransitionState = 'idle' | 'transitioning' | 'complete';
+
+export type LoadingState = 'loading' | 'ready' | 'error';
 
 // 3D Component props types
 export interface WorldSeedInputProps {

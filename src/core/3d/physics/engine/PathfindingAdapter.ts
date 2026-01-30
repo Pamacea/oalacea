@@ -41,25 +41,28 @@ export class PathfindingAdapter {
     end: Vector3,
     characterRadius: number = 0.5
   ): Vector3[] {
+    // Use reduced radius for pathfinding to allow tighter navigation
+    const pathfindingRadius = Math.max(0.3, characterRadius * 0.5);
+
     // Validate start position - if invalid, find nearest valid
     const safeStart = this.collisionDetector.isPositionValid(start)
       ? start
-      : this.collisionDetector.findNearestValidPosition(start, this.characterRadius, 3);
+      : this.collisionDetector.findNearestValidPosition(start, pathfindingRadius, 3);
 
     // Validate end position - if invalid, find nearest valid
     const safeEnd = this.collisionDetector.isPositionValid(end)
       ? end
-      : this.collisionDetector.findNearestValidPosition(end, this.characterRadius, 5);
+      : this.collisionDetector.findNearestValidPosition(end, pathfindingRadius, 5);
 
     // Direct path if line of sight
-    if (this.hasLineOfSight(safeStart, safeEnd, characterRadius)) {
+    if (this.hasLineOfSight(safeStart, safeEnd, pathfindingRadius)) {
       return [safeEnd.clone()];
     }
 
     // A* pathfinding
     const startCell = this.worldToCell(safeStart);
     const endCell = this.worldToCell(safeEnd);
-    const gridPath = this.findGridPath(startCell, endCell, characterRadius);
+    const gridPath = this.findGridPath(startCell, endCell, pathfindingRadius);
 
     if (gridPath.length === 0) {
       // No path found, try direct anyway
@@ -72,7 +75,7 @@ export class PathfindingAdapter {
     worldPath.push(safeEnd.clone());
 
     // Smooth path with collision validation
-    return this.smoothPath(worldPath, this.characterRadius);
+    return this.smoothPath(worldPath, pathfindingRadius);
   }
 
   /**
@@ -174,7 +177,7 @@ export class PathfindingAdapter {
 
     // Use reduced radius for pathfinding to avoid double-margin issue
     // Hitboxes already include their collision bounds, so we don't need full character radius
-    const pathfindingRadius = Math.max(0.3, radius * 0.6);
+    const pathfindingRadius = Math.max(0.3, radius * 0.5);
     return this.collisionDetector.isPositionValid(cellCenter, pathfindingRadius);
   }
 
@@ -261,7 +264,7 @@ export class PathfindingAdapter {
 
       for (let i = currentIndex + 2; i < path.length; i++) {
         // Use reduced radius for LOS to be more permissive
-        const losRadius = Math.max(0.3, radius * 0.7);
+        const losRadius = Math.max(0.3, radius * 0.5);
         if (this.hasLineOfSight(path[currentIndex], path[i], losRadius)) {
           farthestIndex = i;
         } else {

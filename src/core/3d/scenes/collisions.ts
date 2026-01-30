@@ -41,19 +41,20 @@ export const DEV_COLLISION_ZONES: ObstacleConfig[] = [
   }),
 
   // Arcs gothiques - 2 piliers séparés
+  // Hitbox réduite à 1.3 pour permettre un passage plus large entre les piliers
   // Arc Nord (z=18)
   createObstacle(
     'arch-north-left',
     ObstacleType.ARCH,
     [-3, 0, 18],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Nord Gauche', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'arch-north-right',
     ObstacleType.ARCH,
     [3, 0, 18],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Nord Droite', collisionLayer: CollisionLayer.DEFAULT }
   ),
   // Arc Sud (z=-18)
@@ -61,14 +62,14 @@ export const DEV_COLLISION_ZONES: ObstacleConfig[] = [
     'arch-south-left',
     ObstacleType.ARCH,
     [-3, 0, -18],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Sud Gauche', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'arch-south-right',
     ObstacleType.ARCH,
     [3, 0, -18],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Sud Droite', collisionLayer: CollisionLayer.DEFAULT }
   ),
   // Arc Est (x=18)
@@ -76,14 +77,14 @@ export const DEV_COLLISION_ZONES: ObstacleConfig[] = [
     'arch-east-left',
     ObstacleType.ARCH,
     [18, 0, -3],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Est Gauche', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'arch-east-right',
     ObstacleType.ARCH,
     [18, 0, 3],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Est Droite', collisionLayer: CollisionLayer.DEFAULT }
   ),
   // Arc Ouest (x=-18)
@@ -91,14 +92,14 @@ export const DEV_COLLISION_ZONES: ObstacleConfig[] = [
     'arch-west-left',
     ObstacleType.ARCH,
     [-18, 0, -3],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Ouest Gauche', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'arch-west-right',
     ObstacleType.ARCH,
     [-18, 0, 3],
-    createBoxHitbox([1.5, 3, 1.5]),
+    createBoxHitbox([1.3, 3, 1.3]),
     { name: 'Pilier Arc Ouest Droite', collisionLayer: CollisionLayer.DEFAULT }
   ),
 
@@ -137,14 +138,14 @@ export const DEV_COLLISION_ZONES: ObstacleConfig[] = [
     'pedestal-oalacea',
     ObstacleType.PEDESTAL,
     [15, 0, 10],
-    createBoxHitbox([5.5, 1.2, 5.5]),
+    createBoxHitbox([5.0, 1.2, 5.0]),
     { name: 'Pedestal Oalacea', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'pedestal-ecommerce',
     ObstacleType.PEDESTAL,
     [-15, 0, 15],
-    createBoxHitbox([5.5, 1.2, 5.5]),
+    createBoxHitbox([5.0, 1.2, 5.0]),
     { name: 'Pedestal E-commerce', collisionLayer: CollisionLayer.DEFAULT }
   ),
 
@@ -223,28 +224,28 @@ export const ART_COLLISION_ZONES: ObstacleConfig[] = [
     'pedestal-1',
     ObstacleType.PEDESTAL,
     [-10, 0, -8],
-    createBoxHitbox([4.5, 1.2, 4.5]),
+    createBoxHitbox([4.0, 1.2, 4.0]),
     { name: 'Pedestal 1', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'pedestal-2',
     ObstacleType.PEDESTAL,
     [10, 0, -8],
-    createBoxHitbox([4.5, 1.2, 4.5]),
+    createBoxHitbox([4.0, 1.2, 4.0]),
     { name: 'Pedestal 2', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'pedestal-3',
     ObstacleType.PEDESTAL,
     [-8, 0, 12],
-    createBoxHitbox([4.5, 1.2, 4.5]),
+    createBoxHitbox([4.0, 1.2, 4.0]),
     { name: 'Pedestal 3', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'pedestal-4',
     ObstacleType.PEDESTAL,
     [8, 0, 12],
-    createBoxHitbox([4.5, 1.2, 4.5]),
+    createBoxHitbox([4.0, 1.2, 4.0]),
     { name: 'Pedestal 4', collisionLayer: CollisionLayer.DEFAULT }
   ),
 
@@ -336,14 +337,14 @@ export const ART_COLLISION_ZONES: ObstacleConfig[] = [
     'art-display-mobile',
     ObstacleType.PEDESTAL,
     [12, 0, -18],
-    createBoxHitbox([6, 1.5, 6]),
+    createBoxHitbox([5.5, 1.5, 5.5]),
     { name: 'Mobile App Display', collisionLayer: CollisionLayer.DEFAULT }
   ),
   createObstacle(
     'art-display-ai',
     ObstacleType.PEDESTAL,
     [-18, 0, 12],
-    createBoxHitbox([6, 1.5, 6]),
+    createBoxHitbox([5.5, 1.5, 5.5]),
     { name: 'AI Chatbot Display', collisionLayer: CollisionLayer.DEFAULT }
   ),
 

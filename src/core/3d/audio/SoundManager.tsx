@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useCallback } from 'react';
-import { useAudioStore } from '@/store/3d-audio-store';
+import { useAudioStore } from '@/features/3d-world/store';
 import type { WorldType } from '@/core/3d/scenes/types';
 
 export type SoundType = 'interaction' | 'hover' | 'worldSwitch' | 'click' | 'success' | 'error';

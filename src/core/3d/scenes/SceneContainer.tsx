@@ -6,7 +6,7 @@ import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Environment, Preload } from '@react-three/drei';
 import * as THREE from 'three';
 import type { WorldType } from './types';
-import { useWorldStore } from '@/store/3d-world-store';
+import { useWorldStore } from '@/features/3d-world/store';
 import { useSettingsStore, selectQualitySettings } from '@/store/settings-store';
 import { DEV_WORLD, ART_WORLD } from '@/config/3d/worlds';
 

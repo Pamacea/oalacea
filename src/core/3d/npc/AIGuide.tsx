@@ -1,10 +1,10 @@
 'use client';
 
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, Vector3, Color } from 'three';
 import { Text } from '@react-three/drei';
-import { useCharacterStore } from '@/store/3d-character-store';
+import { useCharacterStore } from '@/features/3d-world/store';
 import type { WorldType } from '@/core/3d/scenes/types';
 
 export interface NPCProps {
@@ -41,6 +41,10 @@ export function AIGuide({
   const [isNearby, setIsNearby] = useState(false);
   const [showBubble, setShowBubble] = useState(false);
 
+  // Track previous state to only update when values actually change
+  const wasNearbyRef = useRef(false);
+  const npcPositionRef = useRef(new Vector3(...position));
+
   const characterPosition = useCharacterStore((s) => s.position);
 
   const colors = useMemo(() => ({
@@ -51,26 +55,22 @@ export function AIGuide({
   const modelHeight = modelVariant === 'tall' ? 2.2 : modelVariant === 'short' ? 1.4 : 1.8;
   const bodyWidth = modelVariant === 'tall' ? 0.7 : modelVariant === 'short' ? 0.9 : 0.8;
 
-  useEffect(() => {
-    const npcPosition = new Vector3(...position);
-    const charPosition = new Vector3(...characterPosition);
-    const distance = npcPosition.distanceTo(charPosition);
-
-    const wasNearby = isNearby;
-    const nowNearby = distance < 4;
-
-    setIsNearby(nowNearby);
-
-    if (!wasNearby && nowNearby) {
-      setShowBubble(true);
-    } else if (wasNearby && !nowNearby) {
-      setShowBubble(false);
-    }
-  }, [characterPosition, position, isNearby]);
-
   useFrame((state) => {
     const time = state.clock.elapsedTime;
 
+    // Check distance to player
+    const charPosition = new Vector3(...characterPosition);
+    const distance = npcPositionRef.current.distanceTo(charPosition);
+    const nowNearby = distance < 4;
+
+    // Only update state when proximity actually changes
+    if (nowNearby !== wasNearbyRef.current) {
+      wasNearbyRef.current = nowNearby;
+      setIsNearby(nowNearby);
+      setShowBubble(nowNearby);
+    }
+
+    // Animate NPC parts
     if (bodyRef.current) {
       bodyRef.current.position.y = Math.sin(time * 1.2) * 0.08 + modelHeight / 2;
     }

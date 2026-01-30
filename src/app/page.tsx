@@ -2,12 +2,14 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { SceneCanvas } from './components/SceneCanvas';
-import { ControlsPanel } from './components/ControlsPanel';
-import { LoadingScreen } from '@/components/3d/LoadingScreen';
-import { WorldTransitionScreen } from '@/components/3d/WorldTransitionScreen';
-import { FloatingUI } from '@/components/3d/FloatingUI';
-import { useWorldStore } from '@/store/3d-world-store';
+import {
+  SceneCanvas,
+  ControlsPanel,
+  LoadingScreen,
+  WorldTransitionScreen,
+  FloatingUI,
+} from '@/features/3d-world';
+import { useWorldStore } from '@/features/3d-world/store';
 
 // Camera position interface
 interface CameraPosition {
@@ -41,11 +43,20 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden bg-black">
+    <div
+      className="fixed inset-0 -z-10 overflow-hidden bg-black"
+      tabIndex={-1}
+      onKeyDown={(e) => {
+        if (e.code === 'Space' && !e.repeat) {
+          e.preventDefault();
+          toggleCamera();
+        }
+      }}
+    >
       <SceneCanvas
         currentWorld={currentWorld}
         cameraMode={cameraMode}
-        onCameraPositionChange={(pos) => { cameraPositionRef.current = pos; }}
+        onCameraPositionChange={(pos: CameraPosition) => { cameraPositionRef.current = pos; }}
       />
       <LoadingScreen />
       <WorldTransitionScreen />

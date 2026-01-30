@@ -5,7 +5,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import { Vector3, PerspectiveCamera as PerspectiveCameraType, MathUtils } from 'three';
-import { useOnboardingStore } from '@/store/onboarding-store';
+import { useOnboardingStore } from '@/features/onboarding/store';
 
 export interface CinematicPathPoint {
   position: [number, number, number];
