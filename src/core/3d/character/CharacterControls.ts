@@ -9,6 +9,7 @@ import type { WorldType } from '../scenes/types';
 import type { CollisionZone, ObstacleConfig } from '../scenes/collisions';
 import { usePhysicsEngine, useCharacterController as usePhysicsController } from '@/hooks/usePhysicsEngine';
 import { useCharacterStore } from '@/store/3d-character-store';
+import { useWorldStore } from '@/store/3d-world-store';
 
 const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
 
@@ -47,6 +48,7 @@ export function useCharacterControls({
   const characterController = usePhysicsController(physicsEngine, localPosition);
 
   const setPosition = useCharacterStore((s) => s.setPosition);
+  const setPlayerPosition = useWorldStore((s) => s.setPlayerPosition);
   const lastSyncedPositionRef = useRef(new Vector3(...INITIAL_POSITION));
   const keys = useRef({ sprint: false });
 
@@ -278,10 +280,11 @@ export function useCharacterControls({
     }
 
     // Sync position to store
-    const posChanged = currentPos.distanceTo(lastSyncedPositionRef.current) > 0.5;
+    const posChanged = currentPos.distanceTo(lastSyncedPositionRef.current) > 0.1;
     if (posChanged) {
       lastSyncedPositionRef.current.copy(currentPos);
       setPosition([currentPos.x, currentPos.y, currentPos.z]);
+      setPlayerPosition([currentPos.x, currentPos.y, currentPos.z]);
     }
 
     groupRef.current.position.copy(currentPos);
