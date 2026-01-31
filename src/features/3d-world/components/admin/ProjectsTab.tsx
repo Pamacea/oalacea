@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, Pencil, Trash2, Star, Globe } from 'lucide-react';
-import { getProjects, deleteProject, type ProjectListItem } from '@/actions/projects';
+import { useProjects } from '@/features/portfolio/queries/useProjects';
+import { useDeleteProject } from './queries/use-project-mutations';
 import { ProjectCategory } from '@/generated/prisma/enums';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { ConfirmDialog } from './ConfirmDialog';
-import { TableSkeleton } from '@/features/admin/components';
+import { CardGridSkeleton } from '@/features/admin/components';
 
 const categoryLabels: Record<ProjectCategory, string> = {
   WEB: 'Web',
@@ -25,36 +26,32 @@ const worldFilters = [
 type WorldFilter = 'all' | 'DEV' | 'ART';
 
 export function ProjectsTab() {
-  const [projects, setProjects] = useState<ProjectListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [worldFilter, setWorldFilter] = useState<WorldFilter>('all');
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; title: string }>({
     open: false,
     id: '',
     title: '',
   });
-  const { setView } = useInWorldAdminStore();
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const { setView, setSelectedId } = useInWorldAdminStore();
 
-  const fetchProjects = async () => {
-    setIsLoading(true);
-    try {
-      const result = await getProjects(worldFilter === 'all' ? {} : { world: worldFilter });
-      setProjects(result);
-    } catch (error) {
-      console.error('Failed to fetch projects:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Get projects with optional filter
+  const { projects, isLoading } = useProjects(
+    worldFilter === 'all' ? {} : { world: worldFilter }
+  );
 
-  useEffect(() => {
-    fetchProjects();
-  }, [worldFilter]);
+  const deleteMutation = useDeleteProject();
 
-  const handleDelete = async () => {
-    await deleteProject(deleteDialog.id);
-    setDeleteDialog({ open: false, id: '', title: '' });
-    fetchProjects();
+  const handleDelete = () => {
+    deleteMutation.mutate(deleteDialog.id, {
+      onSuccess: () => {
+        setDeleteSuccess(true);
+        setTimeout(() => {
+          setDeleteDialog({ open: false, id: '', title: '' });
+          setDeleteSuccess(false);
+        }, 1000);
+      },
+    });
   };
 
   if (isLoading) {
@@ -89,7 +86,10 @@ export function ProjectsTab() {
             </div>
           </div>
           <button
-            onClick={() => setView('edit-project')}
+            onClick={() => {
+              setSelectedId(null);
+              setView('edit-project');
+            }}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-600 transition-all"
           >
             <Plus className="h-4 w-4" />
@@ -103,7 +103,10 @@ export function ProjectsTab() {
               {worldFilter === 'all' ? 'Aucun projet' : `Aucun projet dans le monde ${worldFilter}`}
             </p>
             <button
-              onClick={() => setView('edit-project')}
+              onClick={() => {
+                setSelectedId(null);
+                setView('edit-project');
+              }}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
             >
               <Plus className="h-4 w-4" />
@@ -159,7 +162,10 @@ export function ProjectsTab() {
 
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setView('edit-project')}
+                      onClick={() => {
+                        setSelectedId(project.id);
+                        setView('edit-project');
+                      }}
                       aria-label={`Edit ${project.title}`}
                       className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-all duration-200"
                     >
@@ -190,6 +196,8 @@ export function ProjectsTab() {
         confirmLabel="Supprimer"
         onConfirm={handleDelete}
         variant="danger"
+        isLoading={deleteMutation.isPending}
+        isSuccess={deleteSuccess}
       />
     </>
   );

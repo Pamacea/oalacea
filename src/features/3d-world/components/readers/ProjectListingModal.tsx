@@ -91,12 +91,12 @@ export function ProjectListingModal() {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative z-[51] w-[600px] max-h-[80vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+        className="relative z-[51] w-[80vw] max-w-3xl h-[80vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 shrink-0">
             <h2 className="text-lg font-semibold text-zinc-100">Projets</h2>
             <button
               onClick={handleClose}
@@ -107,7 +107,7 @@ export function ProjectListingModal() {
           </div>
 
           {/* Content */}
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 text-amber-500 animate-spin" />
@@ -128,7 +128,8 @@ export function ProjectListingModal() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="px-4 py-3 rounded-lg bg-zinc-900/50 border border-zinc-800 mb-2"
+                      onClick={() => handleSelectProject(project.slug, index)}
+                      className="px-4 py-3 rounded-lg bg-zinc-900/50 border border-zinc-800 mb-2 cursor-pointer hover:bg-zinc-800/50 transition-colors"
                     >
                       <div className="flex items-start gap-3">
                         {project.thumbnail && (
@@ -148,22 +149,14 @@ export function ProjectListingModal() {
                             )}
                           </div>
                           <p className="text-sm text-zinc-500 line-clamp-2">{project.description}</p>
-                          <div className="flex items-center justify-between mt-2">
-                            <div className="flex items-center gap-2">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded bg-zinc-800 ${config.color}`}>
-                                <Icon className="h-3 w-3" />
-                                {config.label}
-                              </span>
-                              {project.year && (
-                                <span className="text-xs text-zinc-600">{project.year}</span>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => handleSelectProject(project.slug, index)}
-                              className="px-4 py-2 text-sm font-medium bg-purple-500 text-white rounded-lg hover:bg-purple-400 transition-colors shrink-0"
-                            >
-                              Consulter
-                            </button>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded bg-zinc-800 ${config.color}`}>
+                              <Icon className="h-3 w-3" />
+                              {config.label}
+                            </span>
+                            {project.year && (
+                              <span className="text-xs text-zinc-600">{project.year}</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -175,7 +168,7 @@ export function ProjectListingModal() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 bg-zinc-900/30">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 bg-zinc-900/30 shrink-0">
             <span className="text-xs text-zinc-600">
               {projectsList.length} projet{projectsList.length > 1 ? 's' : ''}
             </span>

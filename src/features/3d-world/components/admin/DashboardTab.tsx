@@ -1,40 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { FileText, FolderKanban, TrendingUp, Calendar } from 'lucide-react';
-import { getPosts, type PostListItem } from '@/actions/blog';
-import { getProjects, type ProjectListItem } from '@/actions/projects';
+import { FileText, FolderKanban, Calendar } from 'lucide-react';
+import { usePosts } from '@/features/blog/queries';
+import { useProjects } from '@/features/portfolio/queries/useProjects';
 
 export function DashboardTab() {
-  const [posts, setPosts] = useState<PostListItem[]>([]);
-  const [projects, setProjects] = useState<ProjectListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [postsData, projectsData] = await Promise.all([
-          getPosts({}),
-          getProjects(),
-        ]);
-        setPosts(postsData.posts);
-        setProjects(projectsData);
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadData();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-zinc-500">Chargement...</div>
-      </div>
-    );
-  }
+  // Get all posts including drafts for accurate count
+  const { posts } = usePosts({ published: false, page: 1, limit: 100 });
+  const { projects } = useProjects();
 
   const stats = [
     {
@@ -53,7 +26,7 @@ export function DashboardTab() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-zinc-100">Tableau de bord</h2>
-        <p className="text-zinc-500 text-sm mt-1">Vue d'ensemble de votre contenu</p>
+        <p className="text-zinc-500 text-sm mt-1">Vue d&apos;ensemble de votre contenu</p>
       </div>
 
       {/* Stats Grid */}

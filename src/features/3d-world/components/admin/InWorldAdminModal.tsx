@@ -57,10 +57,10 @@ export function InWorldAdminModal() {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed left-1/2 top-1/2 z-[51] w-[800px] max-w-[calc(100vw-2rem)] max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl"
+            className="fixed left-1/2 top-1/2 z-[51] w-[85vw] max-w-5xl h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl flex flex-col"
           >
             {!isEditingForm && !isReadingPost && (
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
+              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 shrink-0">
                 <div className="flex gap-1">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
@@ -90,17 +90,17 @@ export function InWorldAdminModal() {
               </div>
             )}
 
-            <div className="overflow-y-auto max-h-[calc(85vh-5rem)] p-6">
+            <div className="overflow-y-auto flex-1 p-6">
               {view === 'dashboard' && <DashboardTab />}
               {view === 'posts' && <PostsTab />}
               {view === 'projects' && <ProjectsTab />}
-              {view === 'edit-post' && <BlogPostForm postId={selectedId} world={world} />}
-              {view === 'edit-project' && <ProjectForm projectId={selectedId} world={world} />}
+              {view === 'edit-post' && <BlogPostForm postId={selectedId ?? undefined} world={world} />}
+              {view === 'edit-project' && <ProjectForm projectId={selectedId ?? undefined} world={world} />}
               {view === 'read-post' && selectedId && <BlogPostReader postSlug={selectedId} />}
             </div>
 
             {!isEditingForm && !isReadingPost && (
-              <div className="flex items-center justify-between border-t border-zinc-800 px-4 py-2 bg-zinc-900/30">
+              <div className="flex items-center justify-between border-t border-zinc-800 px-4 py-2 bg-zinc-900/30 shrink-0">
                 <p className="text-xs text-zinc-600">
                   Admin Panel
                 </p>

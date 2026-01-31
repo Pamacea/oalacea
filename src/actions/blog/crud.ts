@@ -1,7 +1,7 @@
 // Server Actions for blog CRUD operations
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@/generated/prisma/client';
 import { NotFoundError } from '@/core/errors';
@@ -35,10 +35,16 @@ export async function createPost(data: {
       metaTitle: data.metaTitle,
       metaDescription: data.metaDescription,
     },
+    include: {
+      category: {
+        select: { id: true, name: true, slug: true },
+      },
+    },
   });
 
   revalidatePath('/blog');
   revalidatePath(`/blog/${data.slug}`);
+  revalidateTag('blog-posts', { expire: 0 });
 
   return post;
 }
@@ -85,6 +91,11 @@ export async function updatePost(
       metaTitle: data.metaTitle,
       metaDescription: data.metaDescription,
     },
+    include: {
+      category: {
+        select: { id: true, name: true, slug: true },
+      },
+    },
   });
 
   const newSlug = data.slug || slug;
@@ -94,27 +105,58 @@ export async function updatePost(
   if (newSlug !== slug) {
     revalidatePath(`/blog/${newSlug}`);
   }
+  revalidateTag('blog-posts', { expire: 0 });
 
   return post;
 }
 
 export async function deletePost(slug: string) {
-  await prisma.post.delete({
-    where: { slug },
-  });
+  try {
+    await prisma.post.delete({
+      where: { slug },
+    });
+  } catch (error) {
+    // If record not found (P2025), treat as success (already deleted)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2025'
+    ) {
+      // Already deleted - continue
+    } else {
+      throw error;
+    }
+  }
 
   revalidatePath('/blog');
+  revalidateTag('blog-posts', { expire: 0 });
 
   return { success: true };
 }
 
 export async function deletePostWithRevalidate(slug: string): Promise<void> {
-  await prisma.post.delete({
-    where: { slug },
-  });
+  try {
+    await prisma.post.delete({
+      where: { slug },
+    });
+  } catch (error) {
+    // If record not found (P2025), treat as success (already deleted)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2025'
+    ) {
+      // Already deleted - continue
+    } else {
+      throw error;
+    }
+  }
 
   revalidatePath('/blog');
   revalidatePath('/admin/blog');
+  revalidateTag('blog-posts', { expire: 0 });
 }
 
 // =========================================

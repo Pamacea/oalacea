@@ -1,42 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, Pencil, Trash2, Eye, EyeOff, BookOpen } from 'lucide-react';
-import { getPosts, deletePost, type PostListItem } from '@/actions/blog';
+import { usePosts, useDeletePost } from '@/features/blog/queries';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { ConfirmDialog } from './ConfirmDialog';
 import { TableSkeleton } from '@/features/admin/components';
 
 export function PostsTab() {
-  const [posts, setPosts] = useState<PostListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; slug: string; title: string }>({
     open: false,
     slug: '',
     title: '',
   });
-  const { setView } = useInWorldAdminStore();
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const { setView, setSelectedId } = useInWorldAdminStore();
 
-  const fetchPosts = async () => {
-    setIsLoading(true);
-    try {
-      const result = await getPosts({});
-      setPosts(result.posts);
-    } catch (error) {
-      console.error('Failed to fetch posts:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Get all posts including drafts
+  const { posts, isLoading } = usePosts({ published: false, page: 1, limit: 100 });
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  const deleteMutation = useDeletePost();
 
-  const handleDelete = async () => {
-    await deletePost(deleteDialog.slug);
-    setDeleteDialog({ open: false, slug: '', title: '' });
-    fetchPosts();
+  const handleDelete = () => {
+    deleteMutation.mutate(deleteDialog.slug, {
+      onSuccess: () => {
+        setDeleteSuccess(true);
+        setTimeout(() => {
+          setDeleteDialog({ open: false, slug: '', title: '' });
+          setDeleteSuccess(false);
+        }, 1000);
+      },
+    });
   };
 
   if (isLoading) {
@@ -49,7 +43,10 @@ export function PostsTab() {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-zinc-100">Blog</h2>
           <button
-            onClick={() => setView('edit-post')}
+            onClick={() => {
+              setSelectedId(null);
+              setView('edit-post');
+            }}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-600 transition-all"
           >
             <Plus className="h-4 w-4" />
@@ -61,7 +58,10 @@ export function PostsTab() {
           <div className="border border-zinc-800 border-dashed rounded-xl p-12 text-center">
             <p className="text-zinc-500 text-sm mb-4">Aucun article</p>
             <button
-              onClick={() => setView('edit-post')}
+              onClick={() => {
+                setSelectedId(null);
+                setView('edit-post');
+              }}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
             >
               <Plus className="h-4 w-4" />
@@ -105,7 +105,10 @@ export function PostsTab() {
                       <div className="flex items-center justify-end gap-1">
                         {post.published && (
                           <button
-                            onClick={() => setView('read-post')}
+                            onClick={() => {
+                              setSelectedId(post.slug);
+                              setView('read-post');
+                            }}
                             aria-label={`Read ${post.title}`}
                             className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-all duration-200"
                           >
@@ -113,7 +116,10 @@ export function PostsTab() {
                           </button>
                         )}
                         <button
-                          onClick={() => setView('edit-post')}
+                          onClick={() => {
+                            setSelectedId(post.slug);
+                            setView('edit-post');
+                          }}
                           aria-label={`Edit ${post.title}`}
                           className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-all duration-200"
                         >
@@ -146,6 +152,8 @@ export function PostsTab() {
         confirmLabel="Supprimer"
         onConfirm={handleDelete}
         variant="danger"
+        isLoading={deleteMutation.isPending}
+        isSuccess={deleteSuccess}
       />
     </>
   );

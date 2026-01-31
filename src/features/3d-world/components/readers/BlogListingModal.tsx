@@ -83,12 +83,12 @@ export function BlogListingModal() {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative z-[51] w-[600px] max-h-[80vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+        className="relative z-[51] w-[80vw] max-w-3xl h-[80vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 shrink-0">
             <h2 className="text-lg font-semibold text-zinc-100">Blog</h2>
             <button
               onClick={handleClose}
@@ -99,7 +99,7 @@ export function BlogListingModal() {
           </div>
 
           {/* Content */}
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 text-amber-500 animate-spin" />
@@ -117,9 +117,10 @@ export function BlogListingModal() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="px-4 py-3 rounded-lg bg-zinc-900/50 border border-zinc-800 mb-2"
+                    onClick={() => handleSelectBlog(post.slug, index)}
+                    className="px-4 py-3 rounded-lg bg-zinc-900/50 border border-zinc-800 mb-2 cursor-pointer hover:bg-zinc-800/50 transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-zinc-100 font-medium">
                           {post.title}
@@ -147,12 +148,6 @@ export function BlogListingModal() {
                           )}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleSelectBlog(post.slug, index)}
-                        className="px-4 py-2 text-sm font-medium bg-amber-500 text-zinc-900 rounded-lg hover:bg-amber-400 transition-colors shrink-0"
-                      >
-                        Lire
-                      </button>
                     </div>
                   </motion.div>
                 ))}
@@ -161,7 +156,7 @@ export function BlogListingModal() {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 bg-zinc-900/30">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 bg-zinc-900/30 shrink-0">
             <span className="text-xs text-zinc-600">
               {posts.length} article{posts.length > 1 ? 's' : ''}
             </span>

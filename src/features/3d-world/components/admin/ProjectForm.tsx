@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useTransition, useRef } from 'react';
-import { createProject, updateProject, getProjects, type ProjectListItem } from '@/actions/projects';
+import { useState, useEffect, useRef } from 'react';
+import { getProjectById } from '@/actions/projects';
+import { useCreateProject, useUpdateProject, type CreateProjectInput } from './queries/use-project-mutations';
 import { ProjectCategory } from '@/generated/prisma/enums';
-import { ArrowLeft, Save, FolderKanban, Upload, X as XIcon, Eye } from 'lucide-react';
+import { ArrowLeft, FolderKanban, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { useInWorldAdminStore } from '@/features/admin/store';
 
 const categoryLabels: Record<ProjectCategory, string> = {
@@ -36,11 +37,9 @@ const inputBorder = 'border-zinc-700 focus:border-zinc-600';
 const buttonPrimary = 'bg-zinc-700 hover:bg-zinc-600 text-zinc-100';
 const buttonSecondary = 'border-zinc-700 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-400';
 
-export function ProjectForm({ projectId, world }: { projectId?: string; world: 'dev' | 'art' }) {
+export function ProjectForm({ projectId }: { projectId?: string; world: 'dev' | 'art' }) {
   const { setView } = useInWorldAdminStore();
-  const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const theme = inputBorder;
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -60,23 +59,28 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
   const [isLoading, setIsLoading] = useState(true);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const createMutation = useCreateProject();
+  const updateMutation = useUpdateProject();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   // Load project data if editing
   useEffect(() => {
     async function loadProject() {
       try {
         if (projectId) {
-          const projects = await getProjects();
-          const project = projects.find((p) => p.id === projectId);
+          const project = await getProjectById(projectId);
           if (project) {
             setFormData({
               title: project.title,
               slug: project.slug,
               description: project.description,
-              longDescription: '', // ProjectListItem doesn't have longDescription
+              longDescription: project.longDescription || '',
               techStack: project.techStack?.join(', ') || '',
-              githubUrl: '', // ProjectListItem doesn't have githubUrl
-              liveUrl: '', // ProjectListItem doesn't have liveUrl
+              githubUrl: project.githubUrl || '',
+              liveUrl: project.liveUrl || '',
               thumbnail: project.thumbnail || '',
               featured: project.featured,
               sortOrder: project.sortOrder,
@@ -192,30 +196,34 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
     }
   };
 
-  const handleSubmit = () => {
-    startTransition(async () => {
-      const data: any = {
-        title: formData.title,
-        slug: formData.slug || generateSlug(formData.title),
-        description: formData.description,
-        longDescription: formData.longDescription || undefined,
-        techStack: formData.techStack.split(',').map((t) => t.trim()).filter(Boolean),
-        githubUrl: formData.githubUrl || undefined,
-        liveUrl: formData.liveUrl || undefined,
-        thumbnail: formData.thumbnail || undefined,
-        featured: formData.featured,
-        sortOrder: formData.sortOrder,
-        year: formData.year,
-        category: formData.category,
-      };
+  const handleSubmit = async () => {
+    setSaveStatus('idle');
+    const data: CreateProjectInput = {
+      title: formData.title,
+      slug: formData.slug || generateSlug(formData.title),
+      description: formData.description,
+      longDescription: formData.longDescription || undefined,
+      techStack: formData.techStack.split(',').map((t) => t.trim()).filter(Boolean),
+      githubUrl: formData.githubUrl || undefined,
+      liveUrl: formData.liveUrl || undefined,
+      thumbnail: formData.thumbnail || undefined,
+      featured: formData.featured,
+      sortOrder: formData.sortOrder,
+      year: formData.year,
+      category: formData.category,
+    };
 
+    try {
       if (projectId) {
-        await updateProject(projectId, data);
+        await updateMutation.mutateAsync({ id: projectId, data });
       } else {
-        await createProject(data);
+        await createMutation.mutateAsync(data);
       }
+      setSaveStatus('success');
       setView('projects');
-    });
+    } catch {
+      setSaveStatus('error');
+    }
   };
 
   const handleChange = (
@@ -449,7 +457,7 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
               </label>
 
               <div>
-                <label className="mb-1 block text-xs text-zinc-400">Ordre d'affichage</label>
+                <label className="mb-1 block text-xs text-zinc-400">Ordre d&apos;affichage</label>
                 <input
                   type="number"
                   name="sortOrder"
@@ -488,15 +496,29 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
         >
           Annuler
         </button>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isPending || !formData.title || !formData.description}
-          className={`rounded-lg ${buttonPrimary} px-6 py-3 text-sm font-medium text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
-        >
-          <FolderKanban className="h-4 w-4" />
-          {isPending ? 'Enregistrement...' : projectId ? 'Mettre à jour' : 'Créer'}
-        </button>
+        <div className="flex items-center gap-3">
+          {saveStatus === 'success' && (
+            <span className="flex items-center gap-1.5 text-sm text-emerald-400">
+              <CheckCircle className="h-4 w-4" />
+              Enregistré
+            </span>
+          )}
+          {saveStatus === 'error' && (
+            <span className="flex items-center gap-1.5 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              Erreur
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isPending || !formData.title || !formData.description}
+            className={`rounded-lg ${buttonPrimary} px-6 py-3 text-sm font-medium text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+          >
+            <FolderKanban className="h-4 w-4" />
+            {isPending ? 'Enregistrement...' : projectId ? 'Mettre à jour' : 'Créer'}
+          </button>
+        </div>
       </div>
     </div>
   );
