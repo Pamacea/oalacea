@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createProject, updateProject, deleteProject } from '@/actions/projects';
-import type { ProjectCategory } from '@/generated/prisma/enums';
 
 export type CreateProjectInput = {
   title: string;
@@ -16,7 +15,7 @@ export type CreateProjectInput = {
   featured?: boolean;
   sortOrder?: number;
   year: number;
-  category: ProjectCategory;
+  categoryId: string;
 };
 
 export type UpdateProjectInput = Partial<CreateProjectInput>;

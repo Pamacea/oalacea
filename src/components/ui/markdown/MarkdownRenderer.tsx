@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface MarkdownRendererProps {
   content: string;
@@ -38,7 +39,8 @@ export function MarkdownRenderer({ content, className = '', isTerminal = true }:
       .replace(/<p>(<[hlu])/g, '$1')
       .replace(/(<\/[hlu]>)<\/p>/g, '$1');
 
-    return html;
+    // Sanitize HTML to prevent XSS attacks
+    return sanitizeHtml(html);
   }, [content]);
 
   const baseClasses = isTerminal

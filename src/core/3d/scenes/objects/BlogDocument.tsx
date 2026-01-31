@@ -43,9 +43,11 @@ const CATEGORY_COLOR_MAP: Record<string, number> = {
   default: 0x4ecdc4,
 };
 
-function getCategoryColor(category: string | null, baseColor: number): number {
+function getCategoryColor(category: { slug?: string | null } | null, baseColor: number): number {
   if (!category) return baseColor;
-  const normalized = category.toLowerCase();
+  const slug = category.slug || null;
+  if (!slug) return baseColor;
+  const normalized = slug.toLowerCase();
   return CATEGORY_COLOR_MAP[normalized] ?? CATEGORY_COLOR_MAP.default;
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { HelpModal, InteractionPrompt } from './ui'
+import { HelpModal, InteractionPrompt, AdminButton } from './ui'
 import { useModalStore } from '@/store/modal-store'
 import {
   BlogListingModal,
@@ -34,6 +34,7 @@ export function FloatingUI() {
       </button>
 
       <HelpModal />
+      <AdminButton />
       <InteractionPrompt />
 
       {isOpen && type === 'blog-listing' && <BlogListingModal />}

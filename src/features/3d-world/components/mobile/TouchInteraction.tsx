@@ -4,9 +4,11 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { useCharacterStore } from '@/features/3d-world/store';
 import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/features/3d-world/store';
+import { useAdminToast } from '@/features/admin/components/AdminOnlyToast';
 
 interface TouchInteractionProps {
   className?: string;
@@ -18,6 +20,10 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const zoneRef = useRef<HTMLDivElement>(null);
+
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.isAdmin === true;
+  const { showToast } = useAdminToast() ?? { showToast: () => {} };
 
   const canInteract = useCharacterStore((s) => s.canInteract);
   const interactTarget = useCharacterStore((s) => s.interactTarget);
@@ -45,14 +51,18 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
       } else if (interactTarget.route === '/about') {
         openAboutListing();
       } else if (interactTarget.type === 'admin') {
-        openAdminListing();
+        if (isAdmin) {
+          openAdminListing();
+        } else {
+          showToast();
+        }
       }
 
       if (navigator.vibrate) {
         navigator.vibrate(50);
       }
     }
-  }, [canInteract, interactTarget, openBlogListing, openProjectListing, openAboutListing, openAdminListing, switchWorld, isAdminModalOpen]);
+  }, [canInteract, interactTarget, openBlogListing, openProjectListing, openAboutListing, openAdminListing, switchWorld, isAdminModalOpen, isAdmin, showToast]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (isAdminModalOpen) return;

@@ -14,13 +14,20 @@ datasource db {
 // BLOG MODELS
 // =========================================
 
+enum CategoryType {
+  BLOG
+  PROJECT
+}
+
 model Category {
-  id        String   @id @default(cuid())
-  slug      String   @unique
+  id        String        @id @default(cuid())
+  slug      String        @unique
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  type      CategoryType  @default(BLOG)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
   posts     Post[]
+  projects  Project[]
 }
 
 model Post {
@@ -90,7 +97,8 @@ model Project {
   featured      Boolean  @default(false)
   sortOrder     Int      @default(0)
   year          Int
-  category      ProjectCategory
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
   worldPosition WorldPosition?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -100,7 +108,7 @@ model Project {
 
   @@index([featured])
   @@index([year])
-  @@index([category])
+  @@index([categoryId])
   @@index([authorId])
 }
 
@@ -116,14 +124,6 @@ model WorldPosition {
   project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
-}
-
-enum ProjectCategory {
-  WEB
-  MOBILE
-  THREE_D
-  AI
-  OTHER
 }
 
 enum WorldType {

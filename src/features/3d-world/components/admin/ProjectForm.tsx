@@ -3,33 +3,30 @@
 import { useState, useEffect, useRef } from 'react';
 import { getProjectById } from '@/actions/projects';
 import { useCreateProject, useUpdateProject, type CreateProjectInput } from './queries/use-project-mutations';
-import { ProjectCategory } from '@/generated/prisma/enums';
 import { ArrowLeft, FolderKanban, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { useInWorldAdminStore } from '@/features/admin/store';
+import { TagInput } from '@/components/ui/tag-input';
+import { useProjectCategories } from './queries/use-project-categories';
+import dynamic from 'next/dynamic';
 
-const categoryLabels: Record<ProjectCategory, string> = {
-  WEB: 'Web',
-  MOBILE: 'Mobile',
-  THREE_D: '3D',
-  AI: 'IA',
-  OTHER: 'Autre',
-};
-
-const categories = Object.values(ProjectCategory);
+const MarkdownEditor = dynamic(
+  () => import('./markdown-editor').then(mod => ({ default: mod.MarkdownEditor })),
+  { ssr: false }
+);
 
 type FormData = {
   title: string;
   slug: string;
   description: string;
   longDescription: string;
-  techStack: string;
+  techStack: string[];
   githubUrl: string;
   liveUrl: string;
   thumbnail: string;
   featured: boolean;
   sortOrder: number;
   year: number;
-  category: ProjectCategory;
+  categoryId: string;
 };
 
 // Zinc color scheme - minimal and consistent
@@ -46,17 +43,17 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
     slug: '',
     description: '',
     longDescription: '',
-    techStack: '',
+    techStack: [],
     githubUrl: '',
     liveUrl: '',
     thumbnail: '',
     featured: false,
     sortOrder: 0,
     year: new Date().getFullYear(),
-    category: ProjectCategory.WEB,
+    categoryId: '',
   });
 
-  const [isLoading, setIsLoading] = useState(!!projectId);
+  const { categories, isLoading: categoriesLoading } = useProjectCategories();
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -66,14 +63,12 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  // Load project data if editing
+  const isLoading = categoriesLoading || (projectId && !formData.title);
+
+  // Load project data when editing (categories are loaded separately)
   useEffect(() => {
     async function loadProject() {
-      // If no projectId (creating new project), we're done loading
-      if (!projectId) {
-        setIsLoading(false);
-        return;
-      }
+      if (!projectId) return;
 
       try {
         const project = await getProjectById(projectId);
@@ -83,24 +78,32 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
             slug: project.slug,
             description: project.description,
             longDescription: project.longDescription || '',
-            techStack: project.techStack?.join(', ') || '',
+            techStack: project.techStack || [],
             githubUrl: project.githubUrl || '',
             liveUrl: project.liveUrl || '',
             thumbnail: project.thumbnail || '',
             featured: project.featured,
             sortOrder: project.sortOrder,
             year: project.year,
-            category: project.category as ProjectCategory,
+            categoryId: project.categoryId || '',
           });
         }
       } catch (error) {
         console.error('Failed to load project:', error);
-      } finally {
-        setIsLoading(false);
       }
     }
     loadProject();
   }, [projectId]);
+
+  // Set default category when categories are loaded
+  useEffect(() => {
+    if (categories.length > 0 && !formData.categoryId) {
+      setFormData((prev) => ({
+        ...prev,
+        categoryId: categories[0].id,
+      }));
+    }
+  }, [categories]);
 
   const generateSlug = (title: string) => {
     return title
@@ -201,20 +204,26 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
   };
 
   const handleSubmit = async () => {
+    // Check if category is selected
+    if (!formData.categoryId && categories.length > 0) {
+      alert('Veuillez sélectionner une catégorie');
+      return;
+    }
+
     setSaveStatus('idle');
     const data: CreateProjectInput = {
       title: formData.title,
       slug: formData.slug || generateSlug(formData.title),
       description: formData.description,
       longDescription: formData.longDescription || undefined,
-      techStack: formData.techStack.split(',').map((t) => t.trim()).filter(Boolean),
+      techStack: formData.techStack,
       githubUrl: formData.githubUrl || undefined,
       liveUrl: formData.liveUrl || undefined,
       thumbnail: formData.thumbnail || undefined,
       featured: formData.featured,
       sortOrder: formData.sortOrder,
       year: formData.year,
-      category: formData.category,
+      categoryId: formData.categoryId,
     };
 
     try {
@@ -245,7 +254,7 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
     }));
   };
 
-  if (isLoading && projectId) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className={`text-zinc-300`}>Chargement...</div>
@@ -309,17 +318,22 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
             <div>
               <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Catégorie</label>
               <select
-                name="category"
-                value={formData.category}
+                name="categoryId"
+                value={formData.categoryId}
                 onChange={handleChange}
                 className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none`}
+                required
               >
+                <option value="">Sélectionner...</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {categoryLabels[cat]}
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
                   </option>
                 ))}
               </select>
+              {categories.length === 0 && (
+                <p className="mt-1 text-xs text-amber-500">Aucune catégorie disponible. Créez-en d'abord dans l'onglet Catégories.</p>
+              )}
             </div>
             <div>
               <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Année</label>
@@ -351,26 +365,24 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
           {/* Long Description */}
           <div>
             <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Description longue</label>
-            <textarea
-              name="longDescription"
-              value={formData.longDescription}
-              onChange={handleChange}
-              rows={5}
-              placeholder="Description détaillée du projet, challenges, solutions..."
-              className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none resize-y`}
+            <MarkdownEditor
+              content={formData.longDescription}
+              onChange={(content) => setFormData(prev => ({ ...prev, longDescription: content }))}
+              placeholder="# Description du projet
+
+Décrivez le **contexte**, les **challenges** et les **solutions**..."
+              editable
             />
           </div>
 
-          {/* Tech Stack */}
+          {/* Tech Stack - Now using TagInput */}
           <div>
-            <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Stack technique</label>
-            <input
-              type="text"
-              name="techStack"
+            <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Tags</label>
+            <TagInput
               value={formData.techStack}
-              onChange={handleChange}
+              onChange={(tags) => setFormData((prev) => ({ ...prev, techStack: tags }))}
               placeholder="React, TypeScript, Tailwind..."
-              className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none`}
+              className="w-full"
             />
           </div>
 
@@ -516,7 +528,7 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isPending || !formData.title || !formData.description}
+            disabled={isPending || !formData.title || !formData.description || !formData.categoryId}
             className={`rounded-lg ${buttonPrimary} px-6 py-3 text-sm font-medium text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
           >
             <FolderKanban className="h-4 w-4" />
