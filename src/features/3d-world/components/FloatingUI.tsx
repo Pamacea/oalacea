@@ -16,7 +16,7 @@ export function FloatingUI() {
     <>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-amber-500 focus:text-white focus:p-4 focus:rounded-md focus:font-semibold"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-imperium-crimson focus:text-imperium-bone focus:p-4 focus:rounded-none focus:font-semibold focus:border-2 focus:border-imperium-crimson-bright"
         onClick={(e) => {
           e.preventDefault()
           document.getElementById('scene-container')?.focus()
@@ -25,9 +25,10 @@ export function FloatingUI() {
         Skip to main content
       </a>
 
+      {/* GitHub Link - Brutal Style */}
       <button
         onClick={() => window.open('https://github.com/oalacea', '_blank')}
-        className="fixed top-4 right-4 z-30 h-8 w-8 rounded-full bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold"
+        className="fixed top-4 right-4 z-30 h-10 w-10 bg-imperium-iron text-imperium-bone border-2 border-imperium-steel-dark hover:bg-imperium-steel hover:border-imperium-crimson backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold font-display uppercase"
         aria-label="GitHub repository"
       >
         GH

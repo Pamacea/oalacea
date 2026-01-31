@@ -12,7 +12,7 @@ export function ControlsPanel({
   return (
     <button
       onClick={onToggleCamera}
-      className="fixed top-4 right-14 z-30 h-8 w-8 rounded-full bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center"
+      className="fixed top-4 right-14 z-30 h-10 w-10 rounded-none bg-imperium-iron text-imperium-bone border-2 border-imperium-steel-dark hover:bg-imperium-steel hover:border-imperium-crimson backdrop-blur-sm transition-colors flex items-center justify-center font-display text-xs"
       aria-label={cameraMode === 'follow' ? 'Unlock camera (Space)' : 'Lock camera (Space)'}
       title={cameraMode === 'follow' ? 'Unlock camera (Space)' : 'Lock camera (Space)'}
     >
