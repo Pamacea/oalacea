@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { getProjects } from "@/actions/projects"
 
+// Single hook for projects - query function directly from server action
 export function useProjects(options?: {
   featured?: boolean
   category?: string
@@ -11,6 +12,7 @@ export function useProjects(options?: {
   const { data, isLoading, error } = useQuery({
     queryKey: ["projects", options],
     queryFn: () => getProjects(options ?? {}),
+    refetchOnWindowFocus: false,
   })
 
   return {

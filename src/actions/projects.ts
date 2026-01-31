@@ -1,7 +1,7 @@
 // Server Actions pour les projets portfolio - Using Prisma in Server Components
 'use server';
 
-import { revalidatePath, unstable_cache } from 'next/cache';
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import type { Project, WorldPosition, Prisma } from '@/generated/prisma/client';
 import { ProjectCategory } from '@/generated/prisma/enums';
@@ -57,7 +57,7 @@ const getCachedProjects = unstable_cache(
     });
   },
   ['projects'],
-  { revalidate: 120 }
+  { revalidate: 120, tags: ['projects'] }
 );
 
 const getCachedProjectBySlug = unstable_cache(
@@ -81,7 +81,7 @@ const getCachedProjectBySlug = unstable_cache(
     });
   },
   ['project'],
-  { revalidate: 120 }
+  { revalidate: 120, tags: ['projects'] }
 );
 
 const getCachedProjectById = unstable_cache(
@@ -154,6 +154,58 @@ export async function getProjectCategories() {
 }
 
 // =========================================
+// ADMIN ACTIONS (uncached for real-time updates)
+// =========================================
+
+// Uncached version for admin - bypasses cache entirely
+export async function getProjectsUncached({
+  featured,
+  category,
+  world,
+}: {
+  featured?: boolean;
+  category?: string;
+  world?: 'DEV' | 'ART';
+} = {}): Promise<ProjectListItem[]> {
+  const where: Prisma.ProjectWhereInput = {};
+  if (featured) where.featured = true;
+  if (category) {
+    const upperCategory = category.toUpperCase() as keyof typeof ProjectCategory;
+    where.category = ProjectCategory[upperCategory] ?? category;
+  }
+  if (world) {
+    where.worldPosition = { world };
+  }
+
+  return prisma.project.findMany({
+    where,
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      thumbnail: true,
+      year: true,
+      category: true,
+      featured: true,
+      sortOrder: true,
+      techStack: true,
+      worldPosition: {
+        select: {
+          world: true,
+          x: true,
+          z: true,
+        },
+      },
+    },
+    orderBy: [
+      { sortOrder: 'asc' },
+      { year: 'desc' },
+    ],
+  });
+}
+
+// =========================================
 // MUTATION ACTIONS (invalidate cache)
 // =========================================
 
@@ -204,11 +256,15 @@ export async function createProject(data: {
         },
       }),
     },
+    include: {
+      worldPosition: true,
+    },
   });
 
   revalidatePath('/portfolio');
   revalidatePath(`/portfolio/${data.slug}`);
   revalidatePath('/admin/projects');
+  revalidateTag('projects', { expire: 0 });
 
   return project;
 }
@@ -282,31 +338,65 @@ export async function updateProject(
       ...(data.year && { year: data.year }),
       ...(data.category && { category: data.category }),
     },
+    include: {
+      worldPosition: true,
+    },
   });
 
   revalidatePath('/portfolio');
   revalidatePath(`/portfolio/${currentProject.slug}`);
   revalidatePath('/admin/projects');
+  revalidateTag('projects', { expire: 0 });
 
   return project;
 }
 
 export async function deleteProject(id: string) {
-  await prisma.project.delete({
-    where: { id },
-  });
+  try {
+    await prisma.project.delete({
+      where: { id },
+    });
+  } catch (error) {
+    // If record not found (P2025), treat as success (already deleted)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2025'
+    ) {
+      // Already deleted - continue
+    } else {
+      throw error;
+    }
+  }
 
   revalidatePath('/portfolio');
   revalidatePath('/admin/projects');
+  revalidateTag('projects', { expire: 0 });
 
   return { success: true };
 }
 
 export async function deleteProjectWithRevalidate(id: string): Promise<void> {
-  await prisma.project.delete({
-    where: { id },
-  });
+  try {
+    await prisma.project.delete({
+      where: { id },
+    });
+  } catch (error) {
+    // If record not found (P2025), treat as success (already deleted)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2025'
+    ) {
+      // Already deleted - continue
+    } else {
+      throw error;
+    }
+  }
 
   revalidatePath('/portfolio');
   revalidatePath('/admin/projects');
+  revalidateTag('projects', { expire: 0 });
 }

@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useTransition, useRef } from 'react';
-import { createPost, updatePost, getPosts } from '@/actions/blog';
+import { useState, useEffect, useRef } from 'react';
+import { getPostBySlug } from '@/actions/blog';
 import { getAllCategories } from '@/actions/blog';
-import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye } from 'lucide-react';
+import { useCreatePost, useUpdatePost } from '@/features/blog/queries';
+import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { useInWorldAdminStore } from '@/features/admin/store';
-import { useWorldStore } from '@/features/3d-world/store';
-import type { Post } from '@/generated/prisma/client';
 
 type FormData = {
   title: string;
@@ -21,7 +20,6 @@ type FormData = {
 
 export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' | 'art' }) {
   const { setView } = useInWorldAdminStore();
-  const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Theme classes - conditional for Tailwind JIT
@@ -38,42 +36,62 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
     featured: false,
   });
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
   const [isLoading, setIsLoading] = useState(!!postId);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  // Load categories and post data
+  const createMutation = useCreatePost();
+  const updateMutation = useUpdatePost();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
+  // Load categories first, then post data
   useEffect(() => {
-    async function loadData() {
+    async function loadCategories() {
       try {
         const cats = await getAllCategories();
         setCategories(cats);
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    }
+    loadCategories();
+  }, []);
 
+  // Load post data after categories are loaded
+  useEffect(() => {
+    if (!categories.length) return;
+
+    async function loadPost() {
+      try {
         if (postId) {
-          const posts = await getPosts({});
-          const post = posts.posts.find((p) => p.id === postId);
+          // postId is actually the slug here
+          const post = await getPostBySlug(postId);
           if (post) {
+            // Find category id from loaded categories by matching slug
+            const catId = categories.find((c) => c.slug === post.category?.slug)?.id || '';
             setFormData({
               title: post.title,
               slug: post.slug,
               excerpt: post.excerpt || '',
-              content: '', // PostListItem doesn't have content, would need separate fetch
-              categoryId: '', // PostListItem doesn't have categoryId
+              content: post.content || '',
+              categoryId: catId,
               coverImage: post.coverImage || '',
-              tags: '', // PostListItem doesn't have tags
-              featured: post.featured,
+              tags: post.tags?.join(', ') || '',
+              featured: false, // PostDetail doesn't have featured, default to false
             });
           }
         }
       } catch (error) {
-        console.error('Failed to load data:', error);
+        console.error('Failed to load post:', error);
       } finally {
         setIsLoading(false);
       }
     }
-    loadData();
-  }, [postId]);
+    loadPost();
+  }, [postId, categories]);
 
   const generateSlug = (title: string) => {
     return title
@@ -173,27 +191,31 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
     }
   };
 
-  const handleSubmit = (publish: boolean) => {
-    startTransition(async () => {
-      const data = {
-        title: formData.title,
-        slug: formData.slug || generateSlug(formData.title),
-        excerpt: formData.excerpt || undefined,
-        content: formData.content,
-        categoryId: formData.categoryId || undefined,
-        coverImage: formData.coverImage || undefined,
-        tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
-        featured: formData.featured,
-        published: publish,
-      };
+  const handleSubmit = async (publish: boolean) => {
+    setSaveStatus('idle');
+    const data = {
+      title: formData.title,
+      slug: formData.slug || generateSlug(formData.title),
+      excerpt: formData.excerpt || undefined,
+      content: formData.content,
+      categoryId: formData.categoryId || undefined,
+      coverImage: formData.coverImage || undefined,
+      tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
+      featured: formData.featured,
+      published: publish,
+    };
 
+    try {
       if (postId) {
-        await updatePost(formData.slug, data);
+        await updateMutation.mutateAsync({ slug: formData.slug, data });
       } else {
-        await createPost(data);
+        await createMutation.mutateAsync(data);
       }
+      setSaveStatus('success');
       setView('posts');
-    });
+    } catch {
+      setSaveStatus('error');
+    }
   };
 
   const handleChange = (
@@ -423,25 +445,39 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
         >
           Annuler
         </button>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => handleSubmit(false)}
-            disabled={isPending || !formData.title || !formData.content}
-            className={`rounded-lg border-2 ${buttonSecondary} px-6 py-3 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
-          >
-            <Save className="h-4 w-4" />
-            {isPending ? 'Enregistrement...' : 'Brouillon'}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSubmit(true)}
-            disabled={isPending || !formData.title || !formData.content}
-            className={`rounded-lg ${buttonPrimary} px-6 py-3 text-sm font-medium text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
-          >
-            <FileText className="h-4 w-4" />
-            {isPending ? 'Publication...' : postId ? 'Mettre à jour' : 'Publier'}
-          </button>
+        <div className="flex items-center gap-3">
+          {saveStatus === 'success' && (
+            <span className="flex items-center gap-1.5 text-sm text-emerald-400">
+              <CheckCircle className="h-4 w-4" />
+              Enregistré
+            </span>
+          )}
+          {saveStatus === 'error' && (
+            <span className="flex items-center gap-1.5 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              Erreur
+            </span>
+          )}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => handleSubmit(false)}
+              disabled={isPending || !formData.title || !formData.content}
+              className={`rounded-lg border-2 ${buttonSecondary} px-6 py-3 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+            >
+              <Save className="h-4 w-4" />
+              {isPending ? 'Enregistrement...' : 'Brouillon'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubmit(true)}
+              disabled={isPending || !formData.title || !formData.content}
+              className={`rounded-lg ${buttonPrimary} px-6 py-3 text-sm font-medium text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+            >
+              <FileText className="h-4 w-4" />
+              {isPending ? 'Publication...' : postId ? 'Mettre à jour' : 'Publier'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

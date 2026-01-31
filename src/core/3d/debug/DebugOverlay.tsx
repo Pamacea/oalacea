@@ -3,7 +3,8 @@
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Vector3, Group, BufferAttribute } from 'three';
+import * as THREE from 'three';
+import { Vector3, Group } from 'three';
 import type { ObstacleConfig } from '@/core/3d/physics/config/ObstacleConfig';
 import type { HitboxShape } from '@/core/3d/physics/engine/hitboxes/HitboxShape';
 
@@ -57,16 +58,14 @@ function CircleHitboxDebug({
     return new Float32Array(pts);
   }, [radius]);
 
+  const geometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(points, 3));
+    return geo;
+  }, [points]);
+
   return (
-    <line position={[position.x, position.y, position.z]}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[points, 3]}
-        />
-      </bufferGeometry>
-      <lineBasicMaterial color={color} linewidth={2} />
-    </line>
+    <primitive object={new THREE.Line(geometry, new THREE.LineBasicMaterial({ color, linewidth: 2 }))} position={[position.x, position.y, position.z]} />
   );
 }
 

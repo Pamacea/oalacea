@@ -3,9 +3,27 @@
 
 import { Suspense, forwardRef, useEffect, useState } from 'react';
 import { useLoader } from '@react-three/fiber';
-import type { GLTF } from 'three-stdlib/loaders/GLTFLoader';
 import { TextureLoader } from 'three';
 import * as THREE from 'three';
+import type { AnimationClip, Camera, Group } from 'three';
+
+// GLTF type definition (from three-stdlib GLTFLoader)
+export interface GLTF {
+  animations: AnimationClip[];
+  scene: Group;
+  scenes: Group[];
+  cameras: Camera[];
+  asset: {
+    copyright?: string;
+    generator?: string;
+    version?: string;
+    minVersion?: string;
+    extensions?: any;
+    extras?: any;
+  };
+  parser: any;
+  userData: Record<string, any>;
+}
 
 type AssetType = 'gltf' | 'glb' | 'texture' | 'audio';
 
@@ -65,11 +83,12 @@ function AssetLoaderContent({
         switch (type) {
           case 'gltf':
           case 'glb': {
+            // @ts-ignore - three-stdlib dynamic import
             const { GLTFLoader } = await import('three-stdlib/loaders/GLTFLoader');
             asset = await new Promise<GLTF>((resolve, reject) => {
               new GLTFLoader(loader).load(
                 url,
-                (gltf) => resolve(gltf),
+                (gltf: GLTF) => resolve(gltf),
                 undefined,
                 reject
               );
@@ -180,11 +199,8 @@ export function AssetLoader({
 }
 
 export function useGLTF(url: string) {
-  const gltf = useLoader(
-    // @ts-ignore - GLTFLoader is dynamically imported
-    (await import('three-stdlib/loaders/GLTFLoader')).GLTFLoader,
-    url
-  );
+  // @ts-ignore - three-stdlib dynamic import
+  const gltf = useLoader((await import('three-stdlib/loaders/GLTFLoader')).GLTFLoader, url);
   return gltf as GLTF;
 }
 

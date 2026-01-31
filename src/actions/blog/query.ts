@@ -51,7 +51,7 @@ export type GetPostsResult = {
   };
 };
 
-// Cached query functions
+// Query functions - using unstable_cache but with admin bypass
 const getCachedPosts = unstable_cache(
   async ({ published, featured, categoryId, page, limit }: {
     published: boolean;
@@ -105,8 +105,67 @@ const getCachedPosts = unstable_cache(
     };
   },
   ['blog-posts'],
-  { revalidate: 60 }
+  { revalidate: 60, tags: ['blog-posts'] }
 );
+
+// Uncached version for admin - bypasses cache entirely
+export async function getPostsUncached({
+  published,
+  featured,
+  categoryId,
+  page = 1,
+  limit = 10,
+}: {
+  published?: boolean;
+  featured?: boolean;
+  categoryId?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<GetPostsResult> {
+  const skip = (page - 1) * limit;
+  const where: Prisma.PostWhereInput = {};
+  if (published !== undefined) where.published = published;
+  if (featured) where.featured = true;
+  if (categoryId) where.categoryId = categoryId;
+
+  const [posts, total] = await Promise.all([
+    prisma.post.findMany({
+      where,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        excerpt: true,
+        coverImage: true,
+        publishDate: true,
+        createdAt: true,
+        readingTime: true,
+        featured: true,
+        published: true,
+        category: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+      },
+      orderBy: { publishDate: 'desc' },
+      skip,
+      take: limit,
+    }),
+    prisma.post.count({ where }),
+  ]);
+
+  return {
+    posts,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
 
 const getCachedPostBySlug = unstable_cache(
   async (slug: string) => {
@@ -135,7 +194,7 @@ const getCachedPostBySlug = unstable_cache(
     });
   },
   ['blog-post'],
-  { revalidate: 60 }
+  { revalidate: 60, tags: ['blog-posts'] }
 );
 
 const getCachedAllCategories = unstable_cache(
