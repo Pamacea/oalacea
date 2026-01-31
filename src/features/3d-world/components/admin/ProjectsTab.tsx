@@ -4,18 +4,9 @@ import { useState } from 'react';
 import { Plus, Pencil, Trash2, Star, Globe } from 'lucide-react';
 import { useProjects } from '@/features/portfolio/queries/useProjects';
 import { useDeleteProject } from './queries/use-project-mutations';
-import { ProjectCategory } from '@/generated/prisma/enums';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { ConfirmDialog } from './ConfirmDialog';
 import { CardGridSkeleton } from '@/features/admin/components';
-
-const categoryLabels: Record<ProjectCategory, string> = {
-  WEB: 'Web',
-  MOBILE: 'Mobile',
-  THREE_D: '3D',
-  AI: 'IA',
-  OTHER: 'Autre',
-};
 
 const worldFilters = [
   { value: 'all' as const, label: 'Tous', icon: Globe },
@@ -26,119 +17,94 @@ const worldFilters = [
 type WorldFilter = 'all' | 'DEV' | 'ART';
 
 export function ProjectsTab() {
-  const [worldFilter, setWorldFilter] = useState<WorldFilter>('all');
+  const { setView } = useInWorldAdminStore();
+  const { data: projects, isLoading } = useProjects();
+  const deleteMutation = useDeleteProject();
+
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; title: string }>({
     open: false,
     id: '',
     title: '',
   });
   const [deleteSuccess, setDeleteSuccess] = useState(false);
-  const { setView, setSelectedId } = useInWorldAdminStore();
+  const [worldFilter, setWorldFilter] = useState<WorldFilter>('all');
 
-  // Get projects with optional filter
-  const { projects, isLoading } = useProjects(
-    worldFilter === 'all' ? {} : { world: worldFilter }
-  );
+  const filteredProjects = projects?.filter((p) => {
+    if (worldFilter === 'all') return true;
+    return p.worldPosition?.world === worldFilter;
+  });
 
-  const deleteMutation = useDeleteProject();
-
-  const handleDelete = () => {
-    deleteMutation.mutate(deleteDialog.id, {
-      onSuccess: () => {
-        setDeleteSuccess(true);
-        setTimeout(() => {
-          setDeleteDialog({ open: false, id: '', title: '' });
-          setDeleteSuccess(false);
-        }, 1000);
-      },
-    });
+  const handleDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(deleteDialog.id);
+      setDeleteSuccess(true);
+      setTimeout(() => setDeleteSuccess(false), 2000);
+    } finally {
+      setDeleteDialog({ ...deleteDialog, open: false });
+    }
   };
-
-  if (isLoading) {
-    return <CardGridSkeleton cards={4} />;
-  }
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-6">
+        {/* Header with filters and add button */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-semibold text-zinc-100">Projets</h2>
-            <div className="flex items-center rounded-lg bg-zinc-900/50 border border-zinc-800 p-1">
-              {worldFilters.map((filter) => {
-                const Icon = filter.icon;
-                const isActive = worldFilter === filter.value;
-                return (
-                  <button
-                    key={filter.value}
-                    onClick={() => setWorldFilter(filter.value)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
-                      isActive
-                        ? 'bg-zinc-800 text-zinc-100'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {filter.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <h2 className="text-xl font-bold text-zinc-200">Projets</h2>
           <button
-            onClick={() => {
-              setSelectedId(null);
-              setView('edit-project');
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:border-zinc-600 transition-all"
+            onClick={() => setView('create-project')}
+            className="flex items-center gap-2 rounded-lg bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-600 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Nouveau projet
           </button>
         </div>
 
-        {projects.length === 0 ? (
-          <div className="border border-zinc-800 border-dashed rounded-xl p-12 text-center">
-            <p className="text-zinc-500 text-sm mb-4">
-              {worldFilter === 'all' ? 'Aucun projet' : `Aucun projet dans le monde ${worldFilter}`}
-            </p>
+        {/* World filter */}
+        <div className="flex items-center gap-2">
+          {worldFilters.map((filter) => (
             <button
-              onClick={() => {
-                setSelectedId(null);
-                setView('edit-project');
-              }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
+              key={filter.value}
+              onClick={() => setWorldFilter(filter.value)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                worldFilter === filter.value
+                  ? 'bg-zinc-700 text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-400 hover:bg-zinc-900'
+              }`}
             >
-              <Plus className="h-4 w-4" />
-              Créer le premier
+              {filter.label}
             </button>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {projects.map((project) => (
+          ))}
+        </div>
+
+        {/* Projects grid */}
+        {isLoading ? (
+          <CardGridSkeleton count={6} />
+        ) : filteredProjects && filteredProjects.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredProjects.map((project) => (
               <div
                 key={project.id}
-                className="group border border-zinc-800 rounded-xl bg-zinc-900/30 p-4 hover:bg-zinc-900/50 transition-colors duration-200"
+                className="group relative rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 hover:border-zinc-700 transition-colors"
               >
-                <div className="mb-3 aspect-video rounded-lg bg-zinc-950 overflow-hidden">
-                  {project.thumbnail ? (
-                    <img
-                      src={project.thumbnail}
-                      alt={project.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-zinc-700 text-xs">
-                      Aperçu
+                <div className="flex items-start justify-between gap-3">
+                  {/* Thumbnail */}
+                  {project.thumbnail && (
+                    <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-zinc-800">
+                      <img
+                        src={project.thumbnail}
+                        alt={project.title}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                   )}
-                </div>
 
-                <div className="flex items-start justify-between gap-4">
+                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-zinc-200 truncate">{project.title}</h3>
-                      {project.featured && <Star className="h-4 w-4 text-amber-500 shrink-0" fill={'currentColor'} />}
+                      {project.featured && (
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                      )}
+                      <h3 className="truncate font-medium text-zinc-200">{project.title}</h3>
                     </div>
                     <p className="mt-1 text-sm text-zinc-500 line-clamp-2">{project.description}</p>
                   </div>
@@ -147,7 +113,7 @@ export function ProjectsTab() {
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-                      {categoryLabels[project.category as ProjectCategory]}
+                      {project.category.name}
                     </span>
                     {project.worldPosition?.world && (
                       <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded border ${
@@ -163,8 +129,9 @@ export function ProjectsTab() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
-                        setSelectedId(project.id);
                         setView('edit-project');
+                        // Store project ID in sessionStorage for the edit form
+                        sessionStorage.setItem('editProjectId', project.id);
                       }}
                       aria-label={`Edit ${project.title}`}
                       className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded transition-all duration-200"
@@ -184,6 +151,17 @@ export function ProjectsTab() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-zinc-500 mb-4">Aucun projet pour le moment</p>
+            <button
+              onClick={() => setView('create-project')}
+              className="inline-flex items-center gap-2 rounded-lg bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-100 hover:bg-zinc-600 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Créer un projet
+            </button>
           </div>
         )}
       </div>

@@ -202,12 +202,16 @@ const getCachedPostBySlug = unstable_cache(
 );
 
 const getCachedAllCategories = unstable_cache(
-  async () => {
+  async ({ type }: { type?: 'BLOG' | 'PROJECT' } = {}) => {
+    const where: { type?: 'BLOG' | 'PROJECT' } = {};
+    if (type) where.type = type;
+
     const categories = await prisma.category.findMany({
+      where,
       orderBy: { name: 'asc' },
       include: {
         _count: {
-          select: { posts: true },
+          select: { posts: true, projects: true },
         },
       },
     });
@@ -215,11 +219,34 @@ const getCachedAllCategories = unstable_cache(
     return categories.map((cat) => ({
       ...cat,
       postCount: cat._count.posts,
+      projectCount: cat._count.projects,
     }));
   },
-  ['blog-categories'],
-  { revalidate: 300, tags: ['blog-categories'] }
+  ['categories'],
+  { revalidate: 300, tags: ['categories'] }
 );
+
+// Uncached version for admin - bypasses cache entirely
+export async function getAllCategoriesUncached({ type }: { type?: 'BLOG' | 'PROJECT' } = {}): Promise<(Category & { postCount: number; projectCount: number })[]> {
+  const where: { type?: 'BLOG' | 'PROJECT' } = {};
+  if (type) where.type = type;
+
+  const categories = await prisma.category.findMany({
+    where,
+    orderBy: { name: 'asc' },
+    include: {
+      _count: {
+        select: { posts: true, projects: true },
+      },
+    },
+  });
+
+  return categories.map((cat) => ({
+    ...cat,
+    postCount: cat._count.posts,
+    projectCount: cat._count.projects,
+  }));
+}
 
 const getCachedPostVersions = unstable_cache(
   async (postId: string) => {
@@ -268,8 +295,8 @@ export async function getPostBySlug(slug: string): Promise<PostDetail | null> {
   return getCachedPostBySlug(slug);
 }
 
-export async function getAllCategories(): Promise<(Category & { postCount: number })[]> {
-  return getCachedAllCategories();
+export async function getAllCategories({ type }: { type?: 'BLOG' | 'PROJECT' } = {}): Promise<(Category & { postCount: number; projectCount: number })[]> {
+  return getCachedAllCategories({ type });
 }
 
 export async function getPostVersions(postId: string): Promise<PostVersion[]> {

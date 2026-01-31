@@ -4,7 +4,6 @@
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import type { Project, WorldPosition, Prisma } from '@/generated/prisma/client';
-import { ProjectCategory } from '@/generated/prisma/enums';
 import { NotFoundError } from '@/core/errors';
 
 type ProjectWithWorldPosition = Project & { worldPosition: WorldPosition | null };
@@ -22,8 +21,7 @@ const getCachedProjects = unstable_cache(
     const where: Prisma.ProjectWhereInput = {};
     if (featured) where.featured = true;
     if (category) {
-      const upperCategory = category.toUpperCase() as keyof typeof ProjectCategory;
-      where.category = ProjectCategory[upperCategory] ?? category;
+      where.category = { slug: category };
     }
     if (world) {
       where.worldPosition = { world };
@@ -38,7 +36,14 @@ const getCachedProjects = unstable_cache(
         description: true,
         thumbnail: true,
         year: true,
-        category: true,
+        categoryId: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
         featured: true,
         sortOrder: true,
         techStack: true,
@@ -72,7 +77,14 @@ const getCachedProjectBySlug = unstable_cache(
         longDescription: true,
         thumbnail: true,
         year: true,
-        category: true,
+        categoryId: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
         featured: true,
         techStack: true,
         githubUrl: true,
@@ -103,7 +115,12 @@ export type ProjectListItem = {
   description: string;
   thumbnail: string | null;
   year: number;
-  category: string;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   featured: boolean;
   sortOrder: number;
   techStack: string[];
@@ -122,7 +139,12 @@ type ProjectDetail = {
   longDescription: string | null;
   thumbnail: string | null;
   year: number;
-  category: string;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   featured: boolean;
   techStack: string[];
   githubUrl: string | null;
@@ -150,7 +172,11 @@ export async function getProjectById(id: string) {
 }
 
 export async function getProjectCategories() {
-  return Object.values(ProjectCategory);
+  const categories = await prisma.category.findMany({
+    where: { type: 'PROJECT' },
+    orderBy: { name: 'asc' },
+  });
+  return categories;
 }
 
 // =========================================
@@ -170,8 +196,7 @@ export async function getProjectsUncached({
   const where: Prisma.ProjectWhereInput = {};
   if (featured) where.featured = true;
   if (category) {
-    const upperCategory = category.toUpperCase() as keyof typeof ProjectCategory;
-    where.category = ProjectCategory[upperCategory] ?? category;
+    where.category = { slug: category };
   }
   if (world) {
     where.worldPosition = { world };
@@ -186,7 +211,14 @@ export async function getProjectsUncached({
       description: true,
       thumbnail: true,
       year: true,
-      category: true,
+      categoryId: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
       featured: true,
       sortOrder: true,
       techStack: true,
@@ -221,7 +253,7 @@ export async function createProject(data: {
   featured?: boolean;
   sortOrder?: number;
   year: number;
-  category: ProjectCategory;
+  categoryId: string;
   worldPosition?: {
     world: 'DEV' | 'ART';
     x: number;
@@ -243,7 +275,7 @@ export async function createProject(data: {
       featured: data.featured || false,
       sortOrder: data.sortOrder || 0,
       year: data.year,
-      category: data.category,
+      categoryId: data.categoryId,
       ...(data.worldPosition && {
         worldPosition: {
           create: {
@@ -258,6 +290,7 @@ export async function createProject(data: {
     },
     include: {
       worldPosition: true,
+      category: true,
     },
   });
 
@@ -265,6 +298,7 @@ export async function createProject(data: {
   revalidatePath(`/portfolio/${data.slug}`);
   revalidatePath('/admin/projects');
   revalidateTag('projects', { expire: 0 });
+  revalidateTag('project-by-id', { expire: 0 });
 
   return project;
 }
@@ -282,7 +316,7 @@ export async function updateProject(
     featured?: boolean;
     sortOrder?: number;
     year?: number;
-    category?: ProjectCategory;
+    categoryId?: string;
     worldPosition?: {
       world: 'DEV' | 'ART';
       x: number;
@@ -329,17 +363,18 @@ export async function updateProject(
       ...(data.title && { title: data.title }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.longDescription !== undefined && { longDescription: data.longDescription }),
-      ...(data.techStack && { techStack: data.techStack }),
+      ...(data.techStack !== undefined && { techStack: data.techStack }),
       ...(data.githubUrl !== undefined && { githubUrl: data.githubUrl }),
       ...(data.liveUrl !== undefined && { liveUrl: data.liveUrl }),
       ...(data.thumbnail !== undefined && { thumbnail: data.thumbnail }),
       ...(data.featured !== undefined && { featured: data.featured }),
       ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
       ...(data.year && { year: data.year }),
-      ...(data.category && { category: data.category }),
+      ...(data.categoryId && { categoryId: data.categoryId }),
     },
     include: {
       worldPosition: true,
+      category: true,
     },
   });
 
@@ -347,6 +382,7 @@ export async function updateProject(
   revalidatePath(`/portfolio/${currentProject.slug}`);
   revalidatePath('/admin/projects');
   revalidateTag('projects', { expire: 0 });
+  revalidateTag('project-by-id', { expire: 0 });
 
   return project;
 }
@@ -373,6 +409,7 @@ export async function deleteProject(id: string) {
   revalidatePath('/portfolio');
   revalidatePath('/admin/projects');
   revalidateTag('projects', { expire: 0 });
+  revalidateTag('project-by-id', { expire: 0 });
 
   return { success: true };
 }
@@ -399,4 +436,5 @@ export async function deleteProjectWithRevalidate(id: string): Promise<void> {
   revalidatePath('/portfolio');
   revalidatePath('/admin/projects');
   revalidateTag('projects', { expire: 0 });
+  revalidateTag('project-by-id', { expire: 0 });
 }

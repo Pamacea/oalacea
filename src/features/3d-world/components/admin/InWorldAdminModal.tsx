@@ -2,13 +2,14 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, LayoutDashboard, FileText, FolderKanban } from 'lucide-react';
+import { X, LayoutDashboard, FileText, FolderKanban, Folder, Lock } from 'lucide-react';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/features/3d-world/store';
 import { DashboardTab } from './DashboardTab';
 import { PostsTab } from './PostsTab';
 import { ProjectsTab } from './ProjectsTab';
+import { CategoriesTab } from './CategoriesTab';
 import { BlogPostForm } from './BlogPostForm';
 import { ProjectForm } from './ProjectForm';
 import { BlogPostReader } from './BlogPostReader';
@@ -17,6 +18,7 @@ const tabs = [
   { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
   { id: 'posts' as const, label: 'Blog', icon: FileText },
   { id: 'projects' as const, label: 'Projects', icon: FolderKanban },
+  { id: 'categories' as const, label: 'Catégories', icon: Folder },
 ];
 
 export function InWorldAdminModal() {
@@ -24,7 +26,9 @@ export function InWorldAdminModal() {
   const { close: closeModalStore } = useModalStore();
   const world = useWorldStore((s) => s.currentWorld);
   const isEditingForm = view === 'edit-post' || view === 'edit-project';
+  const isCreatingForm = view === 'create-post' || view === 'create-project';
   const isReadingPost = view === 'read-post';
+  const isFormView = isEditingForm || isCreatingForm || isReadingPost;
 
   const handleClose = () => {
     closeAdmin();
@@ -60,7 +64,7 @@ export function InWorldAdminModal() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 shrink-0">
-              {!isEditingForm && !isReadingPost ? (
+              {!isFormView ? (
                 <div className="flex gap-1">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
@@ -84,7 +88,9 @@ export function InWorldAdminModal() {
               ) : (
                 <span className="text-sm font-medium text-zinc-300">
                   {view === 'edit-post' && 'Modifier l\'article'}
+                  {view === 'create-post' && 'Nouvel article'}
                   {view === 'edit-project' && 'Modifier le projet'}
+                  {view === 'create-project' && 'Nouveau projet'}
                   {view === 'read-post' && 'Lire l\'article'}
                 </span>
               )}
@@ -101,12 +107,15 @@ export function InWorldAdminModal() {
               {view === 'dashboard' && <DashboardTab />}
               {view === 'posts' && <PostsTab />}
               {view === 'projects' && <ProjectsTab />}
+              {view === 'categories' && <CategoriesTab />}
               {view === 'edit-post' && <BlogPostForm postId={selectedId ?? undefined} world={world} />}
+              {view === 'create-post' && <BlogPostForm world={world} />}
               {view === 'edit-project' && <ProjectForm projectId={selectedId ?? undefined} world={world} />}
+              {view === 'create-project' && <ProjectForm world={world} />}
               {view === 'read-post' && selectedId && <BlogPostReader postSlug={selectedId} />}
             </div>
 
-            {!isEditingForm && !isReadingPost && (
+            {!isFormView && (
               <div className="flex items-center justify-between border-t border-zinc-800 px-4 py-2 bg-zinc-900/30 shrink-0">
                 <p className="text-xs text-zinc-600">
                   Admin Panel

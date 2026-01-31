@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type AdminView = 'dashboard' | 'posts' | 'projects' | 'edit-post' | 'edit-project' | 'read-post' | null;
+type AdminView = 'dashboard' | 'posts' | 'projects' | 'categories' | 'edit-post' | 'edit-project' | 'read-post' | null;
 
 interface InWorldAdminState {
   isOpen: boolean;

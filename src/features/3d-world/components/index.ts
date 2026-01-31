@@ -13,6 +13,7 @@ export { WorldIntro } from './WorldIntro';
 // UI
 export { InteractionPrompt } from './InteractionPrompt';
 export { HelpModal } from './HelpModal';
+export { AdminButton } from './AdminButton';
 export { ControlHints } from './ControlHints';
 
 // Export subdirectories

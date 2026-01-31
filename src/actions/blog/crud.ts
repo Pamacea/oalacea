@@ -163,13 +163,30 @@ export async function deletePostWithRevalidate(slug: string): Promise<void> {
 // CATEGORY ACTIONS
 // =========================================
 
-export async function createCategory(data: { name: string; slug: string }) {
+export async function createCategory(data: {
+  name: string;
+  slug: string;
+  type?: 'BLOG' | 'PROJECT';
+}) {
+  const existing = await prisma.category.findUnique({
+    where: { slug: data.slug },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
   const category = await prisma.category.create({
-    data: { name: data.name, slug: data.slug },
+    data: {
+      name: data.name,
+      slug: data.slug,
+      type: data.type || 'BLOG',
+    },
   });
 
   revalidatePath('/blog');
   revalidatePath('/admin/blog');
+  revalidateTag('categories', { expire: 0 });
 
   return category;
 }
@@ -185,17 +202,33 @@ export async function updateCategory(
 
   revalidatePath('/blog');
   revalidatePath('/admin/blog');
+  revalidateTag('categories', { expire: 0 });
 
   return category;
 }
 
 export async function deleteCategory(id: string) {
-  await prisma.category.delete({
-    where: { id },
-  });
+  try {
+    await prisma.category.delete({
+      where: { id },
+    });
+  } catch (error) {
+    // If record not found (P2025), treat as success (already deleted)
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2025'
+    ) {
+      // Already deleted - continue
+    } else {
+      throw error;
+    }
+  }
 
   revalidatePath('/blog');
   revalidatePath('/admin/blog');
+  revalidateTag('categories', { expire: 0 });
 
   return { success: true };
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Clock, Tag, Eye, Loader2 } from 'lucide-react';
 import { useBlogPost } from '@/features/blog/hooks';
+import { sanitizeInlineHtml } from '@/lib/sanitize';
 
 interface BlogReadingModalProps {
   slug: string;
@@ -34,7 +35,9 @@ function MarkdownContent({ content }: { content: string }) {
       processed = processed.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
       processed = processed.replace(/`(.+?)`/g, '<code class="inline-code">$1</code>');
       processed = processed.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="markdown-link" target="_blank" rel="noopener noreferrer">$1</a>');
-      return <span dangerouslySetInnerHTML={{ __html: processed }} />;
+      // Sanitize HTML to prevent XSS attacks
+      const sanitized = sanitizeInlineHtml(processed);
+      return <span dangerouslySetInnerHTML={{ __html: sanitized }} />;
     };
 
     for (let i = 0; i < lines.length; i++) {

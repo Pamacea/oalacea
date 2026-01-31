@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Folder } from 'lucide-react';
 import { getPosts, deletePostWithRevalidate } from '@/actions/blog';
 
 function DeleteButton({ slug }: { slug: string }) {
@@ -29,13 +29,22 @@ export default async function AdminBlogPage() {
           <h1 className="text-2xl font-semibold text-zinc-100">Blog</h1>
           <p className="text-zinc-500 text-sm mt-1">{posts.pagination.total} article{posts.pagination.total > 1 ? 's' : ''}</p>
         </div>
-        <Link
-          href="/admin/blog/new"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:border-zinc-700 transition-all"
-        >
-          <Plus className="h-4 w-4" />
-          Nouvel article
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/blog/categories"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:text-zinc-300 transition-all"
+          >
+            <Folder className="h-4 w-4" />
+            Catégories
+          </Link>
+          <Link
+            href="/admin/blog/new"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            Nouvel article
+          </Link>
+        </div>
       </div>
 
       {/* Posts List */}

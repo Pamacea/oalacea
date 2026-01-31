@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { AdminTerminal } from './AdminTerminal';
 import { useInWorldAdminStore } from '@/features/admin/store';
+import { useAdminToast } from '@/features/admin/components/AdminOnlyToast';
 
 interface AdminTerminalWrapperProps {
   world: 'DEV' | 'ART';
@@ -15,9 +16,14 @@ export function AdminTerminalWrapper({ world, position }: AdminTerminalWrapperPr
   const [isActive, setIsActive] = useState(false);
   const { data: session } = useSession();
   const isAdmin = session?.user?.isAdmin === true;
+  const { showToast } = useAdminToast() ?? { showToast: () => {} };
 
-  // Close modal when moving away from terminal
   const handleInteract = () => {
+    if (!isAdmin) {
+      showToast();
+      return;
+    }
+
     setIsActive(true);
     openAdmin();
     setTimeout(() => setIsActive(false), 1000);

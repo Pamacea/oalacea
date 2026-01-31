@@ -1,13 +1,16 @@
 // SceneOverlay - Overlay qui affiche le contenu des pages au-dessus de la scène 3D
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useOverlayStore } from '@/features/3d-world/store';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 export function SceneOverlay() {
   const { isOpen, content, title, closeOverlay } = useOverlayStore();
+
+  const safeContent = useMemo(() => sanitizeHtml(content || ''), [content]);
 
   const handleClose = useCallback(() => {
     closeOverlay();
@@ -59,7 +62,7 @@ export function SceneOverlay() {
             <div className="h-[calc(80vh-73px)] overflow-y-auto">
               <div
                 className="p-6 prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: content }}
+                dangerouslySetInnerHTML={{ __html: safeContent }}
               />
             </div>
           </motion.div>

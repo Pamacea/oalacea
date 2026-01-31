@@ -6,6 +6,12 @@ import { getAllCategories } from '@/actions/blog';
 import { useCreatePost, useUpdatePost } from '@/features/blog/queries';
 import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { useInWorldAdminStore } from '@/features/admin/store';
+import dynamic from 'next/dynamic';
+
+const MarkdownEditor = dynamic(
+  () => import('./markdown-editor').then(mod => ({ default: mod.MarkdownEditor })),
+  { ssr: false }
+);
 
 type FormData = {
   title: string;
@@ -308,16 +314,13 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
           {/* Content */}
           <div>
             <label className={`mb-2 block text-sm font-medium ${labelClass}`}>Contenu *</label>
-            <textarea
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              rows={12}
-              required
-              placeholder="# Titre du article
+            <MarkdownEditor
+              content={formData.content}
+              onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+              placeholder="# Titre de l'article
 
 Écrivez votre contenu ici en **markdown**..."
-              className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none resize-y font-mono leading-relaxed`}
+              editable
             />
           </div>
 

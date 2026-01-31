@@ -3,18 +3,11 @@
 import Link from 'next/link'
 import { ExternalLink, Github, Star } from 'lucide-react'
 import { useWorldTheme } from '@/components/theme'
+import { CATEGORY_LABELS } from '@/features/portfolio/constants'
 import type { Project } from '@/generated/prisma/client'
 
 interface ProjectCardProps {
   project: Project & { worldPosition?: unknown }
-}
-
-const categoryLabels: Record<string, string> = {
-  WEB: 'Web',
-  MOBILE: 'Mobile',
-  THREE_D: '3D',
-  AI: 'IA',
-  OTHER: 'Autre',
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
@@ -52,7 +45,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 color: colors.secondary,
               }}
             >
-              {categoryLabels[project.category] || project.category}
+              {CATEGORY_LABELS[project.category] || project.category}
             </span>
 
             {/* Title */}

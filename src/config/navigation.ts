@@ -8,12 +8,12 @@ export const mainNav = [
     href: "/about",
   },
   {
-    title: "Portfolio",
-    href: "/portfolio",
+    title: "Projets",
+    href: "/projets",
   },
   {
     title: "Blog",
-    href: "/blog",
+    href: "/blogs",
   },
   {
     title: "Contact",
@@ -27,13 +27,13 @@ export const footerNav = [
     items: [
       { title: "Home", href: "/" },
       { title: "About", href: "/about" },
-      { title: "Portfolio", href: "/portfolio" },
+      { title: "Projets", href: "/projets" },
     ],
   },
   {
     title: "Content",
     items: [
-      { title: "Blog", href: "/blog" },
+      { title: "Blog", href: "/blogs" },
       { title: "Contact", href: "/contact" },
     ],
   },

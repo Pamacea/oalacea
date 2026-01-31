@@ -2,9 +2,11 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
+import { useSession } from 'next-auth/react';
 import { useCharacterStore } from '@/features/3d-world/store';
 import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/features/3d-world/store';
+import { useAdminToast } from '@/features/admin/components/AdminOnlyToast';
 
 export function InteractionPrompt() {
   const openBlogListing = useModalStore((s) => s.openBlogListing);
@@ -12,6 +14,10 @@ export function InteractionPrompt() {
   const openAboutListing = useModalStore((s) => s.openAboutListing);
   const openAdminListing = useModalStore((s) => s.openAdminListing);
   const switchWorld = useWorldStore((s) => s.switchWorld);
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.isAdmin === true;
+  const { showToast } = useAdminToast() ?? { showToast: () => {} };
+
   const { canInteract, interactTarget } = useCharacterStore(
     useShallow((s) => ({
       canInteract: s.canInteract,
@@ -29,7 +35,11 @@ export function InteractionPrompt() {
     } else if (interactTarget?.route === '/about') {
       openAboutListing();
     } else if (interactTarget?.type === 'admin') {
-      openAdminListing();
+      if (isAdmin) {
+        openAdminListing();
+      } else {
+        showToast();
+      }
     }
   };
 
