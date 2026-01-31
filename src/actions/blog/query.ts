@@ -35,6 +35,8 @@ export type PostDetail = {
   tags: string[] | null;
   metaTitle: string | null;
   metaDescription: string | null;
+  featured: boolean;
+  published: boolean;
   category: {
     name: string;
     slug: string;
@@ -184,6 +186,8 @@ const getCachedPostBySlug = unstable_cache(
         tags: true,
         metaTitle: true,
         metaDescription: true,
+        featured: true,
+        published: true,
         category: {
           select: {
             name: true,

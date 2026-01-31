@@ -47,42 +47,39 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  // Load categories first, then post data
+  // Load categories and post data
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        const cats = await getAllCategories();
-        setCategories(cats);
-      } catch (error) {
-        console.error('Failed to load categories:', error);
+    async function loadData() {
+      // If no postId (creating new post), we're done loading
+      if (!postId) {
+        setIsLoading(false);
+        return;
       }
-    }
-    loadCategories();
-  }, []);
 
-  // Load post data after categories are loaded
-  useEffect(() => {
-    if (!categories.length) return;
-
-    async function loadPost() {
       try {
-        if (postId) {
-          // postId is actually the slug here
-          const post = await getPostBySlug(postId);
-          if (post) {
-            // Find category id from loaded categories by matching slug
-            const catId = categories.find((c) => c.slug === post.category?.slug)?.id || '';
-            setFormData({
-              title: post.title,
-              slug: post.slug,
-              excerpt: post.excerpt || '',
-              content: post.content || '',
-              categoryId: catId,
-              coverImage: post.coverImage || '',
-              tags: post.tags?.join(', ') || '',
-              featured: false, // PostDetail doesn't have featured, default to false
-            });
-          }
+        // Load categories in parallel with post
+        const [cats, post] = await Promise.all([
+          getAllCategories().catch(() => []),
+          getPostBySlug(postId),
+        ]);
+
+        if (cats) {
+          setCategories(cats);
+        }
+
+        if (post) {
+          // Find category id from loaded categories by matching slug
+          const catId = cats?.find((c) => c.slug === post.category?.slug)?.id || '';
+          setFormData({
+            title: post.title,
+            slug: post.slug,
+            excerpt: post.excerpt || '',
+            content: post.content || '',
+            categoryId: catId,
+            coverImage: post.coverImage || '',
+            tags: post.tags?.join(', ') || '',
+            featured: post.featured,
+          });
         }
       } catch (error) {
         console.error('Failed to load post:', error);
@@ -90,8 +87,8 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
         setIsLoading(false);
       }
     }
-    loadPost();
-  }, [postId, categories]);
+    loadData();
+  }, [postId]);
 
   const generateSlug = (title: string) => {
     return title
