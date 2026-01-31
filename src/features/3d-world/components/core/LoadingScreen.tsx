@@ -84,6 +84,7 @@ export function LoadingScreen() {
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.3 }}
+                suppressHydrationWarning
               />
             </div>
 
@@ -105,6 +106,7 @@ export function LoadingScreen() {
                       backgroundColor: isPast ? '#d4af37' : isActive ? '#fbbf24' : 'rgba(255,255,255,0.1)',
                     }}
                     transition={{ duration: 0.3 }}
+                    suppressHydrationWarning
                   />
                 )
               })}

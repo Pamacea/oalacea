@@ -60,26 +60,27 @@ export function InteractionPrompt() {
           role="alert"
           aria-live="polite"
         >
-          <div className="flex items-center gap-4 rounded-full bg-black/70 px-6 py-3 backdrop-blur-md border border-white/10">
-            <span className="text-sm font-medium text-white">
+          {/* Brutal Style Prompt */}
+          <div className="flex items-center gap-4 rounded-none bg-imperium-black/90 px-6 py-3 backdrop-blur-md border-2 border-imperium-crimson shadow-[4px_4px_0_rgba(154,17,21,0.3)]">
+            <span className="font-display text-sm text-imperium-bone uppercase tracking-wider">
               {isPortal ? `Portal to ${interactTarget.name}` : interactTarget.name}
             </span>
             <div className="flex items-center gap-2">
               <kbd
-                className="rounded bg-white/20 px-2 py-1 text-xs text-white font-mono border border-white/10"
+                className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-3 py-1 text-xs text-imperium-bone font-terminal uppercase"
                 aria-label="Press E to interact"
               >
                 E
               </kbd>
-              <span className="text-xs text-white/60">to {actionText}</span>
+              <span className="font-terminal text-xs text-imperium-steel">to {actionText}</span>
             </div>
             <button
               onClick={handleInteract}
-              className="ml-2 rounded-full bg-white/20 p-1 hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              className="ml-2 rounded-none bg-imperium-crimson p-2 hover:bg-imperium-crimson-bright border-2 border-imperium-crimson-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-imperium-crimson"
               aria-label={`${actionText} ${interactTarget.name}`}
               role="button"
             >
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="w-4 h-4 text-imperium-bone" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
