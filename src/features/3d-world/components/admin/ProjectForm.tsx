@@ -37,7 +37,7 @@ const inputBorder = 'border-zinc-700 focus:border-zinc-600';
 const buttonPrimary = 'bg-zinc-700 hover:bg-zinc-600 text-zinc-100';
 const buttonSecondary = 'border-zinc-700 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-400';
 
-export function ProjectForm({ projectId }: { projectId?: string; world: 'dev' | 'art' }) {
+export function ProjectForm({ projectId, world }: { projectId?: string; world: 'dev' | 'art' }) {
   const { setView } = useInWorldAdminStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -56,7 +56,7 @@ export function ProjectForm({ projectId }: { projectId?: string; world: 'dev' | 
     category: ProjectCategory.WEB,
   });
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!!projectId);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -69,25 +69,29 @@ export function ProjectForm({ projectId }: { projectId?: string; world: 'dev' | 
   // Load project data if editing
   useEffect(() => {
     async function loadProject() {
+      // If no projectId (creating new project), we're done loading
+      if (!projectId) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        if (projectId) {
-          const project = await getProjectById(projectId);
-          if (project) {
-            setFormData({
-              title: project.title,
-              slug: project.slug,
-              description: project.description,
-              longDescription: project.longDescription || '',
-              techStack: project.techStack?.join(', ') || '',
-              githubUrl: project.githubUrl || '',
-              liveUrl: project.liveUrl || '',
-              thumbnail: project.thumbnail || '',
-              featured: project.featured,
-              sortOrder: project.sortOrder,
-              year: project.year,
-              category: project.category as ProjectCategory,
-            });
-          }
+        const project = await getProjectById(projectId);
+        if (project) {
+          setFormData({
+            title: project.title,
+            slug: project.slug,
+            description: project.description,
+            longDescription: project.longDescription || '',
+            techStack: project.techStack?.join(', ') || '',
+            githubUrl: project.githubUrl || '',
+            liveUrl: project.liveUrl || '',
+            thumbnail: project.thumbnail || '',
+            featured: project.featured,
+            sortOrder: project.sortOrder,
+            year: project.year,
+            category: project.category as ProjectCategory,
+          });
         }
       } catch (error) {
         console.error('Failed to load project:', error);

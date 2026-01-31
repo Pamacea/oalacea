@@ -32,13 +32,12 @@ export function InWorldAdminModal() {
   };
 
   useEffect(() => {
-    if (isEditingForm || isReadingPost) return;
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [handleClose, isEditingForm, isReadingPost]);
+  }, [handleClose]);
 
   return (
     <AnimatePresence>
@@ -49,7 +48,7 @@ export function InWorldAdminModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
-            onClick={isEditingForm || isReadingPost ? undefined : handleClose}
+            onClick={handleClose}
           />
 
           <motion.div
@@ -58,9 +57,10 @@ export function InWorldAdminModal() {
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed left-1/2 top-1/2 z-[51] w-[85vw] max-w-5xl h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
           >
-            {!isEditingForm && !isReadingPost && (
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 shrink-0">
+            <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 shrink-0">
+              {!isEditingForm && !isReadingPost ? (
                 <div className="flex gap-1">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
@@ -81,14 +81,21 @@ export function InWorldAdminModal() {
                     );
                   })}
                 </div>
-                <button
-                  onClick={handleClose}
-                  className="rounded-lg p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            )}
+              ) : (
+                <span className="text-sm font-medium text-zinc-300">
+                  {view === 'edit-post' && 'Modifier l\'article'}
+                  {view === 'edit-project' && 'Modifier le projet'}
+                  {view === 'read-post' && 'Lire l\'article'}
+                </span>
+              )}
+              <button
+                onClick={handleClose}
+                className="rounded-lg p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
             <div className="overflow-y-auto flex-1 p-6">
               {view === 'dashboard' && <DashboardTab />}
