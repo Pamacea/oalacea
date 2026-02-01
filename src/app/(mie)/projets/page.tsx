@@ -4,6 +4,9 @@ import { CATEGORY_LABELS } from "@/features/portfolio/constants"
 import Link from "next/link"
 import { Star } from "lucide-react"
 
+// Force dynamic rendering - don't attempt to prerender at build time
+export const dynamic = 'force-dynamic'
+
 export default async function ProjetsPage() {
   const projects = await getProjects()
 

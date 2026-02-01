@@ -24,7 +24,8 @@ const categoryLabels: Record<string, string> = {
   OTHER: 'Autre',
 };
 
-export const revalidate = 30;
+// Force dynamic rendering - don't attempt to prerender at build time
+export const dynamic = 'force-dynamic';
 
 interface AdminProjectsPageProps {
   searchParams: { world?: 'all' | 'DEV' | 'ART' };

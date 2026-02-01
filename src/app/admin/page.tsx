@@ -4,7 +4,8 @@ import { PenTool, FolderOpen } from 'lucide-react';
 import { AdminHeader, AdminStatsGrid, QuickActions, RecentContent } from '@/features/admin/components/dashboard';
 import type { StatCard } from '@/types/component';
 
-export const revalidate = 30;
+// Force dynamic rendering - don't attempt to prerender at build time
+export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
   const [posts, projects] = await Promise.all([

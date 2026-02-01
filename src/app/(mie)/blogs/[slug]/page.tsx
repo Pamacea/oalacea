@@ -6,6 +6,9 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
 
+// Force dynamic rendering - don't attempt to prerender at build time
+export const dynamic = 'force-dynamic'
+
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
   const post = await getPostBySlug(slug)
