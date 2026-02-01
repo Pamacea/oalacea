@@ -1,7 +1,11 @@
 'use client'
 
-import { InteractionPrompt, AdminButton } from './ui'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useModalStore } from '@/store/modal-store'
+import { useLoadingStore } from '@/features/3d-world/store/loading-store'
+import { AdminButton } from './AdminButton'
+import { ControlsPanel } from './ControlsPanel'
 import {
   BlogListingModal,
   ProjectListingModal,
@@ -9,8 +13,25 @@ import {
   AdminListingModal,
 } from './readers'
 
-export function FloatingUI() {
+interface FloatingUIProps {
+  cameraMode?: 'follow' | 'free'
+  onToggleCamera?: () => void
+}
+
+export function FloatingUI({ cameraMode = 'follow', onToggleCamera }: FloatingUIProps) {
   const { isOpen, type } = useModalStore()
+  const isLoading = useLoadingStore((s) => s.isLoading)
+  const [glitchActive, setGlitchActive] = useState(false)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGlitchActive(true)
+      setTimeout(() => setGlitchActive(false), 200)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const showCameraButton = onToggleCamera !== undefined
 
   return (
     <>
@@ -25,17 +46,66 @@ export function FloatingUI() {
         Skip to main content
       </a>
 
-      {/* GitHub Link - Brutal Style */}
-      <button
-        onClick={() => window.open('https://github.com/oalacea', '_blank')}
-        className="fixed top-4 right-4 z-30 h-10 w-10 bg-imperium-iron text-imperium-bone border-2 border-imperium-steel-dark hover:bg-imperium-steel hover:border-imperium-crimson backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold font-display uppercase"
-        aria-label="GitHub repository"
-      >
-        GH
-      </button>
+      {/* Floating Navigation - Bottom Left */}
+      <AnimatePresence>
+        {!isLoading && (
+          <motion.div
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className="fixed bottom-6 left-6 z-[60]"
+          >
+            <div
+              className={`relative bg-imperium-black-raise border-2 ${
+                glitchActive ? 'border-imperium-crimson' : 'border-imperium-steel-dark'
+              } rounded-none overflow-hidden`}
+              style={{
+                boxShadow: glitchActive
+                  ? '0 0 20px rgba(154,17,21,0.3), inset 0 0 10px rgba(154,17,21,0.1)'
+                  : '0 0 10px rgba(0,0,0,0.5), inset 0 0 5px rgba(212,175,55,0.05)',
+              }}
+            >
+              {/* Animated gradient border */}
+              <div className="absolute inset-0 opacity-10">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-imperium-crimson via-imperium-gold to-imperium-teal"
+                  animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+                  style={{ backgroundSize: '200% 200%' }}
+                />
+              </div>
 
-      <AdminButton />
-      <InteractionPrompt />
+              {/* Scanline effect */}
+              <div className="absolute inset-0 pointer-events-none">
+                <motion.div
+                  className="h-0.5 bg-imperium-crimson/30"
+                  animate={{ y: ['0%', '100%'] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                />
+              </div>
+
+              {/* Corner accents */}
+              <div className="absolute top-0 left-0 w-3 h-3 border-l-2 border-t-2 border-imperium-crimson" />
+              <div className="absolute top-0 right-0 w-3 h-3 border-r-2 border-t-2 border-imperium-crimson" />
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-l-2 border-b-2 border-imperium-crimson" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 border-r-2 border-b-2 border-imperium-crimson" />
+
+              {/* Buttons inside the floating nav - same height as FloatingNav */}
+              <div className="relative z-10 flex items-center gap-1 px-2 py-2">
+                {showCameraButton && (
+                  <motion.div className="relative group" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                    <ControlsPanel cameraMode={cameraMode} onToggleCamera={onToggleCamera} />
+                  </motion.div>
+                )}
+                <motion.div className="relative group" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <AdminButton />
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isOpen && type === 'blog-listing' && <BlogListingModal />}
       {isOpen && type === 'project-listing' && <ProjectListingModal />}

@@ -126,6 +126,152 @@ export function Noise({ className, opacity = 0.05 }: NoiseProps) {
 }
 
 /**
+ * TyranidVision - Hive Mind perception overlay effect
+ * Simulates Tyranid sensory input with organic noise, biomass detection tint, and neural pulse
+ */
+export interface TyranidVisionProps {
+  className?: string
+  intensity?: "subtle" | "medium" | "full"
+}
+
+const tyranidIntensityMap = {
+  subtle: {
+    noiseOpacity: 0.04,
+    tintOpacity: 0.06,
+    pulseOpacity: 0.02,
+    blur: 0,
+  },
+  medium: {
+    noiseOpacity: 0.08,
+    tintOpacity: 0.12,
+    pulseOpacity: 0.04,
+    blur: 0.3,
+  },
+  full: {
+    noiseOpacity: 0.15,
+    tintOpacity: 0.2,
+    pulseOpacity: 0.08,
+    blur: 0.6,
+  },
+}
+
+export function TyranidVision({ className, intensity = "subtle" }: TyranidVisionProps) {
+  const config = tyranidIntensityMap[intensity]
+  const [pulsePhase, setPulsePhase] = React.useState(0)
+  const [darknessPhase, setDarknessPhase] = React.useState(0)
+  const [glitchActive, setGlitchActive] = React.useState(false)
+  const [glitchOffset, setGlitchOffset] = React.useState({ x: 0, y: 0 })
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setPulsePhase(p => (p + 0.015) % 1)
+    }, 30)
+    return () => clearInterval(interval)
+  }, [])
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setDarknessPhase(d => (d + 0.008) % 1)
+    }, 50)
+    return () => clearInterval(interval)
+  }, [])
+
+  React.useEffect(() => {
+    const glitchInterval = setInterval(() => {
+      if (Math.random() < 0.03) {
+        setGlitchActive(true)
+        setGlitchOffset({
+          x: (Math.random() - 0.5) * 4,
+          y: (Math.random() - 0.5) * 2,
+        })
+        setTimeout(() => setGlitchActive(false), 50 + Math.random() * 100)
+      }
+    }, 200)
+    return () => clearInterval(glitchInterval)
+  }, [])
+
+  const pulseOpacity = config.pulseOpacity + Math.sin(pulsePhase * Math.PI * 2) * 0.02
+  const darknessOpacity = 0.02 + Math.sin(darknessPhase * Math.PI * 2) * 0.015
+
+  return (
+    <div className={cn("absolute inset-0 pointer-events-none", className)}>
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: darknessOpacity,
+          background: "radial-gradient(circle at 50% 50%, transparent 30%, rgba(0, 0, 0, 0.4) 100%)",
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: config.tintOpacity,
+          background: `
+            radial-gradient(ellipse at 50% 50%, rgba(80, 255, 120, 0.2) 0%, transparent 50%),
+            radial-gradient(ellipse at 30% 70%, rgba(180, 80, 220, 0.12) 0%, transparent 40%),
+            linear-gradient(180deg, rgba(40, 120, 40, 0.1) 0%, rgba(20, 70, 20, 0.15) 100%)
+          `,
+        }}
+      />
+      <motion.div
+        className="absolute inset-0"
+        animate={{
+          opacity: [pulseOpacity * 0.5, pulseOpacity, pulseOpacity * 0.5],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        style={{
+          background: "radial-gradient(circle at 50% 50%, rgba(60, 200, 90, 0.1), transparent 60%)",
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: config.noiseOpacity,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='tyranidNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1.5 0 0 0  0 0 1 0 0  0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23tyranidNoise)'/%3E%3C/svg%3E")`,
+          mixBlendMode: "screen",
+          transform: glitchActive ? `translate(${glitchOffset.x}px, ${glitchOffset.y}px)` : undefined,
+        }}
+      />
+      {glitchActive && (
+        <>
+          <div
+            className="absolute inset-0"
+            style={{
+              opacity: 0.3,
+              background: "rgba(100, 255, 150, 0.05)",
+              mixBlendMode: "color-dodge",
+              transform: `translate(${glitchOffset.x * 2}px, 0)`,
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              opacity: 0.2,
+              background: "rgba(180, 80, 220, 0.05)",
+              mixBlendMode: "color-burn",
+              transform: `translate(${-glitchOffset.x}px, 0)`,
+            }}
+          />
+        </>
+      )}
+      {config.blur > 0 && (
+        <div
+          className="absolute inset-0"
+          style={{
+            backdropFilter: `blur(${config.blur}px)`,
+            WebkitBackdropFilter: `blur(${config.blur}px)`,
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+/**
  * GlowBox - Container with glow effect
  */
 export interface GlowBoxProps {

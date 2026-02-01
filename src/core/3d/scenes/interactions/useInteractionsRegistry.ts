@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import type { WorldType } from '../types';
-import { INTERACTIONS_REGISTRY, getInteractionsForWorld, type InteractionConfig } from './registry';
+import { getInteractionsForWorld } from './registry';
 import { useProximity, type ProximityObject } from '@/features/3d-world/hooks';
 
 export function useInteractionsRegistry(world: WorldType) {
@@ -39,9 +39,15 @@ export function useInteractionsRegistry(world: WorldType) {
     );
   }, [interactions]);
 
+  // Toutes les interactions pour l'affichage (inclut les zones de portails pour les labels)
+  const allVisualInteractions = useMemo(() => {
+    return interactions.filter(interaction => !interaction.disabled);
+  }, [interactions]);
+
   return {
     interactions,
     proximityObjects,
     visualInteractions,
+    allVisualInteractions,
   };
 }

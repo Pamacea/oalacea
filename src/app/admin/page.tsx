@@ -1,10 +1,8 @@
 import { getPosts } from '@/actions/blog';
 import { getProjects } from '@/actions/projects';
-import { PenTool, FolderOpen } from 'lucide-react';
 import { AdminHeader, AdminStatsGrid, QuickActions, RecentContent } from '@/features/admin/components/dashboard';
 import type { StatCard } from '@/types/component';
 
-// Force dynamic rendering - don't attempt to prerender at build time
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
@@ -18,7 +16,7 @@ export default async function AdminPage() {
       label: 'Articles',
       value: posts.pagination.total,
       href: '/admin/blog',
-      icon: PenTool,
+      icon: 'pen-tool',
       color: 'text-imperium-crimson',
       bgColor: 'bg-imperium-crimson/10',
       borderColor: 'border-imperium-crimson/30',
@@ -27,7 +25,7 @@ export default async function AdminPage() {
       label: 'Projets',
       value: projects.length,
       href: '/admin/projects',
-      icon: FolderOpen,
+      icon: 'folder-open',
       color: 'text-imperium-gold',
       bgColor: 'bg-imperium-gold/10',
       borderColor: 'border-imperium-gold/30',

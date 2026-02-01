@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useProgress } from '@react-three/drei'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useLoadingStore } from '@/features/3d-world/store/loading-store'
 
 const hints = [
   'Use Right Click to explore the world',
@@ -36,13 +37,17 @@ export function LoadingScreen() {
   const [visible, setVisible] = useState(true)
   const [hintIndex, setHintIndex] = useState(0)
   const currentStep = getLoadingStep(progress)
+  const setLoading = useLoadingStore((s) => s.setLoading)
 
   useEffect(() => {
     if (progress === 100) {
-      const timeout = setTimeout(() => setVisible(false), 500)
+      const timeout = setTimeout(() => {
+        setVisible(false)
+        setLoading(false)
+      }, 500)
       return () => clearTimeout(timeout)
     }
-  }, [progress])
+  }, [progress, setLoading])
 
   useEffect(() => {
     const interval = setInterval(() => {

@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import type { WorldType } from '@/types/3d';
 import { TopDownScene } from '@/core/3d/scenes/TopDownScene';
 import { ThreeErrorBoundary } from '@/shared/components';
+import { TyranidVision } from '@/components/ui/imperium';
 
 interface CameraPosition {
   x: number;
@@ -27,7 +28,8 @@ const worldConfig: Record<WorldType, { bg: string; fog: string }> = {
 export function SceneCanvas({ currentWorld, cameraMode, onCameraPositionChange }: SceneCanvasProps) {
   return (
     <ThreeErrorBoundary>
-      <Canvas
+      <div className="relative w-full h-full">
+        <Canvas
         shadows
         dpr={[1, 2]}
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}
@@ -67,6 +69,8 @@ export function SceneCanvas({ currentWorld, cameraMode, onCameraPositionChange }
         />
         <Environment preset={currentWorld === 'dev' ? 'night' : 'city'} />
       </Canvas>
+      <TyranidVision intensity="subtle" className="z-10" />
+      </div>
     </ThreeErrorBoundary>
   );
 }

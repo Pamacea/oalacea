@@ -2,6 +2,8 @@
 
 import { useSession } from 'next-auth/react';
 import { useInWorldAdminStore } from '@/features/admin/store';
+import { motion } from 'framer-motion';
+import { Shield } from 'lucide-react';
 
 export function AdminButton() {
   const { data: session } = useSession();
@@ -9,16 +11,41 @@ export function AdminButton() {
   const { openAdmin } = useInWorldAdminStore();
 
   return (
-    <button
+    <motion.div
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
       onClick={() => isAdmin && openAdmin()}
-      className={`fixed top-4 right-24 z-30 h-10 w-10 rounded-none border-2 backdrop-blur-sm transition-colors flex items-center justify-center font-display text-xs uppercase ${
+      className={`flex w-16 h-14 flex-col items-center gap-1 px-3 py-2 transition-all cursor-pointer ${
         isAdmin
-          ? 'bg-imperium-crimson text-imperium-bone border-imperium-crimson hover:bg-imperium-crimson-bright shadow-[0_0_10px_rgba(154,17,21,0.4)]'
-          : 'bg-imperium-iron text-imperium-steel border-imperium-steel-dark'
+          ? 'bg-imperium-crimson/20 text-imperium-crimson'
+          : 'text-imperium-steel hover:text-imperium-gold'
       }`}
+      role="button"
+      tabIndex={0}
       aria-label="Admin panel"
+      onKeyDown={(e) => {
+        if (isAdmin && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          openAdmin();
+        }
+      }}
     >
-      A
-    </button>
+      {/* Active indicator */}
+      {isAdmin && (
+        <motion.div
+          layoutId="adminIndicator"
+          className="absolute inset-0 border-2 border-imperium-crimson"
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        />
+      )}
+
+      <Shield className="h-5 w-5 relative z-10" />
+      <span className="font-terminal text-[10px] uppercase tracking-wider relative z-10">
+        ADMIN
+      </span>
+
+      {/* Hover glow */}
+      <div className="absolute inset-0 bg-imperium-gold/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+    </motion.div>
   );
 }

@@ -56,7 +56,7 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
     },
   }[worldType];
 
-  const { proximityObjects, visualInteractions } = useInteractionsRegistry(worldType);
+  const { allVisualInteractions } = useInteractionsRegistry(worldType);
 
   const openBlogListing = useModalStore((s) => s.openBlogListing);
   const openProjectListing = useModalStore((s) => s.openProjectListing);
@@ -66,6 +66,10 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
   const isAdminModalOpen = useModalStore((s) => s.isOpen);
   const canInteract = useCharacterStore((s) => s.canInteract);
   const interactTarget = useCharacterStore((s) => s.interactTarget);
+
+  const activeInteractionId = interactTarget ? (
+    allVisualInteractions.find(z => z.label === interactTarget.name)?.id
+  ) : null;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -112,7 +116,7 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
 
       <gridHelper args={[gridSize, gridDivisions, colors.grid, colors.gridAlt]} position={[0, 0, 0]} />
 
-      {visualInteractions.map((zone) => (
+      {allVisualInteractions.map((zone) => (
         <InteractionZone
           key={zone.id}
           id={zone.id}
@@ -121,7 +125,10 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
           route={zone.route ?? ''}
           worldType={worldType}
           color={colors.accent}
-          radius={3}
+          radius={zone.radius ?? 3}
+          type={zone.type}
+          targetWorld={zone.targetWorld}
+          isActive={canInteract && activeInteractionId === zone.id}
         />
       ))}
 

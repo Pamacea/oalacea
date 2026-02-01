@@ -38,6 +38,7 @@ export type PostDetail = {
   featured: boolean;
   published: boolean;
   category: {
+    id: string;
     name: string;
     slug: string;
   } | null;
@@ -190,6 +191,7 @@ const getCachedPostBySlug = unstable_cache(
         published: true,
         category: {
           select: {
+            id: true,
             name: true,
             slug: true,
           },
@@ -198,6 +200,39 @@ const getCachedPostBySlug = unstable_cache(
     });
   },
   ['blog-post'],
+  { revalidate: 60, tags: ['blog-posts'] }
+);
+
+const getCachedPostById = unstable_cache(
+  async (id: string) => {
+    return prisma.post.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        excerpt: true,
+        content: true,
+        coverImage: true,
+        publishDate: true,
+        createdAt: true,
+        readingTime: true,
+        tags: true,
+        metaTitle: true,
+        metaDescription: true,
+        featured: true,
+        published: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+  },
+  ['blog-post-by-id'],
   { revalidate: 60, tags: ['blog-posts'] }
 );
 
@@ -293,6 +328,10 @@ export async function getPosts({
 
 export async function getPostBySlug(slug: string): Promise<PostDetail | null> {
   return getCachedPostBySlug(slug);
+}
+
+export async function getPostById(id: string): Promise<PostDetail | null> {
+  return getCachedPostById(id);
 }
 
 export async function getAllCategories({ type }: { type?: 'BLOG' | 'PROJECT' } = {}): Promise<(Category & { postCount: number; projectCount: number })[]> {

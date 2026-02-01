@@ -46,38 +46,33 @@ export function InteractionPrompt() {
   if (!canInteract || !interactTarget) return null;
 
   const isPortal = !!interactTarget.targetWorld;
-  const actionText = isPortal ? 'enter' : 'view';
 
   return (
     <AnimatePresence>
       {canInteract && interactTarget && (
         <motion.div
-          initial={{ scale: 0.8, opacity: 0, y: 20 }}
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.8, opacity: 0, y: 20 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40"
           role="alert"
           aria-live="polite"
         >
-          {/* Brutal Style Prompt */}
-          <div className="flex items-center gap-4 rounded-none bg-imperium-black/90 px-6 py-3 backdrop-blur-md border-2 border-imperium-crimson shadow-[4px_4px_0_rgba(154,17,21,0.3)]">
+          <div className="flex items-center gap-4 rounded-none bg-imperium-black/90 px-5 py-2.5 backdrop-blur-md border-2 border-imperium-crimson shadow-[4px_4px_0_rgba(154,17,21,0.3)]">
+            <kbd
+              className="rounded-none bg-imperium-crimson border-2 border-imperium-crimson-dark px-3 py-1 text-sm text-imperium-bone font-terminal uppercase"
+              aria-label="Press E to interact"
+            >
+              E
+            </kbd>
             <span className="font-display text-sm text-imperium-bone uppercase tracking-wider">
-              {isPortal ? `Portal to ${interactTarget.name}` : interactTarget.name}
+              {isPortal ? `Enter ${interactTarget.name}` : interactTarget.name}
             </span>
-            <div className="flex items-center gap-2">
-              <kbd
-                className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-3 py-1 text-xs text-imperium-bone font-terminal uppercase"
-                aria-label="Press E to interact"
-              >
-                E
-              </kbd>
-              <span className="font-terminal text-xs text-imperium-steel">to {actionText}</span>
-            </div>
             <button
               onClick={handleInteract}
-              className="ml-2 rounded-none bg-imperium-crimson p-2 hover:bg-imperium-crimson-bright border-2 border-imperium-crimson-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-imperium-crimson"
-              aria-label={`${actionText} ${interactTarget.name}`}
+              className="ml-2 rounded-none bg-imperium-steel p-2 hover:bg-imperium-steel-dark border-2 border-imperium-steel-dark transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-imperium-crimson"
+              aria-label={`Interact with ${interactTarget.name}`}
               role="button"
             >
               <svg className="w-4 h-4 text-imperium-bone" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

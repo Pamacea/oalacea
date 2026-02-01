@@ -1,30 +1,55 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Trash2, Folder } from 'lucide-react';
-import { useCategories, useCreateCategory, useDeleteCategory } from '@/features/blog/queries';
-import { ConfirmDialog } from '@/features/3d-world/components/admin/ConfirmDialog';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Plus, Trash2, Folder, Edit2, X, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { GlitchText } from '@/components/ui/imperium';
+import { getAllCategories, createCategory, updateCategory, deleteCategory } from '@/actions/blog';
 
-const DEFAULT_CATEGORIES = [
-  { name: 'Développement', slug: 'developpement' },
-  { name: 'Design', slug: 'design' },
-  { name: 'Tutoriels', slug: 'tutoriels' },
-  { name: 'Projets', slug: 'projets' },
-  { name: 'À propos', slug: 'a-propos' },
-];
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  type: 'BLOG' | 'PROJECT';
+  _count?: {
+    posts?: number;
+    projects?: number;
+  };
+}
+
+interface DeleteDialog {
+  open: boolean;
+  id: string;
+  name: string;
+  count: number;
+}
+
+interface EditState {
+  id: string;
+  name: string;
+}
 
 export default function AdminCategoriesPage() {
-  const { categories, isLoading } = useCategories();
+  const router = useRouter();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; name: string; postCount: number }>({
-    open: false,
-    id: '',
-    name: '',
-    postCount: 0,
-  });
+  const [deleteDialog, setDeleteDialog] = useState<DeleteDialog>({ open: false, id: '', name: '', count: 0 });
+  const [editState, setEditState] = useState<EditState | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const createMutation = useCreateCategory();
-  const deleteMutation = useDeleteCategory();
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    setIsLoading(true);
+    const cats = await getAllCategories({ type: 'BLOG' });
+    setCategories(cats);
+    setIsLoading(false);
+  };
 
   const generateSlug = (name: string) => {
     return name
@@ -35,16 +60,7 @@ export default function AdminCategoriesPage() {
       .replace(/(^-|-$)/g, '');
   };
 
-  const handleAddDefault = async () => {
-    for (const cat of DEFAULT_CATEGORIES) {
-      if (!categories.find(c => c.slug === cat.slug)) {
-        createMutation.mutate(cat);
-      }
-    }
-  };
-
-  const handleAddCustom = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
 
     const slug = generateSlug(newCategoryName);
@@ -53,121 +69,221 @@ export default function AdminCategoriesPage() {
       return;
     }
 
-    createMutation.mutate({ name: newCategoryName, slug });
-    setNewCategoryName('');
+    try {
+      await createCategory({ name: newCategoryName, slug, type: 'BLOG' });
+      setNewCategoryName('');
+      await loadCategories();
+    } catch (error) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    }
   };
 
-  const handleDeleteConfirm = async () => {
-    deleteMutation.mutate(deleteDialog.id, {
-      onSuccess: () => {
-        setDeleteDialog({ ...deleteDialog, open: false });
-      },
-    });
+  const handleStartEdit = (cat: Category) => {
+    setEditState({ id: cat.id, name: cat.name });
+  };
+
+  const handleCancelEdit = () => {
+    setEditState(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editState) return;
+
+    try {
+      await updateCategory(editState.id, { name: editState.name });
+      setEditState(null);
+      await loadCategories();
+    } catch (error) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteCategory(deleteDialog.id);
+      setDeleteDialog({ ...deleteDialog, open: false });
+      await loadCategories();
+    } catch (error) {
+      alert('Failed to delete category');
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="font-terminal text-imperium-steel">{'>'} Loading...</div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="text-5xl mb-4 text-imperium-crimson"
+        >
+          ⚙
+        </motion.div>
+        <p className="font-terminal text-imperium-steel">LOADING DATA...</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-2xl uppercase tracking-wider text-imperium-crimson">
-              [ Categories ]
-            </h1>
-            <p className="font-terminal text-imperium-steel-dark text-sm mt-1">
-              {'>'} {categories.length} catégorie{categories.length > 1 ? 's' : ''}
-            </p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b-2 border-imperium-steel-dark pb-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/blog"
+              className="flex items-center gap-2 font-terminal text-sm border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone px-4 py-2 transition-all"
+            >
+              {'<'} BACK
+            </Link>
+            <div>
+              <h1 className="font-display text-2xl uppercase tracking-wider text-imperium-crimson flex items-center gap-3">
+                <span className="inline-block w-2 h-2 bg-imperium-crimson animate-pulse" />
+                <GlitchText intensity="low">[ CATEGORIES DATABASE ]</GlitchText>
+              </h1>
+              <p className="font-terminal text-imperium-steel text-sm mt-2 flex items-center gap-2">
+                <span className="text-imperium-gold">{'>'}</span>
+                <span>{categories.length} ENTR{categories.length > 1 ? 'IES' : 'Y'} FOUND</span>
+              </p>
+            </div>
           </div>
-          <button
-            onClick={handleAddDefault}
-            disabled={createMutation.isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black rounded-none hover:border-imperium-gold hover:text-imperium-gold transition-all disabled:opacity-50"
-          >
-            <Plus className="h-4 w-4" />
-            {createMutation.isPending ? 'Adding...' : 'Add defaults'}
-          </button>
         </div>
 
-        <form onSubmit={handleAddCustom} className="flex gap-2">
+        <form onSubmit={(e) => { e.preventDefault(); handleAddCategory(); }} className="flex gap-3">
           <input
             type="text"
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
-            placeholder="New category..."
-            className="flex-1 rounded-none border-2 border-imperium-steel-dark bg-imperium-black px-4 py-2 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson"
+            placeholder="NEW CATEGORY NAME..."
+            className="flex-1 border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson"
           />
           <button
             type="submit"
-            disabled={createMutation.isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-bone border-2 border-imperium-steel bg-imperium-iron rounded-none hover:border-imperium-crimson hover:bg-imperium-crimson/10 transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 font-terminal text-sm font-medium text-imperium-bone border-2 border-imperium-crimson bg-imperium-crimson hover:bg-imperium-crimson/90 hover:shadow-[4px_4px_0_rgba(154,17,21,0.3)] transition-all"
           >
             <Plus className="h-4 w-4" />
-            Add
+            INITIALIZE
           </button>
         </form>
 
         {categories.length === 0 ? (
-          <div className="border-2 border-dashed border-imperium-steel-dark rounded-none p-12 text-center">
-            <Folder className="h-10 w-10 mx-auto text-imperium-steel-dark mb-3" />
-            <p className="font-terminal text-imperium-steel-dark text-sm mb-4">{'>'} No categories</p>
-            <button
-              onClick={handleAddDefault}
-              disabled={createMutation.isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black rounded-none hover:border-imperium-gold hover:bg-imperium-gold/10 transition-all disabled:opacity-50"
-            >
-              <Plus className="h-4 w-4" />
-              Create defaults
-            </button>
+          <div className="text-center py-20 border-2 border-dashed border-imperium-steel-dark bg-imperium-black-deep/30">
+            <Folder className="h-12 w-12 mx-auto text-imperium-steel-dark mb-4" />
+            <p className="font-terminal text-imperium-steel-dark mb-4">{'>'} NO CATEGORIES FOUND</p>
+            <p className="font-terminal text-xs text-imperium-steel mb-6">Database empty. Initialize new category.</p>
           </div>
         ) : (
-          <div className="border-2 border-imperium-steel-dark rounded-none divide-y divide-imperium-steel-dark">
-            {categories.map((cat) => (
-              <div
+          <div className="border-2 border-imperium-steel-dark bg-imperium-black-deep/20 divide-y divide-imperium-steel-dark">
+            {categories.map((cat, index) => (
+              <motion.div
                 key={cat.id}
-                className="flex items-center justify-between px-6 py-4 hover:bg-imperium-iron transition-colors"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                className="flex items-center justify-between px-6 py-4 hover:bg-imperium-crimson/5 transition-colors group"
               >
-                <div>
-                  <p className="font-display text-sm uppercase tracking-wider text-imperium-bone">{cat.name}</p>
-                  <p className="font-terminal text-xs text-imperium-steel-dark">
-                    /{cat.slug} {'>'} {cat.postCount} article{cat.postCount !== 1 ? 's' : ''}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className="p-2 border-2 border-imperium-steel-dark bg-imperium-black group-hover:border-imperium-crimson transition-colors">
+                    <Folder className="h-5 w-5 text-imperium-steel group-hover:text-imperium-crimson" />
+                  </div>
+                  {editState?.id === cat.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editState.name}
+                        onChange={(e) => setEditState({ ...editState, name: e.target.value })}
+                        className="border-2 border-imperium-steel-dark bg-imperium-black px-3 py-1 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleSaveEdit}
+                        className="p-1.5 border-2 border-imperium-gold bg-imperium-gold/20 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="p-1.5 border-2 border-imperium-maroon bg-imperium-maroon/20 text-imperium-maroon hover:bg-imperium-maroon hover:text-imperium-bone transition-all"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="font-display text-sm uppercase tracking-wider text-imperium-bone">{cat.name}</p>
+                      <p className="font-terminal text-xs text-imperium-steel-dark">
+                        /{cat.slug} {'>>'} {cat._count?.posts || 0} ARCHIVE{(cat._count?.posts || 0) !== 1 ? 'S' : ''}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={() =>
-                    setDeleteDialog({ open: true, id: cat.id, name: cat.name, postCount: cat.postCount })
-                  }
-                  className="p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
-                  title="Supprimer"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
+                <div className="flex items-center gap-2">
+                  {editState?.id !== cat.id && (
+                    <>
+                      <button
+                        onClick={() => handleStartEdit(cat)}
+                        className="p-2 text-imperium-steel hover:text-imperium-gold border-2 border-transparent hover:border-imperium-gold/30 transition-all"
+                        title="Modifier"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          setDeleteDialog({
+                            open: true,
+                            id: cat.id,
+                            name: cat.name,
+                            count: cat._count?.posts || 0,
+                          })
+                        }
+                        className="p-2 text-imperium-steel hover:text-imperium-crimson border-2 border-transparent hover:border-imperium-maroon/30 transition-all"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
 
-      <ConfirmDialog
-        open={deleteDialog.open}
-        onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
-        title="Delete category?"
-        description={
-          deleteDialog.postCount > 0
-            ? `The category "${deleteDialog.name}" contains ${deleteDialog.postCount} article${deleteDialog.postCount > 1 ? 's' : ''}. This action is irreversible.`
-            : `Are you sure you want to delete "${deleteDialog.name}"?`
-        }
-        confirmLabel="Delete"
-        onConfirm={handleDeleteConfirm}
-        variant="danger"
-        isLoading={deleteMutation.isPending}
-      />
+      {deleteDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-imperium-black/80 backdrop-blur-sm p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="border-2 border-imperium-crimson bg-imperium-black max-w-md w-full"
+          >
+            <div className="p-6">
+              <h2 className="font-display text-lg uppercase tracking-wider text-imperium-crimson mb-4">
+                [ CONFIRM DELETION ]
+              </h2>
+              <p className="font-terminal text-sm text-imperium-bone mb-6">
+                {deleteDialog.count > 0
+                  ? `WARNING: Category "${deleteDialog.name}" contains ${deleteDialog.count} archive${deleteDialog.count > 1 ? 's' : ''}. Deleting will orphan this content.`
+                  : `Confirm deletion of "${deleteDialog.name}"?`}
+              </p>
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setDeleteDialog({ ...deleteDialog, open: false })}
+                  className="px-4 py-2 font-terminal text-sm border-2 border-imperium-steel-dark text-imperium-steel hover:text-imperium-bone transition-all"
+                >
+                  ABORT
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 font-terminal text-sm border-2 border-imperium-crimson bg-imperium-crimson text-imperium-bone hover:bg-imperium-crimson/90 transition-all"
+                >
+                  TERMINATE
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 }

@@ -4,7 +4,6 @@ export { WorldTransitionScreen } from './core/WorldTransitionScreen';
 
 // Main components
 export { SceneCanvas } from './SceneCanvas';
-export { ControlsPanel } from './ControlsPanel';
 export { FloatingUI } from './FloatingUI';
 export { SceneOverlay } from './SceneOverlay';
 export { WorldSwitch } from './WorldSwitch';

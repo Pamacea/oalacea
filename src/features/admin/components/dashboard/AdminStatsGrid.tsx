@@ -1,27 +1,68 @@
+'use client';
+
 import Link from 'next/link';
+import { PenTool, FolderOpen, BarChart3, Users, Activity } from 'lucide-react';
+import { MineralCard, MineralCardTitle, MineralCardContent } from '@/components/ui/imperium';
+import { motion } from 'framer-motion';
 import type { StatCard } from '@/types/component';
 
 interface AdminStatsGridProps {
   stats: StatCard[];
 }
 
+const iconMap = {
+  'pen-tool': PenTool,
+  'folder-open': FolderOpen,
+  'bar-chart': BarChart3,
+  'users': Users,
+  'activity': Activity,
+} as const;
+
+const variantMap = {
+  'text-imperium-crimson': 'crimson' as const,
+  'text-imperium-gold': 'gold' as const,
+  'text-imperium-teal': 'brutal' as const,
+};
+
 export function AdminStatsGrid({ stats }: AdminStatsGridProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-      {stats.map((stat) => (
-        <Link
-          key={stat.label}
-          href={stat.href}
-          className="block p-6 border border-zinc-800 rounded-sm bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <stat.icon className={`h-5 w-5 ${stat.color ?? 'text-zinc-400'}`} />
-            <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">→</span>
-          </div>
-          <p className="text-2xl font-semibold text-zinc-100">{stat.value}</p>
-          <p className="text-sm text-zinc-500">{stat.label}</p>
-        </Link>
-      ))}
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      {stats.map((stat, index) => {
+        const variant = variantMap[stat.color as keyof typeof variantMap] || 'crimson';
+        const Icon = iconMap[stat.icon] || FolderOpen;
+
+        return (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.4 }}
+          >
+            <Link href={stat.href} className="block">
+              <MineralCard
+                variant={variant}
+                padding="md"
+                className="group hover:shadow-[8px_8px_0_rgba(154,17,21,0.4)] transition-shadow"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-2 border-2 border-imperium-steel-dark ${stat.bgColor} group-hover:border-imperium-crimson transition-colors`}>
+                    <Icon className={`h-5 w-5 ${stat.color}`} />
+                  </div>
+                  <span className="font-terminal text-xs text-imperium-steel-dark group-hover:text-imperium-crimson transition-colors">
+                    {'>>>'}
+                  </span>
+                </div>
+                <MineralCardTitle className="text-4xl font-bold">
+                  {stat.value}
+                </MineralCardTitle>
+                <MineralCardContent className="font-terminal text-xs text-imperium-steel-dark uppercase tracking-wider mt-2">
+                  [{stat.label}]
+                </MineralCardContent>
+              </MineralCard>
+            </Link>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, FileText, FolderKanban, User, Mail, X } from 'lucide-react';
 import { GlitchText } from '@/components/ui/imperium';
+import { useLoadingStore } from '@/features/3d-world/store/loading-store';
 
 const NAV_ITEMS = [
   { href: '/', label: 'HOME', icon: Home },
@@ -19,6 +20,7 @@ export function FloatingNav() {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(false);
   const [glitchActive, setGlitchActive] = useState(false);
+  const isLoading = useLoadingStore((s) => s.isLoading);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -38,12 +40,15 @@ export function FloatingNav() {
       />
 
       {/* Floating Navigation Dock */}
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        className="fixed w-auto bottom-6 left-1/2 -translate-x-1/2 z-[60]"
-      >
+      <AnimatePresence>
+        {!isLoading && (
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className="fixed w-auto bottom-6 left-1/2 -translate-x-1/2 z-[60]"
+          >
         <div
           className={`relative bg-imperium-black-raise border-2 ${
             glitchActive ? 'border-imperium-crimson' : 'border-imperium-steel-dark'
@@ -123,6 +128,8 @@ export function FloatingNav() {
           </div>
         </div>
       </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Noise overlay for atmosphere */}
       <div className="fixed inset-0 pointer-events-none z-40 opacity-5">

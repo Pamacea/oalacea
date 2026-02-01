@@ -1,5 +1,8 @@
 'use client';
 
+import { motion } from 'framer-motion';
+import { Lock, Unlock } from 'lucide-react';
+
 interface ControlsPanelProps {
   cameraMode: 'follow' | 'free';
   onToggleCamera: () => void;
@@ -9,22 +12,49 @@ export function ControlsPanel({
   cameraMode,
   onToggleCamera,
 }: ControlsPanelProps) {
+  const isActive = cameraMode === 'free';
+
   return (
-    <button
+    <motion.div
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
       onClick={onToggleCamera}
-      className="fixed top-4 right-14 z-30 h-10 w-10 rounded-none bg-imperium-iron text-imperium-bone border-2 border-imperium-steel-dark hover:bg-imperium-steel hover:border-imperium-crimson backdrop-blur-sm transition-colors flex items-center justify-center font-display text-xs"
+      className={`flex w-16 h-14 flex-col items-center gap-1 px-3 py-2 transition-all cursor-pointer ${
+        isActive
+          ? 'bg-imperium-crimson/20 text-imperium-crimson'
+          : 'text-imperium-steel hover:text-imperium-gold'
+      }`}
+      role="button"
+      tabIndex={0}
       aria-label={cameraMode === 'follow' ? 'Unlock camera (Space)' : 'Lock camera (Space)'}
       title={cameraMode === 'follow' ? 'Unlock camera (Space)' : 'Lock camera (Space)'}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggleCamera();
+        }
+      }}
     >
-      {cameraMode === 'follow' ? (
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-9V6a5 5 0 00-10 0v2H6v10h12V8h-2zM9 6a3 3 0 116 0v2H9V6z" />
-        </svg>
-      ) : (
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-9h-1V6a5 5 0 00-10 0v2H6v10h12V8h-2zM9 6a3 3 0 013 3v2H9V6a3 3 0 013-3zm0 14a4 4 0 110-8 4 4 0 010 8z" />
-        </svg>
+      {/* Active indicator */}
+      {isActive && (
+        <motion.div
+          layoutId="cameraIndicator"
+          className="absolute inset-0 border-2 border-imperium-crimson"
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        />
       )}
-    </button>
+
+      {cameraMode === 'follow' ? (
+        <Lock className="h-5 w-5 relative z-10" />
+      ) : (
+        <Unlock className="h-5 w-5 relative z-10" />
+      )}
+      <span className="font-terminal text-[10px] uppercase tracking-wider relative z-10">
+        {cameraMode === 'follow' ? 'LOCK' : 'FREE'}
+      </span>
+
+      {/* Hover glow */}
+      <div className="absolute inset-0 bg-imperium-gold/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+    </motion.div>
   );
 }

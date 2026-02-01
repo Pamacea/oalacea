@@ -92,6 +92,7 @@ export {
   GlowBox,
   ChronoFlicker,
   BorderGlow,
+  TyranidVision,
 } from "./effects"
 export type {
   GlitchTextProps,
@@ -100,6 +101,7 @@ export type {
   GlowBoxProps,
   ChronoFlickerProps,
   BorderGlowProps,
+  TyranidVisionProps,
 } from "./effects"
 
 // ============================================

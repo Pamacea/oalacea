@@ -3,7 +3,7 @@ export interface StatCard {
   label: string;
   value: number;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: 'pen-tool' | 'folder-open' | 'bar-chart' | 'users' | 'activity';
   color?: string;
   bgColor?: string;
   borderColor?: string;
@@ -13,6 +13,7 @@ export interface QuickAction {
   href: string;
   title: string;
   description: string;
+  icon?: 'skull' | 'zap' | 'plus';
 }
 
 // Dashboard list items (simplified versions for dashboard display)

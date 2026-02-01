@@ -4,7 +4,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   SceneCanvas,
-  ControlsPanel,
   LoadingScreen,
   WorldTransitionScreen,
   FloatingUI,
@@ -61,12 +60,11 @@ export default function HomePage() {
       />
       <LoadingScreen />
       <WorldTransitionScreen />
-      <FloatingUI />
-      <FloatingNav />
-      <ControlsPanel
+      <FloatingUI
         cameraMode={cameraMode}
         onToggleCamera={toggleCamera}
       />
+      <FloatingNav />
     </div>
   );
 }

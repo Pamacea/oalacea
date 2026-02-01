@@ -1,4 +1,3 @@
-// InteractionZone - Zone d'interaction avec indicateur visuel
 'use client';
 
 import { useRef, useMemo } from 'react';
@@ -6,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { Mesh, Group } from 'three';
 import type { WorldType } from '../types';
 import type { ProximityObject } from '@/features/3d-world/hooks';
+import { InSceneLabel } from './InSceneLabel';
 
 interface InteractionZoneProps {
   position: [number, number, number];
@@ -14,18 +14,24 @@ interface InteractionZoneProps {
   route: string;
   worldType: WorldType;
   color?: string;
-  /** ID unique pour la zone */
   id: string;
+  type?: 'portal' | 'route' | 'dialogue' | 'pickup' | 'admin';
+  targetWorld?: WorldType;
+  isActive?: boolean;
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export function InteractionZone({
   position,
   radius = 3,
   label: _label,
-  route: _route,
+  route,
   worldType,
   color,
-  id: _id,
+  id,
+  type = 'route',
+  targetWorld,
+  isActive = false,
 }: InteractionZoneProps) {
   const groupRef = useRef<Group>(null);
   const ringRef = useRef<Mesh>(null);
@@ -44,8 +50,10 @@ export function InteractionZone({
 
   const zoneColor = color || colors.primary;
 
-  // Calculer pulseSpeed une seule fois pour éviter les avertissements ESLint
-  const pulseSpeed = useMemo(() => 1.5 + Math.random() * 0.5, []);
+  const pulseSpeed = useMemo(() => {
+    const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return 1.5 + ((hash % 100) / 100) * 0.5;
+  }, [id]);
   const baseRadius = radius;
 
   useFrame((state) => {
@@ -53,18 +61,15 @@ export function InteractionZone({
 
     const time = state.clock.elapsedTime;
 
-    // Pulsation du ring
-    const pulseScale = 1 + Math.sin(time * pulseSpeed) * 0.1;
+    const pulseScale = isActive ? 1 + Math.sin(time * pulseSpeed * 1.5) * 0.15 : 1 + Math.sin(time * pulseSpeed) * 0.1;
     ringRef.current.scale.setScalar(pulseScale);
 
-    // Pulsation de la sphère
-    const spherePulse = 1 + Math.sin(time * pulseSpeed * 1.5) * 0.15;
+    const spherePulse = isActive ? 1 + Math.sin(time * pulseSpeed * 2) * 0.2 : 1 + Math.sin(time * pulseSpeed * 1.5) * 0.15;
     sphereRef.current.scale.setScalar(spherePulse);
   });
 
   return (
     <group ref={groupRef} position={position}>
-      {/* Anneau au sol */}
       <mesh
         ref={ringRef}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -74,35 +79,42 @@ export function InteractionZone({
         <meshBasicMaterial
           color={zoneColor}
           transparent
-          opacity={0.4}
+          opacity={isActive ? 0.6 : 0.4}
         />
       </mesh>
 
-      {/* Sphère flottante au centre */}
       <mesh ref={sphereRef} position={[0, 1, 0]}>
         <sphereGeometry args={[0.25, 16, 16]} />
         <meshStandardMaterial
           color={zoneColor}
           emissive={zoneColor}
-          emissiveIntensity={0.8}
+          emissiveIntensity={isActive ? 1.2 : 0.8}
         />
       </mesh>
 
-      {/* Point light pour éclairer la zone */}
       <pointLight
         position={[0, 2, 0]}
         color={zoneColor}
-        intensity={1.5}
+        intensity={isActive ? 2 : 1.5}
         distance={radius * 2.5}
         decay={2}
+      />
+
+      <InSceneLabel
+        position={position}
+        label={_label}
+        type={type}
+        isActive={isActive}
+        targetWorld={targetWorld}
       />
     </group>
   );
 }
 
 export function interactionZoneToProps(
-  zone: Omit<InteractionZoneProps, 'worldType'>
+  zone: Omit<InteractionZoneProps, 'worldType' | 'isActive'>
 ): ProximityObject {
+  // biome-ignore lint/style/noUnusedTsParameters: route is used in the returned data object
   return {
     id: zone.id,
     position: zone.position,
@@ -110,6 +122,8 @@ export function interactionZoneToProps(
     data: {
       name: zone.label,
       route: zone.route,
+      type: zone.type,
+      targetWorld: zone.targetWorld,
     },
   };
 }
