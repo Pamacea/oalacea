@@ -1,4 +1,4 @@
-import { cn } from "@/lib/formatters"
+import { cn } from "@/lib/utils"
 
 interface ContainerProps {
   children: React.ReactNode

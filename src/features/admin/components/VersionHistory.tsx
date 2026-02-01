@@ -31,7 +31,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatRelativeTime } from '@/lib/formatters';
+import { formatRelativeTime } from '@/shared/utils/format';
 
 interface PostVersion {
   id: string;

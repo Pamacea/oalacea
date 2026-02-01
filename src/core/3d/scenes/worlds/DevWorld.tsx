@@ -36,31 +36,6 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
       <GothicArch position={[0, 0, 18]} rotation={0} />
       <GothicArch position={[0, 0, -18]} rotation={Math.PI} />
 
-      {/* Monolithe central - DÉSACTIVÉ car trop proche du portail central */}
-      {/* <group position={[0, 0, -20]}>
-        <mesh position={[0, 5, 0]} castShadow receiveShadow>
-          <boxGeometry args={[6, 10, 2]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.5} metalness={0.5} />
-        </mesh>
-        <mesh position={[0, 5, 1.1]} castShadow>
-          <boxGeometry args={[6.2, 10.2, 0.2]} />
-          <meshStandardMaterial color="#d4af37" roughness={0.2} metalness={0.9} emissive="#d4af37" emissiveIntensity={0.1} />
-        </mesh>
-        <group position={[0, 7, 1.3]}>
-          <mesh position={[-2, 0, 0]} rotation={[0, 0, 0.3]} castShadow>
-            <coneGeometry args={[1, 3, 4]} />
-            <meshStandardMaterial color="#d4af37" metalness={0.9} emissive="#d4af37" emissiveIntensity={0.3} />
-          </mesh>
-          <mesh position={[2, 0, 0]} rotation={[0, 0, -0.3]} castShadow>
-            <coneGeometry args={[1, 3, 4]} />
-            <meshStandardMaterial color="#d4af37" metalness={0.9} emissive="#d4af37" emissiveIntensity={0.3} />
-          </mesh>
-          <mesh>
-            <sphereGeometry args={[0.8]} />
-            <meshStandardMaterial color="#8b0000" metalness={0.9} emissive="#8b0000" emissiveIntensity={0.3} />
-          </mesh>
-        </group>
-      </group> */}
 
       {/* Terminaux */}
       <DevTerminal position={[-12, 0, -8]} rotation={0.3} />

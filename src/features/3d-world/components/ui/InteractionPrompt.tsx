@@ -9,10 +9,14 @@ import { useWorldStore } from '@/features/3d-world/store'
 import { useAdminToast } from '@/features/admin/components/AdminOnlyToast'
 
 export function InteractionPrompt() {
-  const openBlogListing = useModalStore((s) => s.openBlogListing)
-  const openProjectListing = useModalStore((s) => s.openProjectListing)
-  const openAboutListing = useModalStore((s) => s.openAboutListing)
-  const openAdminListing = useModalStore((s) => s.openAdminListing)
+  const modalActions = useModalStore(
+    useShallow((s) => ({
+      openBlogListing: s.openBlogListing,
+      openProjectListing: s.openProjectListing,
+      openAboutListing: s.openAboutListing,
+      openAdminListing: s.openAdminListing,
+    }))
+  )
   const switchWorld = useWorldStore((s) => s.switchWorld)
   const { data: session } = useSession()
   const isAdmin = session?.user?.isAdmin === true
@@ -29,14 +33,14 @@ export function InteractionPrompt() {
     if (interactTarget?.targetWorld) {
       switchWorld(interactTarget.targetWorld)
     } else if (interactTarget?.route === '/blog') {
-      openBlogListing()
+      modalActions.openBlogListing()
     } else if (interactTarget?.route === '/portfolio') {
-      openProjectListing()
+      modalActions.openProjectListing()
     } else if (interactTarget?.route === '/about') {
-      openAboutListing()
+      modalActions.openAboutListing()
     } else if (interactTarget?.type === 'admin') {
       if (isAdmin) {
-        openAdminListing()
+        modalActions.openAdminListing()
       } else {
         showToast()
       }

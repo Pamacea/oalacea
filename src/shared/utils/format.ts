@@ -9,6 +9,8 @@ export function formatDate(date: Date | string): string {
 
 export function formatRelativeTime(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date
+  if (isNaN(d.getTime())) return 'Unknown date'
+
   const now = new Date()
   const diff = now.getTime() - d.getTime()
   const seconds = Math.floor(diff / 1000)
@@ -44,7 +46,7 @@ export function readingTime(content: string): string {
 }
 
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
+  if (!bytes || bytes < 0) return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))

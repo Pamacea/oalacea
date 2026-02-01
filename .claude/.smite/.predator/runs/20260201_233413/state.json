@@ -1,0 +1,17 @@
+{
+  "workflow": "predator",
+  "task": "Optimisation et refactorisation complète du projet - suppression code mort, duplication, réduction re-renders, split composants >200 lignes, amélioration architecture",
+  "flags": {
+    "auto": true,
+    "examine": true,
+    "pr": false,
+    "max_attempts": "unlimited"
+  },
+  "state": {
+    "current_step": "INIT",
+    "issues_found": [],
+    "files_created": [],
+    "files_modified": []
+  },
+  "start_time": "2025-02-01T23:34:13"
+}

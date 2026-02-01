@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Calendar, Clock, Scroll, Skull } from 'lucide-react';
 import { useBlogPosts } from '@/features/blog/hooks';
@@ -17,8 +17,8 @@ export function BlogListingModal() {
   const { playClick, playHover } = useUISound();
 
   const posts = postsData?.posts || [];
-  const hasPrev = selectedIndex > 0;
-  const hasNext = selectedIndex < posts.length - 1;
+  const hasPrev = useMemo(() => selectedIndex > 0, [selectedIndex]);
+  const hasNext = useMemo(() => selectedIndex < posts.length - 1, [selectedIndex, posts.length]);
 
   // Close on Escape
   useEffect(() => {
@@ -35,35 +35,43 @@ export function BlogListingModal() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [selectedBlog, close]);
 
-  const handleSelectBlog = (slug: string, index: number) => {
+  const handleSelectBlog = useCallback((slug: string, index: number) => {
     setSelectedIndex(index);
     setSelectedBlog(slug);
     playClick();
-  };
+  }, [playClick]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (selectedBlog) {
       setSelectedBlog(null);
     } else {
       close();
     }
-  };
+  }, [selectedBlog, close]);
+
+  const handleNext = useCallback(() => {
+    const nextIndex = selectedIndex + 1;
+    if (nextIndex < posts.length && posts[nextIndex]) {
+      setSelectedIndex(nextIndex);
+      setSelectedBlog(posts[nextIndex].slug);
+    }
+  }, [selectedIndex, posts]);
+
+  const handlePrevious = useCallback(() => {
+    const prevIndex = selectedIndex - 1;
+    if (prevIndex >= 0 && posts[prevIndex]) {
+      setSelectedIndex(prevIndex);
+      setSelectedBlog(posts[prevIndex].slug);
+    }
+  }, [selectedIndex, posts]);
 
   if (selectedBlog) {
     return (
       <BlogReadingModal
         slug={selectedBlog}
         onClose={() => setSelectedBlog(null)}
-        onNext={hasNext ? () => {
-          const nextIndex = selectedIndex + 1;
-          setSelectedIndex(nextIndex);
-          setSelectedBlog(posts[nextIndex].slug);
-        } : undefined}
-        onPrevious={hasPrev ? () => {
-          const prevIndex = selectedIndex - 1;
-          setSelectedIndex(prevIndex);
-          setSelectedBlog(posts[prevIndex].slug);
-        } : undefined}
+        onNext={hasNext ? handleNext : undefined}
+        onPrevious={hasPrev ? handlePrevious : undefined}
         currentIndex={selectedIndex}
         total={posts.length}
       />
@@ -79,7 +87,7 @@ export function BlogListingModal() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
-        onClick={handleClose}
+        onClick={() => handleClose()}
       >
         <ChaoticOverlay type="all" opacity={0.3} />
         <ScanlineBeam color="#9a1115" duration={4} />
@@ -93,7 +101,9 @@ export function BlogListingModal() {
         exit={{ scale: 0.9, opacity: 0, rotateX: -10, y: 50 }}
         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
         className="relative z-[51] w-[90vw] max-w-4xl h-[85vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
       >
         <div className="bg-imperium-black-raise border-2 border-imperium-crimson rounded-none shadow-[0_0_60px_rgba(154,17,21,0.4),_8px_8px_0_rgba(154,17,21,0.2)] overflow-hidden flex flex-col h-full">
           {/* Decorative skull */}
@@ -136,8 +146,8 @@ export function BlogListingModal() {
               </div>
 
               <motion.button
-                onClick={handleClose}
-                onMouseEnter={playHover}
+                onClick={() => handleClose()}
+                onMouseEnter={() => playHover()}
                 className="group p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
               >
                 <motion.div
@@ -186,8 +196,10 @@ export function BlogListingModal() {
                     initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.03, type: 'spring', damping: 20 }}
-                    onMouseEnter={playHover}
-                    onClick={() => handleSelectBlog(post.slug, index)}
+                    onMouseEnter={() => playHover()}
+                    onClick={() => {
+                      handleSelectBlog(post.slug, index);
+                    }}
                     className="group relative border border-imperium-steel-dark bg-imperium-black/50 hover:bg-imperium-crimson/10 hover:border-imperium-crimson cursor-pointer transition-all duration-200"
                   >
                     {/* Corner accent on hover */}
