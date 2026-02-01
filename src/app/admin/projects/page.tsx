@@ -7,7 +7,7 @@ function DeleteButton({ id }: { id: string }) {
     <form action={deleteProjectWithRevalidate.bind(null, id)}>
       <button
         type="submit"
-        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+        className="p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
         title="Supprimer"
       >
         <Trash2 className="h-4 w-4" />
@@ -40,101 +40,105 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-100">Projets</h1>
-            <p className="text-zinc-500 text-sm mt-1">{projects.length} projet{projects.length > 1 ? 's' : ''}</p>
+            <h1 className="font-display text-2xl uppercase tracking-wider text-imperium-crimson">
+              [ Projects ]
+            </h1>
+            <p className="font-terminal text-imperium-steel-dark text-sm mt-1">
+              {'>'} {projects.length} projet{projects.length > 1 ? 's' : ''}
+            </p>
           </div>
         </div>
         <Link
           href="/admin/projects/new"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-bone border-2 border-imperium-crimson bg-imperium-crimson rounded-none hover:bg-imperium-crimson/90 hover:shadow-[4px_4px_0_rgba(154,17,21,0.4)] transition-all"
         >
           <Plus className="h-4 w-4" />
-          Nouveau projet
+          New Project
         </Link>
       </div>
 
       {/* Projects List */}
       {projects.length === 0 ? (
-        <div className="text-center py-20 border-2 border-dashed border-zinc-800 rounded-xl">
-          <p className="text-zinc-500 mb-4">
-            {worldFilter === 'all' ? 'Aucun projet' : `Aucun projet dans le monde ${worldFilter}`}
+        <div className="text-center py-20 border-2 border-dashed border-imperium-steel-dark rounded-none">
+          <p className="font-terminal text-imperium-steel-dark mb-4">
+            {'>'} {worldFilter === 'all' ? 'No projects' : `No projects in ${worldFilter} world`}
           </p>
           <Link
             href="/admin/projects/new"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black rounded-none hover:border-imperium-gold hover:bg-imperium-gold/10 transition-all"
           >
             <Plus className="h-4 w-4" />
-            Créer le premier
+            Create first
           </Link>
         </div>
       ) : (
-        <div className="border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="border-2 border-imperium-steel-dark rounded-none overflow-hidden">
           <table className="w-full">
-            <thead className="bg-zinc-900/50 border-b border-zinc-800">
+            <thead className="bg-imperium-iron border-b-2 border-imperium-steel-dark">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Projet</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Catégorie</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Monde</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Année</th>
-                <th className="px-6 py-4 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Project</th>
+                <th className="px-6 py-4 text-left font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Category</th>
+                <th className="px-6 py-4 text-left font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">World</th>
+                <th className="px-6 py-4 text-left font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Year</th>
+                <th className="px-6 py-4 text-right font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800">
+            <tbody className="divide-y divide-imperium-steel-dark">
               {projects.map((project) => (
-                <tr key={project.id} className="hover:bg-zinc-900/30 transition-colors">
+                <tr key={project.id} className="hover:bg-imperium-iron transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       {project.thumbnail ? (
-                        <div className="h-12 w-16 rounded overflow-hidden bg-zinc-900 shrink-0">
+                        <div className="h-12 w-16 rounded-none overflow-hidden border-2 border-imperium-steel-dark bg-imperium-black shrink-0">
                           <img src={project.thumbnail} alt="" className="h-full w-full object-cover" />
                         </div>
                       ) : (
-                        <div className="h-12 w-16 rounded bg-zinc-900 flex items-center justify-center shrink-0">
-                          <span className="text-zinc-700 text-xs">No img</span>
+                        <div className="h-12 w-16 rounded-none border-2 border-imperium-steel-dark bg-imperium-black flex items-center justify-center shrink-0">
+                          <span className="font-terminal text-xs text-imperium-steel-dark">No img</span>
                         </div>
                       )}
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-zinc-200">{project.title}</p>
-                          {project.featured && <Star className="h-3 w-3 text-amber-500" fill={'currentColor'} />}
+                          <p className="font-display text-sm uppercase text-imperium-bone">{project.title}</p>
+                          {project.featured && <Star className="h-3 w-3 text-imperium-gold" fill={'currentColor'} />}
                         </div>
-                        <p className="text-xs text-zinc-500 line-clamp-1">{project.description}</p>
+                        <p className="font-terminal text-xs text-imperium-steel-dark line-clamp-1">{project.description}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                    <span className="inline-flex items-center px-2 py-1 font-terminal text-xs font-medium rounded-none border-2 border-imperium-steel bg-imperium-iron text-imperium-steel">
                       {categoryLabels[project.category]}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     {project.worldPosition ? (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded border ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 font-terminal text-xs font-medium rounded-none border-2 ${
                         project.worldPosition.world === 'DEV'
-                          ? 'bg-emerald-950 text-emerald-400 border-emerald-900'
-                          : 'bg-pink-950 text-pink-400 border-pink-900'
+                          ? 'border-imperium-warp bg-imperium-warp/20 text-imperium-warp'
+                          : 'border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson'
                       }`}>
                         <Globe className="h-3 w-3" />
                         {project.worldPosition.world}
                       </span>
                     ) : (
-                      <span className="text-zinc-600 text-xs">-</span>
+                      <span className="font-terminal text-xs text-imperium-steel-dark">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-zinc-500">{project.year}</td>
+                  <td className="px-6 py-4 font-terminal text-sm text-imperium-steel-dark">{project.year}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
                       <Link
                         href={`/portfolio/${project.slug}`}
                         target="_blank"
-                        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                        className="p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
                         title="Voir"
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
                       <Link
                         href={`/admin/projects/${project.id}`}
-                        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                        className="p-2 text-imperium-steel hover:text-imperium-gold transition-colors"
                         title="Modifier"
                       >
                         <Pencil className="h-4 w-4" />

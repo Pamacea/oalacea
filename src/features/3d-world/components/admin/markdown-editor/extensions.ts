@@ -64,13 +64,13 @@ export const getTiptapExtensions = (placeholder = 'Start writing...') => [
   }),
   Image.configure({
     HTMLAttributes: {
-      class: 'max-w-full h-auto rounded-lg',
+      class: 'max-w-full h-auto rounded-sm',
     },
   }),
   CodeBlockLowlight.configure({
     lowlight,
     HTMLAttributes: {
-      class: 'bg-zinc-900 rounded-lg p-4 my-4 overflow-x-auto',
+      class: 'bg-zinc-900 rounded-sm p-4 my-4 overflow-x-auto',
     },
   }),
   Placeholder.configure({

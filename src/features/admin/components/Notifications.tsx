@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useEffect, useState, useCallback } from "react"
 import { Bell, BellRing, Check, Trash2, ExternalLink } from "lucide-react"
@@ -120,30 +120,29 @@ export function Notifications() {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative rounded-none border-2 border-transparent hover:border-imperium-steel">
           {unreadCount > 0 ? (
-            <BellRing className="h-5 w-5" />
+            <BellRing className="h-5 w-5 text-imperium-crimson" />
           ) : (
-            <Bell className="h-5 w-5" />
+            <Bell className="h-5 w-5 text-imperium-steel" />
           )}
           {unreadCount > 0 && (
             <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-none border-2 border-imperium-crimson bg-imperium-crimson text-imperium-bone"
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
+      <DropdownMenuContent align="end" className="w-80 rounded-none border-2 border-imperium-steel-dark">
+        <DropdownMenuLabel className="flex items-center justify-between font-display uppercase tracking-wider text-imperium-crimson">
+          <span>[ Notifications ]</span>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-auto p-0 text-xs"
+              className="h-auto p-0 font-terminal uppercase text-xs text-imperium-steel hover:text-imperium-crimson"
               onClick={(e) => {
                 e.stopPropagation()
                 markAllAsRead()
@@ -156,8 +155,8 @@ export function Notifications() {
         <DropdownMenuSeparator />
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="p-4 text-center text-sm text-slate-500">
-              No notifications yet
+            <div className="p-4 text-center font-terminal text-sm text-imperium-steel-dark">
+              {'>'} No notifications yet
             </div>
           ) : (
             <DropdownMenuGroup>
@@ -165,8 +164,8 @@ export function Notifications() {
                 <DropdownMenuItem
                   key={notification.id}
                   className={cn(
-                    "flex flex-col items-start p-3 gap-1",
-                    !notification.read && "bg-slate-50 dark:bg-slate-900"
+                    "flex flex-col items-start p-3 gap-1 rounded-none font-terminal",
+                    !notification.read && "bg-imperium-crimson/10"
                   )}
                   onClick={() => {
                     if (!notification.read) {
@@ -180,11 +179,11 @@ export function Notifications() {
                   <div className="flex items-start gap-2 w-full">
                     <span className="text-base">{getNotificationIcon(notification.type)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{notification.title}</p>
-                      <p className="text-xs text-slate-500 line-clamp-2">
+                      <p className="font-display text-xs uppercase tracking-wider text-imperium-bone">{notification.title}</p>
+                      <p className="font-terminal text-xs text-imperium-steel line-clamp-2">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="font-terminal text-xs text-imperium-steel-dark mt-1">
                         {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                       </p>
                     </div>
@@ -193,19 +192,19 @@ export function Notifications() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 rounded-none"
                           onClick={(e) => {
                             e.stopPropagation()
                             markAsRead(notification.id)
                           }}
                         >
-                          <Check className="h-3 w-3" />
+                          <Check className="h-3 w-3 text-imperium-steel" />
                         </Button>
                       )}
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-6 w-6 rounded-none hover:text-imperium-crimson"
                         onClick={(e) => {
                           e.stopPropagation()
                           deleteNotification(notification.id)
@@ -214,7 +213,7 @@ export function Notifications() {
                         <Trash2 className="h-3 w-3" />
                       </Button>
                       {notification.link && (
-                        <ExternalLink className="h-3 w-3 text-slate-400" />
+                        <ExternalLink className="h-3 w-3 text-imperium-steel-dark" />
                       )}
                     </div>
                   </div>

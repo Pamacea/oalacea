@@ -27,13 +27,13 @@ export function ImageModal({ isOpen, onClose, onInsert, initialUrl = '' }: Image
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+      <div className="w-full max-w-md rounded-sm border border-zinc-800 bg-zinc-950 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
           <h3 className="text-lg font-medium text-zinc-100">Insert Image</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
+            className="rounded-sm p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -51,7 +51,7 @@ export function ImageModal({ isOpen, onClose, onInsert, initialUrl = '' }: Image
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://example.com/image.jpg"
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-sm px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handleInsert()}
             />
@@ -69,13 +69,13 @@ export function ImageModal({ isOpen, onClose, onInsert, initialUrl = '' }: Image
               value={alt}
               onChange={(e) => setAlt(e.target.value)}
               placeholder="A brief description of the image"
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-sm px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
             />
           </div>
 
           {/* Preview */}
           {url && (
-            <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-3">
+            <div className="rounded-sm border border-zinc-700 bg-zinc-900 p-3">
               <p className="text-xs text-zinc-500 mb-2">Preview:</p>
               <img
                 src={url}
@@ -100,7 +100,7 @@ export function ImageModal({ isOpen, onClose, onInsert, initialUrl = '' }: Image
           <button
             onClick={handleInsert}
             disabled={!url.trim()}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Insert Image
           </button>

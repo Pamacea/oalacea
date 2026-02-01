@@ -606,7 +606,7 @@ interface WorldSeedInputProps {
 
 export function WorldSeedInput({ seed, onSeedChange, onRegenerate }: WorldSeedInputProps) {
   return (
-    <div className="fixed top-4 left-4 z-50 bg-black/60 backdrop-blur-sm rounded-lg p-4 border border-white/10">
+    <div className="fixed top-4 left-4 z-50 bg-black/60 backdrop-blur-sm rounded-sm p-4 border border-white/10">
       <h3 className="text-white font-medium mb-2">World Generator</h3>
       <div className="flex gap-2">
         <input
@@ -676,7 +676,7 @@ export function WorldMinimap({ buildings, playerPosition, size = 150 }: WorldMin
   }, [buildings, playerPosition, size]);
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 bg-black/60 backdrop-blur-sm rounded-lg p-2 border border-white/10">
+    <div className="fixed bottom-4 left-4 z-50 bg-black/60 backdrop-blur-sm rounded-sm p-2 border border-white/10">
       <canvas
         ref={canvasRef}
         width={size}

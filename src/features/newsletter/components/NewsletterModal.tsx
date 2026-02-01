@@ -3,11 +3,13 @@
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { XIcon, MailIcon, CheckCircleIcon } from 'lucide-react';
+import { X, Mail, CheckCircle, Skull } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ImperiumModal, ImperiumModalContent, ImperiumModalFooter, GlitchText, ChaoticOverlay, ScanlineBeam } from '@/components/ui/imperium';
+import { ImperiumInput } from '@/components/ui/imperium/input';
+import { ImperiumButton } from '@/components/ui/imperium/button';
 import {
   Form,
   FormControl,
@@ -18,6 +20,7 @@ import {
 } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 import { newsletterSchema, type NewsletterInput } from '@/lib/validations';
+import { useUISound } from '@/hooks/use-ui-sound';
 
 interface NewsletterModalProps {
   open: boolean;
@@ -32,6 +35,7 @@ export function NewsletterModal({
 }: NewsletterModalProps) {
   const [isPending, startTransition] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
+  const { playClick, playSuccess, playError } = useUISound();
 
   const form = useForm<NewsletterInput>({
     resolver: zodResolver(newsletterSchema),
@@ -55,6 +59,7 @@ export function NewsletterModal({
 
         if (result.success) {
           setIsSuccess(true);
+          playSuccess();
           toast.success(
             result.message || 'Please check your email to confirm your subscription'
           );
@@ -65,65 +70,73 @@ export function NewsletterModal({
             onOpenChange(false);
           }, 3000);
         } else {
+          playError();
           toast.error(result.error || 'Failed to subscribe');
         }
       } catch {
+        playError();
         toast.error('Something went wrong. Please try again.');
       }
     });
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-xl border border-imperium-gold/20 bg-slate-900/95 p-6 shadow-2xl shadow-imperium-gold/10">
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 rounded-full p-1 text-slate-400 transition-colors hover:text-white"
-        >
-          <XIcon className="size-5" />
-        </button>
-
-        <div className="mb-6 flex items-center gap-3">
-          <div className="rounded-full bg-imperium-gold/10 p-3">
-            <MailIcon className="size-6 text-imperium-gold" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Join the Newsletter</h2>
-            <p className="text-sm text-slate-400">
-              Stay updated with latest projects and 3D experiments
-            </p>
-          </div>
+    <ImperiumModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Subscribe to the Transmission"
+      subtitle="Join the Oalacea data stream"
+      size="sm"
+      soundEffects
+    >
+      <ImperiumModalContent>
+        {/* Decorative elements */}
+        <div className="absolute top-10 right-10 opacity-10">
+          <Skull className="w-20 h-20 text-imperium-crimson" />
         </div>
 
         {isSuccess ? (
-          <div className="py-8 text-center">
-            <div className="mb-4 inline-flex size-16 items-center justify-center rounded-full bg-imperium-terminal/10">
-              <CheckCircleIcon className="size-8 text-imperium-terminal" />
-            </div>
-            <h3 className="text-lg font-semibold text-white">
-              Almost there!
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-8"
+          >
+            <motion.div
+              initial={{ rotate: -10 }}
+              animate={{ rotate: 0 }}
+              transition={{ type: 'spring', damping: 10 }}
+              className="mb-6 inline-flex size-20 items-center justify-center border-2 border-imperium-crimson bg-imperium-crimson/10"
+            >
+              <CheckCircle className="size-10 text-imperium-crimson" />
+            </motion.div>
+            <h3 className="font-display text-2xl uppercase tracking-widest text-imperium-bone mb-3">
+              <GlitchText intensity="severe" auto>
+                Transmission Initiated
+              </GlitchText>
             </h3>
-            <p className="mt-2 text-slate-400">
-              Check your inbox to confirm your subscription.
+            <p className="font-terminal text-imperium-steel">
+              Confirm your data link via inbox transmission.
             </p>
-          </div>
+          </motion.div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Email field with brutalist style */}
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">Email</FormLabel>
+                    <FormLabel className="font-display text-sm uppercase tracking-wider text-imperium-bone flex items-center gap-2">
+                      <span className="w-1 h-4 bg-imperium-crimson" />
+                      Email Address
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="your@email.com"
+                      <ImperiumInput
+                        placeholder="servant@imperium.terra"
                         type="email"
                         disabled={isPending}
-                        className="bg-slate-800/50 border-slate-700 text-white"
+                        variant="crimson"
                         {...field}
                       />
                     </FormControl>
@@ -132,17 +145,21 @@ export function NewsletterModal({
                 )}
               />
 
+              {/* First name field */}
               <FormField
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white">First Name (optional)</FormLabel>
+                    <FormLabel className="font-display text-sm uppercase tracking-wider text-imperium-bone flex items-center gap-2">
+                      <span className="w-1 h-4 bg-imperium-crimson" />
+                      Designation (Optional)
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="John"
+                      <ImperiumInput
+                        placeholder="Brother"
                         disabled={isPending}
-                        className="bg-slate-800/50 border-slate-700 text-white"
+                        variant="steel"
                         {...field}
                       />
                     </FormControl>
@@ -151,6 +168,7 @@ export function NewsletterModal({
                 )}
               />
 
+              {/* Consent checkbox */}
               <FormField
                 control={form.control}
                 name="consent"
@@ -161,14 +179,15 @@ export function NewsletterModal({
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         disabled={isPending}
+                        className="border-imperium-crimson data-[state=checked]:bg-imperium-crimson"
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel className="text-slate-300">
-                        I consent to receive the Oalacea newsletter
+                      <FormLabel className="font-terminal text-sm text-imperium-steel">
+                        I consent to receive Oalacea transmissions
                       </FormLabel>
-                      <p className="text-xs text-slate-500">
-                        Unsubscribe anytime. We respect your privacy.
+                      <p className="font-terminal text-xs text-imperium-steel-dark">
+                        Unsubscribe at any time. For the Emperor.
                       </p>
                     </div>
                     <FormMessage />
@@ -176,22 +195,48 @@ export function NewsletterModal({
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full bg-imperium-gold text-black hover:bg-imperium-gold/90"
-                disabled={isPending}
+              {/* Submit button with glitch effect */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                {isPending ? 'Subscribing...' : 'Subscribe Now'}
-              </Button>
+                <ImperiumButton
+                  type="submit"
+                  variant="crimson"
+                  size="lg"
+                  className="w-full uppercase tracking-widest"
+                  disabled={isPending}
+                  onClick={playClick}
+                >
+                  {isPending ? (
+                    <span className="flex items-center gap-2">
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      >
+                        ⚙
+                      </motion.span>
+                      Processing...
+                    </span>
+                  ) : (
+                    <>
+                      Initiate Transmission
+                      <span className="text-imperium-gold ml-2">»</span>
+                    </>
+                  )}
+                </ImperiumButton>
+              </motion.div>
             </form>
           </Form>
         )}
+      </ImperiumModalContent>
 
-        <p className="mt-4 text-center text-xs text-slate-500">
-          By subscribing, you agree to our Privacy Policy.
+      <ImperiumModalFooter>
+        <p className="font-terminal text-xs text-imperium-steel-dark text-center w-full">
+          // Data processing in accordance with Imperial Protocol.//
         </p>
-      </div>
-    </div>
+      </ImperiumModalFooter>
+    </ImperiumModal>
   );
 }
 

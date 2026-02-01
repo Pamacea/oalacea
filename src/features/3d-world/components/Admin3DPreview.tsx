@@ -90,7 +90,7 @@ export function Admin3DPreview({ world }: Admin3DPreviewProps) {
     : { bg: 'bg-slate-900', border: 'border-teal-500/30', text: 'text-teal-400' };
 
   return (
-    <div className={`rounded-xl border ${colors.border} ${colors.bg} overflow-hidden`}>
+    <div className={`rounded-sm border ${colors.border} ${colors.bg} overflow-hidden`}>
       <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
         <span className={`text-xs font-medium ${colors.text}`}>
           {world === 'DEV' ? 'Dev World' : 'Art World'} - Preview

@@ -14,26 +14,26 @@ export function MarkdownRenderer({ content, className = '', isTerminal = true }:
     let html = content;
 
     html = html
-      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-green-400 mt-6 mb-3">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-green-300 mt-8 mb-4">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-green-200 mt-6 mb-4">$1</h1>')
+      .replace(/^### (.*$)/gim, '<h3 class="font-display uppercase text-imperium-gold text-lg mt-6 mb-3 tracking-wider">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 class="font-display uppercase text-imperium-crimson text-xl mt-8 mb-4 tracking-wider">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 class="font-display uppercase text-imperium-bone text-2xl mt-6 mb-4 tracking-[0.2em]">$1</h1>')
 
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-white">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic text-slate-300">$1</em>')
-      .replace(/`(.*?)`/g, '<code class="bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-display uppercase text-imperium-bone">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em class="text-imperium-steel">$1</em>')
+      .replace(/`(.*?)`/g, '<code class="bg-imperium-crimson/10 text-imperium-crimson border border-imperium-crimson/30 px-1.5 py-0.5 rounded-none text-sm font-mono">$1</code>')
 
-      .replace(/^\- (.*$)/gim, '<li class="ml-6 text-slate-300 my-1 list-disc">$1</li>')
-      .replace(/^\* (.*$)/gim, '<li class="ml-6 text-slate-300 my-1 list-disc">$1</li>')
-      .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-6 text-slate-300 my-1 list-decimal">$2</li>')
+      .replace(/^\- (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-disc font-terminal">{'>'} $1</li>')
+      .replace(/^\* (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-disc font-terminal">{'>'} $1</li>')
+      .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-decimal font-terminal">{'>'} $2</li>')
 
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-green-400 hover:text-green-300 underline" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-imperium-crimson hover:text-imperium-gold border-b-2 border-imperium-steel-dark border-dashed pb-0.5 transition-colors" target="_blank" rel="noopener noreferrer">$1</a>')
 
-      .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-green-500 pl-4 italic text-slate-400 my-4">$1</blockquote>')
+      .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-imperium-gold pl-4 italic text-imperium-steel my-4 font-terminal">{'>'} $1</blockquote>')
 
-      .replace(/---/g, '<hr class="border-green-500/30 my-6"')
+      .replace(/---/g, '<hr class="border-imperium-steel-dark my-6 border-t-2 border-dashed" />')
 
-      .replace(/\n\n/g, '</p><p class="text-slate-300 my-4 leading-relaxed">')
-      .replace(/^(?!<[hlp])/gm, '<p class="text-slate-300 my-4 leading-relaxed">')
+      .replace(/\n\n/g, '</p><p class="text-imperium-steel my-4 leading-relaxed font-terminal">')
+      .replace(/^(?!<[hlp])/gm, '<p class="text-imperium-steel my-4 leading-relaxed font-terminal">')
       .replace(/<p><p/g, '<p>')
       .replace(/<\/p><\/p>/g, '</p>')
       .replace(/<p>(<[hlu])/g, '$1')
@@ -62,8 +62,8 @@ interface CodeBlockProps {
 
 export function CodeBlock({ code, language = 'text' }: CodeBlockProps) {
   return (
-    <pre className="bg-slate-950 border border-green-500/30 rounded-lg p-4 overflow-x-auto my-4">
-      <code className="text-green-300 text-sm font-mono">{code}</code>
+    <pre className="bg-imperium-black border-2 border-imperium-crimson/30 rounded-none p-4 overflow-x-auto my-4 font-terminal text-imperium-gold">
+      <code className="text-sm">{code}</code>
     </pre>
   );
 }
@@ -75,15 +75,15 @@ interface TerminalLineProps {
 
 export function TerminalLine({ children, type = 'output' }: TerminalLineProps) {
   const colors = {
-    command: 'text-green-400 font-bold',
-    output: 'text-slate-300',
-    error: 'text-red-400',
-    success: 'text-green-300',
+    command: 'text-imperium-gold font-bold',
+    output: 'text-imperium-steel',
+    error: 'text-imperium-crimson',
+    success: 'text-imperium-gold',
   };
 
   return (
     <div className={`py-0.5 ${colors[type]}`}>
-      {type === 'command' && <span className="mr-2">$</span>}
+      {type === 'command' && <span className="mr-2">{'>'}</span>}
       {children}
     </div>
   );

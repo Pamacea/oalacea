@@ -12,7 +12,7 @@ export function AdminStatsGrid({ stats }: AdminStatsGridProps) {
         <Link
           key={stat.label}
           href={stat.href}
-          className="block p-6 border border-zinc-800 rounded-xl bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
+          className="block p-6 border border-zinc-800 rounded-sm bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
         >
           <div className="flex items-center justify-between mb-2">
             <stat.icon className={`h-5 w-5 ${stat.color ?? 'text-zinc-400'}`} />

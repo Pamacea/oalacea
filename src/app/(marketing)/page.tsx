@@ -23,10 +23,12 @@ export default function HomePage() {
       {/* Floating UI */}
       <FloatingUI />
 
-      {/* Welcome Overlay - Disparaît au premier clique */}
-      <div className="absolute bottom-6 left-6 z-40 max-w-sm rounded-lg bg-black/50 backdrop-blur-md p-4 text-white border border-white/10">
-        <h2 className="text-lg font-semibold mb-2">Welcome to Oalacea 3D</h2>
-        <p className="text-sm text-white/70">
+      {/* Welcome Overlay - Disparaît au premier clic */}
+      <div className="absolute bottom-6 left-6 z-40 max-w-sm rounded-none border-2 border-imperium-steel-dark bg-imperium-black/95 backdrop-blur-md p-4 shadow-[8px_8px_0_rgba(28,28,28,0.6)]">
+        <h2 className="font-display text-lg uppercase tracking-wider text-imperium-crimson mb-2">
+          {'>'} Welcome to Oalacea 3D
+        </h2>
+        <p className="font-terminal text-sm text-imperium-steel">
           Explore the {currentWorld === 'dev' ? 'Imperium' : 'Underground'} world.
           Click anywhere to start exploring with WASD.
         </p>

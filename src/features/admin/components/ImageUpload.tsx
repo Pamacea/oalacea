@@ -106,7 +106,7 @@ export function ImageUpload({
             variant="ghost"
             size="sm"
             onClick={handleRemove}
-            className="h-7 text-destructive hover:text-destructive"
+            className="h-7 text-imperium-crimson hover:text-imperium-crimson font-terminal uppercase text-xs"
           >
             <X className="h-3 w-3 mr-1" />
             Remove
@@ -117,13 +117,14 @@ export function ImageUpload({
       {!preview ? (
         <div
           className={cn(
-            'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors cursor-pointer',
+            'relative flex flex-col items-center justify-center rounded-none border-2 transition-colors cursor-pointer',
             dragActive
-              ? 'border-zinc-500 bg-zinc-500/10'
-              : 'border-zinc-700 bg-zinc-900/30 hover:border-zinc-600'
+              ? 'border-imperium-crimson bg-imperium-crimson/10'
+              : 'border-imperium-steel-dark bg-imperium-black hover:border-imperium-steel'
           )}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
+          onDragOver={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
@@ -139,19 +140,19 @@ export function ImageUpload({
 
           {isUploading ? (
             <div className="flex flex-col items-center gap-2 p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
-              <p className="text-sm text-zinc-400">Uploading...</p>
+              <Loader2 className="h-8 w-8 animate-spin text-imperium-crimson" />
+              <p className="font-terminal text-sm text-imperium-steel">Uploading...</p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 p-8">
-              <div className="rounded-full bg-zinc-800 p-3">
-                <ImageIcon className="h-6 w-6 text-zinc-400" />
+              <div className="rounded-none border-2 border-imperium-steel-dark bg-imperium-iron p-3">
+                <ImageIcon className="h-6 w-6 text-imperium-steel" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-zinc-300">
+                <p className="font-display text-sm uppercase tracking-wider text-imperium-bone">
                   Drop image here or click to upload
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="font-terminal text-xs text-imperium-steel-dark mt-1">
                   PNG, JPG, GIF up to {maxSize / 1024 / 1024}MB
                 </p>
               </div>
@@ -173,7 +174,7 @@ export function ImageUpload({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800">
+          <div className="relative aspect-video rounded-none overflow-hidden bg-imperium-black border-2 border-imperium-steel-dark">
             <img
               src={preview}
               alt="Preview"
@@ -181,7 +182,7 @@ export function ImageUpload({
             />
           </div>
           <div>
-            <Label htmlFor="alt-text" className="text-xs text-zinc-400">
+            <Label htmlFor="alt-text" className="font-terminal text-xs text-imperium-steel-dark">
               Alt Text (required for accessibility)
             </Label>
             <Input

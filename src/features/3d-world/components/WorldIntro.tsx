@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { IMPERIUM } from '@/config/theme/imperium';
 
 interface WorldIntroProps {
   world: 'dev' | 'art';
@@ -18,13 +17,15 @@ const WORLD_CONFIG = {
     title: 'DEV WORLD',
     subtitle: 'Forged in Code',
     description: 'Welcome to the Imperium of Development. Here, projects stand as monuments to engineering excellence.',
-    color: IMPERIUM.gold.tailwind,
+    color: 'text-imperium-gold',
+    border: 'border-imperium-gold',
   },
   art: {
     title: 'ART WORLD',
     subtitle: 'Creative Sanctuary',
     description: 'Enter the realm of artistic expression. Each display holds a piece of creative vision.',
-    color: IMPERIUM.crimson.light,
+    color: 'text-imperium-crimson',
+    border: 'border-imperium-crimson',
   },
 };
 
@@ -53,8 +54,11 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
     >
+      {/* Grid overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(74,79,82,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(74,79,82,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+
       {/* Skip button */}
       <AnimatePresence>
         {showSkip && (
@@ -68,7 +72,7 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
               variant="outline"
               size="sm"
               onClick={handleSkip}
-              className="border-imperium-gold/50 text-slate-300 hover:border-imperium-gold hover:text-imperium-gold bg-black/50"
+              className="rounded-none border-2 border-imperium-steel-dark bg-imperium-black text-imperium-steel hover:border-imperium-crimson hover:text-imperium-crimson font-terminal uppercase text-xs"
             >
               <X className="mr-2 h-4 w-4" />
               Skip (ESC)
@@ -86,17 +90,17 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
           transition={{ delay: 0.2, duration: 0.8, type: 'spring' }}
           className="relative"
         >
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-imperium-gold bg-black/50">
+          <div className={`flex h-24 w-24 items-center justify-center rounded-none border-2 ${config.border} bg-imperium-black shadow-[4px_4px_0_rgba(0,0,0,0.5)]`}>
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-0 rounded-full border border-imperium-gold/30 border-dashed"
+              className={`absolute inset-0 rounded-none border ${config.border} border-dashed`}
             />
-            <span className="text-4xl font-bold text-imperium-gold">
-              {world === 'dev' ? '{ }' : ''}
+            <span className={`font-display text-4xl font-bold ${config.color}`}>
+              {world === 'dev' ? '{ }' : '◆'}
             </span>
           </div>
-          {/* Pulsing rings */}
+          {/* Pulsing rings - brutal squares */}
           {[...Array(2)].map((_, i) => (
             <motion.div
               key={i}
@@ -108,7 +112,7 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
                 delay: i * 0.5,
                 ease: 'easeOut',
               }}
-              className="absolute inset-0 rounded-full border border-imperium-gold"
+              className={`absolute inset-0 rounded-none border ${config.border}`}
             />
           ))}
         </motion.div>
@@ -119,10 +123,10 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.6 }}
         >
-          <h2 className="mb-2 text-5xl font-black tracking-tighter text-imperium-gold">
+          <h2 className={`mb-2 font-display text-5xl uppercase tracking-[0.2em] ${config.color} border-b-2 ${config.border} pb-2`}>
             {config.title}
           </h2>
-          <p className="text-xl text-slate-400">{config.subtitle}</p>
+          <p className="font-terminal text-xl text-imperium-steel">{config.subtitle}</p>
         </motion.div>
 
         {/* Description */}
@@ -130,7 +134,7 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="text-lg text-slate-300"
+          className="font-terminal text-lg text-imperium-bone max-w-md"
         >
           {config.description}
         </motion.p>
@@ -140,7 +144,7 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ delay: 1, duration: 6, ease: 'linear' }}
-          className="h-0.5 w-48 origin-left bg-gradient-to-r from-imperium-gold to-imperium-crimson"
+          className="h-1 w-48 origin-left bg-imperium-crimson shadow-[0_0_10px_rgba(154,17,21,0.6)]"
         />
 
         {/* Navigation hint */}
@@ -148,15 +152,15 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2 }}
-          className="flex items-center gap-4 text-sm text-slate-500"
+          className="flex items-center gap-4 font-terminal text-sm text-imperium-steel-dark"
         >
-          <span>Right-click to move</span>
-          <span>SPACE for free camera</span>
-          <span>E to interact</span>
+          <span className="border-l-2 border-imperium-steel-dark pl-2">Right-click to move</span>
+          <span className="border-l-2 border-imperium-steel-dark pl-2">SPACE for free camera</span>
+          <span className="border-l-2 border-imperium-steel-dark pl-2">E to interact</span>
         </motion.div>
       </div>
 
-      {/* Corner decorations */}
+      {/* Corner decorations - brutal corners */}
       {[...Array(4)].map((_, i) => {
         const positions = [
           'top-8 left-8 border-l-2 border-t-2',
@@ -170,7 +174,7 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 + i * 0.1 }}
-            className={`fixed h-16 w-16 border-imperium-gold/30 ${positions[i]}`}
+            className={`fixed h-16 w-16 ${config.border} ${positions[i]}`}
           />
         );
       })}

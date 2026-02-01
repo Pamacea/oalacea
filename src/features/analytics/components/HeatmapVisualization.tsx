@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Download, Maximize2, Info } from 'lucide-react';
+import { Download, Info } from 'lucide-react';
 import { getInteractionTracker, type HeatmapPoint } from '@/core/3d/analytics';
 
 interface HeatmapVisualizationProps {
@@ -127,7 +127,7 @@ function HeatmapPoints({ points }: { points: HeatmapDataPoint[] }) {
 
 // Grid helper component
 function WorldGrid({ worldType }: { worldType: WorldType }) {
-  const color = worldType === 'dev' ? '#8b5cf6' : '#3b82f6';
+  const color = worldType === 'dev' ? '#9a1115' : '#b8a646'; // imperium-crimson or imperium-gold
   const gridSize = 100;
   const divisions = 20;
 
@@ -145,11 +145,11 @@ function InteractionMarker({ position }: { position: [number, number, number] })
     <group position={position}>
       <mesh position={[0, 1, 0]}>
         <coneGeometry args={[0.5, 1, 4]} />
-        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.5} />
+        <meshStandardMaterial color="#b8a646" emissive="#b8a646" emissiveIntensity={0.5} />
       </mesh>
       <mesh position={[0, 0.3, 0]}>
         <cylinderGeometry args={[0.1, 0.3, 0.6]} />
-        <meshStandardMaterial color="#f59e0b" />
+        <meshStandardMaterial color="#b8a646" />
       </mesh>
     </group>
   );
@@ -207,13 +207,13 @@ function calculateIntensity(x: number, z: number, points: HeatmapDataPoint[]): n
 }
 
 function getHeatmapColor(intensity: number): THREE.Color {
-  // Cold blue -> Green -> Yellow -> Hot red gradient
+  // Cold blue -> Green -> Yellow -> Hot red gradient (with imperium colors)
   const maxIntensity = 10;
   const normalized = Math.min(intensity / maxIntensity, 1);
 
   if (normalized < 0.25) {
     return new THREE.Color().lerpColors(
-      new THREE.Color(0x3b82f6),
+      new THREE.Color(0x2a3a5a), // warp blue
       new THREE.Color(0x06b6d4),
       normalized * 4
     );
@@ -226,13 +226,13 @@ function getHeatmapColor(intensity: number): THREE.Color {
   } else if (normalized < 0.75) {
     return new THREE.Color().lerpColors(
       new THREE.Color(0x10b981),
-      new THREE.Color(0xf59e0b),
+      new THREE.Color(0xb8a646), // imperium-gold
       (normalized - 0.5) * 4
     );
   } else {
     return new THREE.Color().lerpColors(
-      new THREE.Color(0xf59e0b),
-      new THREE.Color(0xef4444),
+      new THREE.Color(0xb8a646), // imperium-gold
+      new THREE.Color(0x9a1115), // imperium-crimson
       (normalized - 0.75) * 4
     );
   }
@@ -324,19 +324,19 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
 
   return (
     <div className={className}>
-      <Card className="border-white/10 bg-slate-900/50 overflow-hidden">
+      <Card variant="steel" className="overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 p-4">
+        <div className="flex items-center justify-between border-b-2 border-imperium-steel-dark bg-imperium-black p-4">
           <div className="flex items-center gap-4">
-            <h3 className="text-lg font-semibold text-white">
-              Heatmap {worldType === 'dev' ? 'Dev World' : 'Art World'}
+            <h3 className="font-display text-lg uppercase tracking-wider text-imperium-crimson">
+              Heatmap [{worldType === 'dev' ? 'Dev World' : 'Art World'}]
             </h3>
-            <Badge variant="outline" className="bg-slate-800 text-slate-300">
+            <Badge variant="outline" className="border-imperium-steel-dark bg-imperium-iron text-imperium-bone">
               {totalInteractions} interactions
             </Badge>
             {maxIntensity > 0 && (
-              <Badge variant="outline" className="bg-orange-500/10 text-orange-400 border-orange-500/20">
-                Max intensité: {maxIntensity.toFixed(1)}
+              <Badge variant="outline" className="border-imperium-gold bg-imperium-gold/10 text-imperium-gold">
+                Max intensity: {maxIntensity.toFixed(1)}
               </Badge>
             )}
           </div>
@@ -346,7 +346,7 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
               variant="outline"
               size="sm"
               onClick={handleExportImage}
-              className="border-white/10 text-white hover:bg-white/5"
+              className="border-imperium-steel-dark font-terminal text-imperium-bone hover:bg-imperium-iron"
             >
               <Download className="mr-2 h-4 w-4" />
               Export
@@ -355,13 +355,13 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-4 border-b border-white/10 p-4">
+        <div className="flex items-center gap-4 border-b-2 border-imperium-steel-dark bg-imperium-black p-4">
           <Tabs value={worldType} onValueChange={(v) => setWorldType(v as WorldType)}>
-            <TabsList className="bg-slate-800/50 border-white/10">
-              <TabsTrigger value="dev" className="data-[state=active]:bg-violet-500/20">
+            <TabsList className="bg-imperium-black border-2 border-imperium-steel-dark">
+              <TabsTrigger value="dev" className="data-[state=active]:bg-imperium-crimson data-[state=active]:text-imperium-bone font-terminal">
                 Dev World
               </TabsTrigger>
-              <TabsTrigger value="art" className="data-[state=active]:bg-blue-500/20">
+              <TabsTrigger value="art" className="data-[state=active]:bg-imperium-gold data-[state=active]:text-imperium-black font-terminal">
                 Art World
               </TabsTrigger>
             </TabsList>
@@ -378,8 +378,8 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
                     onClick={() => setTimePeriod(period)}
                     className={
                       timePeriod === period
-                        ? 'bg-violet-500 text-white'
-                        : 'border-white/10 text-white hover:bg-white/5'
+                        ? 'bg-imperium-crimson text-imperium-bone font-terminal'
+                        : 'border-imperium-steel-dark font-terminal text-imperium-steel hover:bg-imperium-iron'
                     }
                   >
                     {period === 'today' && "Aujourd'hui"}
@@ -394,7 +394,7 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
         </div>
 
         {/* 3D View */}
-        <div className="relative">
+        <div className="relative bg-imperium-black">
           <div
             className="h-[400px] w-full cursor-crosshair"
             onClick={handleCanvasClick}
@@ -421,49 +421,49 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
           </div>
 
           {/* Legend */}
-          <div className="absolute bottom-4 right-4 rounded-lg bg-slate-900/90 border border-white/10 p-3">
-            <p className="mb-2 text-xs font-medium text-slate-400">Intensité</p>
+          <div className="absolute bottom-4 right-4 rounded-none border-2 border-imperium-steel-dark bg-imperium-black/95 p-3 shadow-[4px_4px_0_rgba(148,148,148,0.3)]">
+            <p className="mb-2 font-terminal text-xs text-imperium-steel-dark">{'>'} Intensity</p>
             <div className="flex items-center gap-1">
-              <div className="h-2 w-6 rounded-l bg-blue-500" />
+              <div className="h-2 w-6 border-l-2 border-imperium-warp bg-imperium-warp" />
               <div className="h-2 w-6 bg-cyan-500" />
               <div className="h-2 w-6 bg-green-500" />
-              <div className="h-2 w-6 bg-yellow-500" />
-              <div className="h-2 w-6 rounded-r bg-red-500" />
+              <div className="h-2 w-6 bg-imperium-gold" />
+              <div className="h-2 w-6 border-r-2 border-imperium-crimson bg-imperium-crimson" />
             </div>
-            <div className="mt-1 flex justify-between text-xs text-slate-500">
-              <span>Faible</span>
-              <span>Élevée</span>
+            <div className="mt-1 flex justify-between font-terminal text-xs text-imperium-steel-dark">
+              <span>Low</span>
+              <span>High</span>
             </div>
           </div>
 
           {/* Selected Point Details */}
           {selectedPoint && showDetails && (
-            <div className="absolute top-4 right-4 w-64 rounded-lg bg-slate-900/95 border border-white/10 p-4 shadow-lg">
+            <div className="absolute top-4 right-4 w-64 rounded-none border-2 border-imperium-crimson bg-imperium-black/95 p-4 shadow-[8px_8px_0_rgba(154,17,21,0.4)]">
               <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-white">Détails</h4>
+                <h4 className="font-display uppercase text-imperium-crimson text-sm">{'>'} Details</h4>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowDetails(false)}
-                  className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                  className="h-6 w-6 p-0 font-terminal text-imperium-steel hover:text-imperium-crimson"
                 >
                   ×
                 </Button>
               </div>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 font-terminal text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Position</span>
-                  <span className="text-white">
+                  <span className="text-imperium-steel-dark">Position</span>
+                  <span className="text-imperium-bone">
                     ({selectedPoint.position[0].toFixed(1)}, {selectedPoint.position[2].toFixed(1)})
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Intensité</span>
-                  <span className="text-white">{selectedPoint.intensity.toFixed(2)}</span>
+                  <span className="text-imperium-steel-dark">Intensity</span>
+                  <span className="text-imperium-bone">{selectedPoint.intensity.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Monde</span>
-                  <span className="text-white capitalize">{worldType}</span>
+                  <span className="text-imperium-steel-dark">World</span>
+                  <span className="text-imperium-gold capitalize">{worldType}</span>
                 </div>
               </div>
             </div>
@@ -474,31 +474,31 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
             <Button
               variant="outline"
               size="sm"
-              className="border-white/10 bg-slate-900/50 text-white hover:bg-white/5"
+              className="border-imperium-steel-dark bg-imperium-black/50 font-terminal text-imperium-bone hover:bg-imperium-iron"
             >
               <Info className="mr-2 h-4 w-4" />
-              Cliquez pour voir les détails
+              Click for details
             </Button>
           </div>
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-4 gap-4 border-t border-white/10 p-4">
+        <div className="grid grid-cols-4 gap-4 border-t-2 border-imperium-steel-dark bg-imperium-black p-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-white">{totalInteractions}</p>
-            <p className="text-xs text-slate-400">Interactions</p>
+            <p className="font-display text-2xl font-bold text-imperium-crimson">{totalInteractions}</p>
+            <p className="font-terminal text-xs text-imperium-steel-dark">Interactions</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-white">{new Set(rawPoints.map((p) => `${Math.floor(p.x)},${Math.floor(p.z)}`)).size}</p>
-            <p className="text-xs text-slate-400">Zones visitées</p>
+            <p className="font-display text-2xl font-bold text-imperium-gold">{new Set(rawPoints.map((p) => `${Math.floor(p.x)},${Math.floor(p.z)}`)).size}</p>
+            <p className="font-terminal text-xs text-imperium-steel-dark">Zones visited</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-white">{maxIntensity.toFixed(1)}</p>
-            <p className="text-xs text-slate-400">Intensité max</p>
+            <p className="font-display text-2xl font-bold text-imperium-crimson">{maxIntensity.toFixed(1)}</p>
+            <p className="font-terminal text-xs text-imperium-steel-dark">Max intensity</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-white">{rawPoints.length > 0 ? (rawPoints.reduce((sum, p) => sum + p.intensity, 0) / rawPoints.length).toFixed(1) : 0}</p>
-            <p className="text-xs text-slate-400">Intensité moyenne</p>
+            <p className="font-display text-2xl font-bold text-imperium-gold">{rawPoints.length > 0 ? (rawPoints.reduce((sum, p) => sum + p.intensity, 0) / rawPoints.length).toFixed(1) : 0}</p>
+            <p className="font-terminal text-xs text-imperium-steel-dark">Avg intensity</p>
           </div>
         </div>
       </Card>

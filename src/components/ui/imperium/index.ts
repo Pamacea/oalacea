@@ -117,3 +117,34 @@ export type {
   ImperiumProgressBarProps,
   ImperiumLoadingScreenProps,
 } from "./loading"
+
+// ============================================
+// MODAL
+// ============================================
+export {
+  ImperiumModal,
+  ImperiumModalContent,
+  ImperiumModalFooter,
+  ImperiumModalSection,
+} from "./modal"
+export type { ImperiumModalProps } from "./modal"
+
+// ============================================
+// BRUTAL EFFECTS (from brutal/effects.tsx)
+// ============================================
+export {
+  GlitchText as BrutalGlitchText,
+  ChaoticOverlay,
+  FallingFragments,
+  CorruptedText,
+  RGBSplit,
+  StaticNoise,
+  ScanlineBeam,
+} from "../brutal/effects"
+export type {
+  GlitchTextProps as BrutalGlitchTextProps,
+  ChaoticOverlayProps,
+  FallingFragmentsProps,
+  CorruptedTextProps,
+  RGBSplitProps,
+} from "../brutal/effects"

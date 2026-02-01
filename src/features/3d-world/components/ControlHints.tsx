@@ -24,10 +24,10 @@ const controls: ControlHint[] = [
     label: 'Directional',
     icon: (
       <div className="flex gap-0.5">
-        <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-amber-400 font-mono">W</kbd>
-        <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-amber-400 font-mono">A</kbd>
-        <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-amber-400 font-mono">S</kbd>
-        <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-amber-400 font-mono">D</kbd>
+        <kbd className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-1.5 py-0.5 text-xs text-imperium-bone font-terminal">W</kbd>
+        <kbd className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-1.5 py-0.5 text-xs text-imperium-bone font-terminal">A</kbd>
+        <kbd className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-1.5 py-0.5 text-xs text-imperium-bone font-terminal">S</kbd>
+        <kbd className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-1.5 py-0.5 text-xs text-imperium-bone font-terminal">D</kbd>
       </div>
     ),
   },
@@ -35,28 +35,28 @@ const controls: ControlHint[] = [
     key: 'Shift',
     label: 'Sprint',
     icon: (
-      <kbd className="rounded bg-white/10 px-2 py-0.5 text-xs text-amber-400 font-mono">Shift</kbd>
+      <kbd className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-2 py-0.5 text-xs text-imperium-bone font-terminal">Shift</kbd>
     ),
   },
   {
     key: 'E',
     label: 'Interact',
     icon: (
-      <kbd className="rounded bg-red-900/50 px-2 py-0.5 text-xs text-red-300 font-mono border border-red-800/50">E</kbd>
+      <kbd className="rounded-none bg-imperium-crimson/30 border-2 border-imperium-crimson px-2 py-0.5 text-xs text-imperium-crimson font-terminal shadow-[0_0_10px_rgba(154,17,21,0.4)]">E</kbd>
     ),
   },
   {
     key: 'Space',
     label: 'Camera',
     icon: (
-      <kbd className="rounded bg-white/10 px-2 py-0.5 text-xs text-amber-400 font-mono">Space</kbd>
+      <kbd className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-2 py-0.5 text-xs text-imperium-bone font-terminal">Space</kbd>
     ),
   },
   {
     key: '?',
     label: 'Help',
     icon: (
-      <kbd className="rounded bg-white/10 px-2 py-0.5 text-xs text-amber-400 font-mono">?</kbd>
+      <kbd className="rounded-none bg-imperium-steel border-2 border-imperium-steel-dark px-2 py-0.5 text-xs text-imperium-bone font-terminal">?</kbd>
     ),
   },
 ];
@@ -69,17 +69,17 @@ export function ControlHints() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-30 flex flex-col gap-2 rounded-lg bg-black/70 p-3 backdrop-blur-md border border-amber-500/20"
+      className="fixed bottom-4 right-4 z-30 flex flex-col gap-2 rounded-none bg-imperium-black-deep/80 p-3 backdrop-blur-md border-2 border-imperium-steel-dark shadow-[4px_4px_0_rgba(58,63,66,0.4)]"
       role="complementary"
       aria-label="Control hints"
     >
-      <div className="mb-1 border-b border-white/10 pb-2">
-        <span className="text-xs font-medium text-amber-400">CONTROLS</span>
+      <div className="mb-1 border-b-2 border-imperium-steel-dark pb-2">
+        <span className="font-display text-xs uppercase tracking-wider text-imperium-crimson">CONTROLS</span>
       </div>
       {controls.map((control) => (
         <div key={control.key} className="flex items-center gap-2">
           {control.icon}
-          <span className="text-xs text-white/60">{control.label}</span>
+          <span className="font-terminal text-xs text-imperium-steel">{control.label}</span>
         </div>
       ))}
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search, X, Trash2, Image as ImageIcon, Calendar, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -96,15 +96,17 @@ export function MediaLibrary({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden rounded-none border-2 border-imperium-crimson bg-imperium-black shadow-[8px_8px_0_rgba(154,17,21,0.3)]">
         <DialogHeader>
-          <DialogTitle>Media Library</DialogTitle>
+          <DialogTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+            [ Media Library ]
+          </DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col h-[calc(80vh-140px)]">
-          <div className="flex items-center gap-2 pb-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2 pb-4 border-b-2 border-imperium-steel-dark">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-imperium-steel-dark" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -115,8 +117,8 @@ export function MediaLibrary({
             {selectedItem && (
               <Button
                 size="sm"
+                variant="crimson"
                 onClick={() => handleSelect(selectedItem)}
-                className="bg-zinc-600 hover:bg-zinc-500"
               >
                 Select Image
               </Button>
@@ -126,18 +128,18 @@ export function MediaLibrary({
           <div className="flex-1 overflow-y-auto p-4">
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
-                <p className="text-zinc-500">Loading media...</p>
+                <p className="font-terminal text-imperium-steel">{'>'} Loading media...</p>
               </div>
             ) : filteredItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-zinc-500">
+              <div className="flex flex-col items-center justify-center h-64 text-imperium-steel-dark">
                 <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
-                <p>No images found</p>
+                <p className="font-terminal">No images found</p>
                 {search && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setSearch('')}
-                    className="mt-2"
+                    className="mt-2 font-terminal uppercase text-xs"
                   >
                     Clear search
                   </Button>
@@ -149,10 +151,10 @@ export function MediaLibrary({
                   <div
                     key={item.id}
                     className={cn(
-                      'relative group aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all',
+                      'relative group aspect-square rounded-none overflow-hidden border-2 cursor-pointer transition-all',
                       selectedItem?.id === item.id
-                        ? 'border-zinc-500 ring-2 ring-zinc-500/50'
-                        : 'border-zinc-800 hover:border-zinc-700'
+                        ? 'border-imperium-crimson shadow-[0_0_10px_rgba(154,17,21,0.4)]'
+                        : 'border-imperium-steel-dark hover:border-imperium-steel'
                     )}
                     onClick={() => setSelectedItem(item)}
                   >
@@ -171,6 +173,7 @@ export function MediaLibrary({
                               e.stopPropagation();
                               setPreviewItem(item);
                             }}
+                            className="rounded-none"
                           >
                             <ImageIcon className="h-3 w-3" />
                           </Button>
@@ -182,6 +185,7 @@ export function MediaLibrary({
                                 e.stopPropagation();
                                 setDeleteItem(item);
                               }}
+                              className="rounded-none"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -190,8 +194,8 @@ export function MediaLibrary({
                       </div>
                     </div>
                     {selectedItem?.id === item.id && (
-                      <div className="absolute top-2 right-2 bg-zinc-600 rounded-full p-1">
-                        <div className="w-2 h-2 bg-white rounded-full" />
+                      <div className="absolute top-2 right-2 bg-imperium-crimson rounded-none p-1 border-2 border-imperium-bone">
+                        <div className="w-2 h-2 bg-imperium-bone" />
                       </div>
                     )}
                   </div>
@@ -201,9 +205,9 @@ export function MediaLibrary({
           </div>
 
           {selectedItem && (
-            <div className="border-t border-zinc-800 p-4 bg-zinc-900/30">
+            <div className="border-t-2 border-imperium-steel-dark p-4 bg-imperium-black">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded overflow-hidden border border-zinc-800 flex-shrink-0">
+                <div className="w-16 h-16 rounded-none overflow-hidden border-2 border-imperium-steel-dark flex-shrink-0">
                   <img
                     src={selectedItem.url}
                     alt={selectedItem.alt || selectedItem.name}
@@ -211,10 +215,10 @@ export function MediaLibrary({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">
+                  <p className="font-display text-sm uppercase tracking-wider text-imperium-bone truncate">
                     {selectedItem.name}
                   </p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-zinc-400">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 font-terminal text-xs text-imperium-steel">
                     <span className="flex items-center gap-1">
                       <FileText className="h-3 w-3" />
                       {formatFileSize(selectedItem.size)}
@@ -230,7 +234,7 @@ export function MediaLibrary({
                     </span>
                   </div>
                   {selectedItem.alt && (
-                    <p className="text-xs text-zinc-500 mt-1 line-clamp-1">
+                    <p className="font-terminal text-xs text-imperium-steel-dark mt-1 line-clamp-1">
                       Alt: {selectedItem.alt}
                     </p>
                   )}
@@ -245,17 +249,19 @@ export function MediaLibrary({
         open={!!deleteItem}
         onOpenChange={(open) => !open && setDeleteItem(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-none border-2 border-imperium-crimson">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete image?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deleteItem?.name}&quot;?
+            <AlertDialogTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+              Delete image?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-terminal text-imperium-steel">
+              Are you sure you want to delete "{deleteItem?.name}"?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>
+            <AlertDialogCancel className="rounded-none font-terminal uppercase text-xs">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="rounded-none font-terminal uppercase text-xs">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -266,11 +272,11 @@ export function MediaLibrary({
         open={!!previewItem}
         onOpenChange={(open) => !open && setPreviewItem(null)}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl rounded-none border-2 border-imperium-crimson">
           <DialogHeader>
-            <DialogTitle>{previewItem?.name}</DialogTitle>
+            <DialogTitle className="font-terminal text-imperium-bone">{previewItem?.name}</DialogTitle>
           </DialogHeader>
-          <div className="flex justify-center bg-zinc-950 rounded-lg p-4">
+          <div className="flex justify-center bg-imperium-black-deep rounded-none p-4 border-2 border-imperium-steel-dark">
             <img
               src={previewItem?.url}
               alt={previewItem?.alt || previewItem?.name}

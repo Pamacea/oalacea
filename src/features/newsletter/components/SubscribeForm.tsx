@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MailIcon, SendIcon, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
+import { Mail, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -76,13 +76,13 @@ export function SubscribeForm({
 
   if (isSuccess) {
     return (
-      <Card className={cn('border-imperium-terminal/50 bg-imperium-terminal/5', className)}>
-        <CardContent className="flex items-center gap-3 py-4">
-          <CheckCircleIcon className="size-5 text-imperium-terminal" />
+      <Card variant="crimson" className={cn(className)}>
+        <CardContent className="flex items-center gap-3 border-2 border-imperium-gold/30 bg-imperium-gold/5 py-4">
+          <CheckCircle className="size-5 text-imperium-gold" />
           <div>
-            <p className="font-semibold text-imperium-terminal">Almost there!</p>
-            <p className="text-sm text-muted-foreground">
-              Check your inbox to confirm your subscription.
+            <p className="font-display uppercase tracking-wider text-imperium-bone">Transmission Received</p>
+            <p className="font-terminal text-sm text-imperium-steel-dark">
+              {'>'} Check your inbox to confirm the uplink.
             </p>
           </div>
         </CardContent>
@@ -113,11 +113,11 @@ export function SubscribeForm({
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isPending} size="icon">
+          <Button type="submit" disabled={isPending} size="icon" variant="crimson">
             {isPending ? (
-              <AlertCircleIcon className="size-4 animate-spin" />
+              <AlertCircle className="size-4 animate-spin" />
             ) : (
-              <SendIcon className="size-4" />
+              <Send className="size-4" />
             )}
           </Button>
         </form>
@@ -177,15 +177,15 @@ export function SubscribeForm({
                     disabled={isPending}
                   />
                 </FormControl>
-                <FormLabel className="text-sm font-normal text-muted-foreground">
-                  I agree to receive emails
+                <FormLabel className="font-terminal text-sm font-normal text-imperium-steel-dark">
+                  I agree to receive transmissions
                 </FormLabel>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Subscribing...' : 'Subscribe'}
+          <Button type="submit" disabled={isPending} variant="crimson">
+            {isPending ? 'Uplinking...' : 'Transmit'}
           </Button>
         </form>
       </Form>
@@ -193,11 +193,11 @@ export function SubscribeForm({
   }
 
   return (
-    <Card className={className}>
+    <Card variant="steel" className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MailIcon className="size-5 text-imperium-gold" />
-          Subscribe to the Newsletter
+        <CardTitle className="flex items-center gap-2 font-display uppercase tracking-wider">
+          <Mail className="size-5 text-imperium-gold" />
+          [ Establish Uplink ]
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -209,7 +209,7 @@ export function SubscribeForm({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="font-display text-imperium-bone">Email Frequency</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="your@email.com"
@@ -227,10 +227,10 @@ export function SubscribeForm({
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name (optional)</FormLabel>
+                    <FormLabel className="font-display text-imperium-bone">Designation (optional)</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="John"
+                        placeholder="Battle Brother"
                         disabled={isPending}
                         {...field}
                       />
@@ -254,12 +254,12 @@ export function SubscribeForm({
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      I consent to receive the Oalacea newsletter
+                    <FormLabel className="font-display text-imperium-bone">
+                      I consent to receive Imperial transmissions
                     </FormLabel>
-                    <FormDescription>
-                      Get updates on new projects, blog posts, and 3D experiments.
-                      Unsubscribe anytime.
+                    <FormDescription className="font-terminal text-imperium-steel-dark">
+                      {'>'} Receive updates on crusades, scripture, and holy experiments.
+                      Unsubscribe at any time via the Administratum.
                     </FormDescription>
                   </div>
                   <FormMessage />
@@ -269,18 +269,19 @@ export function SubscribeForm({
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full font-terminal uppercase"
               disabled={isPending}
+              variant="crimson"
             >
               {isPending ? (
                 <>
-                  <AlertCircleIcon className="mr-2 size-4 animate-spin" />
-                  Processing...
+                  <AlertCircle className="mr-2 size-4 animate-spin" />
+                  Establishing Uplink...
                 </>
               ) : (
                 <>
-                  <SendIcon className="mr-2 size-4" />
-                  Subscribe Now
+                  <Send className="mr-2 size-4" />
+                  Initiate Transmission
                 </>
               )}
             </Button>

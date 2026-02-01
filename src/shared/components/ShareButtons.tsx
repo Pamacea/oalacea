@@ -253,11 +253,11 @@ export function ShareButtons({
                   </DialogHeader>
                   <div className="flex flex-col items-center gap-4 py-4">
                     {qrLoading ? (
-                      <div className="flex size-64 items-center justify-center rounded-lg border bg-muted">
+                      <div className="flex size-64 items-center justify-center rounded-sm border bg-muted">
                         <span className="text-sm text-muted-foreground">Loading...</span>
                       </div>
                     ) : qrCode ? (
-                      <div className="rounded-lg border-2 border-imperium-gold p-4">
+                      <div className="rounded-sm border-2 border-imperium-gold p-4">
                         <img
                           src={qrCode}
                           alt="QR Code"
@@ -265,7 +265,7 @@ export function ShareButtons({
                         />
                       </div>
                     ) : (
-                      <div className="flex size-64 items-center justify-center rounded-lg border bg-muted">
+                      <div className="flex size-64 items-center justify-center rounded-sm border bg-muted">
                         <QrCodeIcon className="size-12 text-muted-foreground" />
                       </div>
                     )}

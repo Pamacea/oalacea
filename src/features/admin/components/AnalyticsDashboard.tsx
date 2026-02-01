@@ -52,7 +52,7 @@ interface AnalyticsDashboardProps {
   period?: TimePeriod;
 }
 
-const COLORS = ['#8b5cf6', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b'];
+const COLORS = ['#9a1115', '#b8a646', '#2a3a5a', '#3a3a3a', '#8b8b8b']; // imperium colors
 
 export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month' }: AnalyticsDashboardProps) {
   const [data, setData] = useState<AnalyticsData>(initialData);
@@ -121,9 +121,11 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold text-zinc-100">Analytics</h2>
+          <h2 className="font-display text-2xl uppercase tracking-wider text-imperium-crimson">
+            [ Analytics ]
+          </h2>
           {realtimeIndicator && (
-            <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
+            <Badge variant="outline" className="border-imperium-gold bg-imperium-gold/10 text-imperium-gold">
               <Activity className="mr-1 h-3 w-3 animate-pulse" />
               Live
             </Badge>
@@ -132,11 +134,11 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
 
         <div className="flex items-center gap-3">
           <Select value={period} onValueChange={(v) => handlePeriodChange(v as TimePeriod)}>
-            <SelectTrigger className="w-32 bg-zinc-800 border-zinc-800 text-zinc-100">
-              <Calendar className="mr-2 h-4 w-4 text-zinc-400" />
+            <SelectTrigger className="w-32 border-imperium-steel-dark bg-imperium-black font-terminal text-imperium-bone">
+              <Calendar className="mr-2 h-4 w-4 text-imperium-steel" />
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-800 border-zinc-800">
+            <SelectContent className="border-imperium-steel-dark bg-imperium-black">
               <SelectItem value="day">24h</SelectItem>
               <SelectItem value="week">7 jours</SelectItem>
               <SelectItem value="month">30 jours</SelectItem>
@@ -149,7 +151,7 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
             variant="outline"
             size="sm"
             onClick={handleExport}
-            className="border-zinc-800 text-zinc-100 hover:bg-white/5"
+            className="border-imperium-steel-dark font-terminal text-imperium-bone hover:bg-imperium-iron"
           >
             <Download className="mr-2 h-4 w-4" />
             Export
@@ -159,85 +161,85 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
 
       {/* Overview Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-zinc-800 bg-zinc-900/50 p-6">
+        <Card variant="steel" className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-zinc-400">Vues totales</p>
-              <p className="mt-2 text-3xl font-bold text-zinc-100">{data.overview.totalViews.toLocaleString()}</p>
+              <p className="font-terminal text-sm text-imperium-steel-dark">{'>'} Total Views</p>
+              <p className="mt-2 font-display text-3xl font-bold text-imperium-crimson">{data.overview.totalViews.toLocaleString()}</p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-500/10">
-              <Eye className="h-6 w-6 text-zinc-400" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none border-2 border-imperium-crimson/30 bg-imperium-crimson/10">
+              <Eye className="h-6 w-6 text-imperium-crimson" />
             </div>
           </div>
-          <p className="mt-4 flex items-center text-sm text-zinc-500">
-            <TrendingUp className="mr-1 h-4 w-4 text-green-400" />
-            <span className="text-green-400">+12%</span> vs période précédente
+          <p className="mt-4 flex items-center font-terminal text-sm text-imperium-gold">
+            <TrendingUp className="mr-1 h-4 w-4" />
+            <span>+12%</span> vs previous period
           </p>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-900/50 p-6">
+        <Card variant="steel" className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-zinc-400">Sessions</p>
-              <p className="mt-2 text-3xl font-bold text-zinc-100">{data.overview.totalSessions.toLocaleString()}</p>
+              <p className="font-terminal text-sm text-imperium-steel-dark">{'>'} Sessions</p>
+              <p className="mt-2 font-display text-3xl font-bold text-imperium-gold">{data.overview.totalSessions.toLocaleString()}</p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10">
-              <Users className="h-6 w-6 text-blue-400" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none border-2 border-imperium-gold/30 bg-imperium-gold/10">
+              <Users className="h-6 w-6 text-imperium-gold" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-zinc-500">
-            Durée moyenne: {formatDuration(data.overview.avgSessionDuration)}
+          <p className="mt-4 font-terminal text-sm text-imperium-steel-dark">
+            Avg duration: {formatDuration(data.overview.avgSessionDuration)}
           </p>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-900/50 p-6">
+        <Card variant="steel" className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-zinc-400">Taux de rebond</p>
-              <p className="mt-2 text-3xl font-bold text-zinc-100">{data.overview.bounceRate.toFixed(1)}%</p>
+              <p className="font-terminal text-sm text-imperium-steel-dark">{'>'} Bounce Rate</p>
+              <p className="mt-2 font-display text-3xl font-bold text-imperium-bone">{data.overview.bounceRate.toFixed(1)}%</p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-500/10">
-              <MousePointer className="h-6 w-6 text-cyan-400" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none border-2 border-imperium-warp/30 bg-imperium-warp/10">
+              <MousePointer className="h-6 w-6 text-imperium-warp" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-zinc-500">
-            {data.overview.bounceRate < 50 ? 'Excellent' : data.overview.bounceRate < 70 ? 'Bon' : 'À améliorer'}
+          <p className="mt-4 font-terminal text-sm text-imperium-steel-dark">
+            {data.overview.bounceRate < 50 ? 'Excellent' : data.overview.bounceRate < 70 ? 'Good' : 'To improve'}
           </p>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-900/50 p-6">
+        <Card variant="steel" className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-zinc-400">Événements</p>
-              <p className="mt-2 text-3xl font-bold text-zinc-100">{data.engagement.totalEvents.toLocaleString()}</p>
+              <p className="font-terminal text-sm text-imperium-steel-dark">{'>'} Events</p>
+              <p className="mt-2 font-display text-3xl font-bold text-imperium-crimson">{data.engagement.totalEvents.toLocaleString()}</p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-500/10">
-              <Activity className="h-6 w-6 text-emerald-400" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none border-2 border-imperium-crimson/30 bg-imperium-crimson/10">
+              <Activity className="h-6 w-6 text-imperium-crimson" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-zinc-500">
-            Durée moyenne: {formatDuration(data.engagement.avgDuration)}
+          <p className="mt-4 font-terminal text-sm text-imperium-steel-dark">
+            Avg duration: {formatDuration(data.engagement.avgDuration)}
           </p>
         </Card>
       </div>
 
       {/* Charts */}
       <Tabs defaultValue="views" className="space-y-4">
-        <TabsList className="bg-zinc-800/50 border-zinc-800">
-          <TabsTrigger value="views" className="data-[state=active]:bg-zinc-500/20">
-            Vues dans le temps
+        <TabsList className="bg-imperium-black border-2 border-imperium-steel-dark">
+          <TabsTrigger value="views" className="data-[state=active]:bg-imperium-crimson data-[state=active]:text-imperium-bone font-terminal">
+            Views Over Time
           </TabsTrigger>
-          <TabsTrigger value="referrers" className="data-[state=active]:bg-zinc-500/20">
-            Sources de trafic
+          <TabsTrigger value="referrers" className="data-[state=active]:bg-imperium-gold data-[state=active]:text-imperium-black font-terminal">
+            Traffic Sources
           </TabsTrigger>
-          <TabsTrigger value="content" className="data-[state=active]:bg-zinc-500/20">
-            Contenu populaire
+          <TabsTrigger value="content" className="data-[state=active]:bg-imperium-warp data-[state=active]:text-imperium-bone font-terminal">
+            Popular Content
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="views">
-          <Card className="border-zinc-800 bg-zinc-900/50 p-6">
-            <h3 className="mb-6 text-lg font-semibold text-zinc-100">Vues au fil du temps</h3>
+          <Card variant="steel" className="p-6">
+            <h3 className="mb-6 font-display uppercase tracking-wider text-imperium-gold">{'>'} Views Over Time</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data.viewsOverTime}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -248,17 +250,17 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
                 />
                 <YAxis stroke="#888" />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #333', borderRadius: '8px' }}
-                  itemStyle={{ color: '#fff' }}
+                  contentStyle={{ backgroundColor: '#1c1c1c', border: '2px solid #333', borderRadius: '0' }}
+                  itemStyle={{ color: '#b8a646' }}
                   labelFormatter={formatDate}
                 />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="views"
-                  stroke="#8b5cf6"
+                  stroke="#9a1115"
                   strokeWidth={2}
-                  dot={{ fill: '#8b5cf6' }}
+                  dot={{ fill: '#9a1115' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -266,8 +268,8 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
         </TabsContent>
 
         <TabsContent value="referrers">
-          <Card className="border-zinc-800 bg-zinc-900/50 p-6">
-            <h3 className="mb-6 text-lg font-semibold text-zinc-100">Sources de trafic</h3>
+          <Card variant="steel" className="p-6">
+            <h3 className="mb-6 font-display uppercase tracking-wider text-imperium-gold">{'>'} Traffic Sources</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.referrers.slice(0, 10)} layout="horizontal">
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -280,10 +282,10 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
                 />
                 <YAxis stroke="#888" />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #333', borderRadius: '8px' }}
-                  itemStyle={{ color: '#fff' }}
+                  contentStyle={{ backgroundColor: '#1c1c1c', border: '2px solid #333', borderRadius: '0' }}
+                  itemStyle={{ color: '#b8a646' }}
                 />
-                <Bar dataKey="visits" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="visits" fill="#b8a646" radius={[0, 0, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -291,43 +293,43 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
 
         <TabsContent value="content">
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="border-zinc-800 bg-zinc-900/50 p-6">
-              <h3 className="mb-4 text-lg font-semibold text-zinc-100">Articles populaires</h3>
+            <Card variant="steel" className="p-6">
+              <h3 className="mb-4 font-display uppercase tracking-wider text-imperium-crimson">{'>'} Popular Posts</h3>
               <div className="space-y-3">
                 {data.content.popularPosts.map((post, index) => (
                   <a
                     key={post.id}
                     href={`/blog/${post.slug}`}
-                    className="flex items-center justify-between rounded-lg border border-white/5 bg-zinc-800/30 px-4 py-3 transition-colors hover:bg-zinc-800/50"
+                    className="flex items-center justify-between rounded-none border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 transition-colors hover:border-imperium-crimson hover:bg-imperium-crimson/10"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-500/20 text-xs font-semibold text-zinc-400">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-none border-2 border-imperium-crimson bg-imperium-crimson/20 font-terminal text-xs font-semibold text-imperium-crimson">
                         {index + 1}
                       </span>
-                      <span className="text-sm text-zinc-100">{post.title}</span>
+                      <span className="font-terminal text-sm text-imperium-bone">{post.title}</span>
                     </div>
-                    <span className="text-sm text-zinc-400">{post.views} vues</span>
+                    <span className="font-terminal text-sm text-imperium-steel">{post.views} views</span>
                   </a>
                 ))}
               </div>
             </Card>
 
-            <Card className="border-zinc-800 bg-zinc-900/50 p-6">
-              <h3 className="mb-4 text-lg font-semibold text-zinc-100">Projets populaires</h3>
+            <Card variant="steel" className="p-6">
+              <h3 className="mb-4 font-display uppercase tracking-wider text-imperium-gold">{'>'} Popular Projects</h3>
               <div className="space-y-3">
                 {data.content.popularProjects.map((project, index) => (
                   <a
                     key={project.id}
                     href={`/projects/${project.slug}`}
-                    className="flex items-center justify-between rounded-lg border border-white/5 bg-zinc-800/30 px-4 py-3 transition-colors hover:bg-zinc-800/50"
+                    className="flex items-center justify-between rounded-none border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 transition-colors hover:border-imperium-gold hover:bg-imperium-gold/10"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-400">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-none border-2 border-imperium-gold bg-imperium-gold/20 font-terminal text-xs font-semibold text-imperium-gold">
                         {index + 1}
                       </span>
-                      <span className="text-sm text-zinc-100">{project.title}</span>
+                      <span className="font-terminal text-sm text-imperium-bone">{project.title}</span>
                     </div>
-                    <span className="text-sm text-zinc-400">{project.views} vues</span>
+                    <span className="font-terminal text-sm text-imperium-steel">{project.views} views</span>
                   </a>
                 ))}
               </div>
@@ -337,21 +339,21 @@ export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month
       </Tabs>
 
       {/* Top Pages */}
-      <Card className="border-zinc-800 bg-zinc-900/50 p-6">
-        <h3 className="mb-4 text-lg font-semibold text-zinc-100">Pages les plus visitées</h3>
+      <Card variant="steel" className="p-6">
+        <h3 className="mb-4 font-display uppercase tracking-wider text-imperium-bone">{'>'} Most Visited Pages</h3>
         <div className="space-y-2">
           {data.overview.topPages.map((page, index) => (
             <div
               key={page.path}
-              className="flex items-center justify-between rounded-lg border border-white/5 bg-zinc-800/30 px-4 py-3"
+              className="flex items-center justify-between rounded-none border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 text-xs font-semibold text-zinc-300">
+                <span className="flex h-6 w-6 items-center justify-center rounded-none border-2 border-imperium-steel font-terminal text-xs font-semibold text-imperium-steel">
                   {index + 1}
                 </span>
-                <span className="text-sm text-zinc-300">{page.path}</span>
+                <span className="font-terminal text-sm text-imperium-steel">{page.path}</span>
               </div>
-              <span className="text-sm text-zinc-400">{page.views} vues</span>
+              <span className="font-terminal text-sm text-imperium-steel-dark">{page.views} views</span>
             </div>
           ))}
         </div>

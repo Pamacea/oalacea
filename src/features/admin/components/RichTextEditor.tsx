@@ -79,18 +79,18 @@ export function RichTextEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-zinc-400 hover:text-zinc-300 underline',
+          class: 'text-imperium-crimson hover:text-imperium-crimson-b underline border-b-2 border-dashed border-imperium-steel-dark',
         },
       }),
       Image.configure({
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg',
+          class: 'max-w-full h-auto rounded-none border-2 border-imperium-steel-dark',
         },
       }),
       CodeBlockLowlight.configure({
         lowlight,
         HTMLAttributes: {
-          class: 'bg-zinc-900 rounded-lg p-4 my-4 overflow-x-auto',
+          class: 'bg-imperium-black rounded-none border-2 border-imperium-steel-dark p-4 my-4 overflow-x-auto font-terminal',
         },
       }),
     ],
@@ -103,20 +103,20 @@ export function RichTextEditor({
       attributes: {
         class: cn(
           'prose prose-invert prose-sm sm:prose-base max-w-none focus:outline-none min-h-[300px] px-4 py-3',
-          'prose-headings:text-white prose-headings:font-semibold',
-          'prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg',
-          'prose-p:text-zinc-300 prose-p:leading-relaxed',
-          'prose-strong:text-white prose-strong:font-semibold',
-          'prose-code:text-zinc-400 prose-code:bg-zinc-400/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm',
-          'prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800',
-          'prose-blockquote:border-l-2 prose-blockquote:border-zinc-500 prose-blockquote:text-zinc-400 prose-blockquote:pl-4 prose-blockquote:italic',
-          'prose-ul:list-disc prose-ul:pl-6 prose-ul:text-zinc-300',
-          'prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-zinc-300',
-          'prose-li:marker:text-zinc-500',
-          'prose-a:text-zinc-400 prose-a:no-underline hover:prose-a:underline',
-          'prose-hr:border-zinc-800 prose-hr:my-6',
-          'prose-img:rounded-lg prose-img:my-4',
-          'is-editor-empty:after:content-[attr(data-placeholder)] is-editor-empty:after:text-zinc-500 is-editor-empty:after:pointer-events-none is-editor-empty:after:h-full is-editor-empty:after:float-left'
+          'prose-headings:font-display prose-headings:uppercase prose-headings:tracking-wider',
+          'prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-headings:text-imperium-bone',
+          'prose-p:text-imperium-steel prose-p:font-terminal prose-p:leading-relaxed',
+          'prose-strong:text-imperium-bone prose-strong:font-display prose-strong:uppercase',
+          'prose-code:text-imperium-crimson prose-code:bg-imperium-crimson/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-none prose-code:font-mono prose-code:text-sm prose-code:border prose-code:border-imperium-crimson/30',
+          'prose-pre:bg-imperium-black prose-pre:border-2 prose-pre:border-imperium-steel-dark',
+          'prose-blockquote:border-l-4 prose-blockquote:border-imperium-crimson prose-blockquote:text-imperium-steel-dark prose-blockquote:pl-4 prose-blockquote:italic',
+          'prose-ul:list-disc prose-ul:pl-6 prose-ul:text-imperium-steel',
+          'prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-imperium-steel',
+          'prose-li:marker:text-imperium-gold',
+          'prose-a:text-imperium-crimson prose-a:no-underline hover:prose-a:underline prose-a:pb-0.5',
+          'prose-hr:border-2 prose-hr:border-imperium-steel-dark prose-hr:my-6',
+          'prose-img:rounded-none prose-img:my-4 prose-img:border-2 prose-img:border-imperium-steel-dark',
+          'is-editor-empty:after:content-[attr(data-placeholder)] is-editor-empty:after:text-imperium-steel-dark is-editor-empty:after:pointer-events-none is-editor-empty:after:h-full is-editor-empty:after:float-left'
         ),
       },
     },
@@ -237,12 +237,12 @@ export function RichTextEditor({
   return (
     <div
       className={cn(
-        'rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden',
+        'rounded-none border-2 border-imperium-steel-dark bg-imperium-black overflow-hidden',
         className
       )}
     >
       {editable && !isMarkdownMode && (
-        <div className="flex flex-wrap items-center gap-1 border-b border-zinc-800 bg-zinc-900/50 p-2">
+        <div className="flex flex-wrap items-center gap-1 border-b-2 border-imperium-steel-dark bg-imperium-black p-2">
           <div className="flex items-center gap-1 pr-2">
             {toolbarButtons.map((button) => (
               <Toggle
@@ -308,7 +308,7 @@ export function RichTextEditor({
               </PopoverTrigger>
               <PopoverContent className="w-64 p-3" align="start">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-zinc-200">Add link</p>
+                  <p className="font-display uppercase text-imperium-bone text-sm">Add link</p>
                   <Input
                     value={linkUrl}
                     onChange={(e) => setLinkUrl(e.target.value)}
@@ -350,7 +350,7 @@ export function RichTextEditor({
               </PopoverTrigger>
               <PopoverContent className="w-72 p-3" align="start">
                 <div className="space-y-3">
-                  <p className="text-sm font-medium text-zinc-200">Add image</p>
+                  <p className="font-display uppercase text-imperium-bone text-sm">Add image</p>
                   <Input
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
@@ -365,7 +365,7 @@ export function RichTextEditor({
                   />
                   {onImageUpload && (
                     <div className="space-y-1">
-                      <p className="text-xs text-zinc-400">Or upload a file:</p>
+                      <p className="font-terminal text-imperium-steel-dark text-xs">Or upload a file:</p>
                       <input
                         type="file"
                         accept="image/*"
@@ -376,7 +376,7 @@ export function RichTextEditor({
                             setImageOpen(false);
                           }
                         }}
-                        className="block w-full text-xs text-zinc-400 file:mr-2 file:rounded file:border-0 file:bg-zinc-800 file:px-2 file:py-1 file:text-xs file:text-zinc-300 hover:file:bg-zinc-700"
+                        className="block w-full font-terminal text-xs text-imperium-steel file:mr-2 file:rounded-none file:border-2 file:border-imperium-steel-dark file:bg-imperium-black file:px-2 file:py-1 file:text-xs file:text-imperium-steel hover:file:bg-imperium-iron"
                       />
                     </div>
                   )}
@@ -451,7 +451,7 @@ export function RichTextEditor({
             });
             editor.commands.setContent(html || '<p></p>');
           }}
-          className="w-full min-h-[300px] bg-transparent p-4 text-zinc-300 font-mono text-sm focus:outline-none resize-none"
+          className="w-full min-h-[300px] bg-imperium-black p-4 font-terminal text-imperium-steel text-sm focus:outline-none resize-none"
           placeholder="Write in Markdown..."
         />
       ) : (

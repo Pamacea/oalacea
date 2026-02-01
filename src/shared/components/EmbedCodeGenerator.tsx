@@ -238,7 +238,7 @@ export function EmbedCodeGenerator({
 
           <div className="space-y-4">
             <h3 className="font-semibold">Preview</h3>
-            <div className="rounded-md border bg-muted/50 p-4">
+            <div className="rounded-sm border bg-muted/50 p-4">
               <iframe
                 src={embedUrl}
                 width="100%"

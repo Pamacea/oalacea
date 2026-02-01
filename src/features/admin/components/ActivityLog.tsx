@@ -36,16 +36,16 @@ interface ActivityLogProps {
 }
 
 const actionColors: Record<string, string> = {
-  CREATE: "bg-green-500/10 text-green-700 dark:text-green-400",
-  UPDATE: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  DELETE: "bg-red-500/10 text-red-700 dark:text-red-400",
-  PUBLISH: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  UNPUBLISH: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
-  LOGIN: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  LOGOUT: "bg-slate-500/10 text-slate-700 dark:text-slate-400",
-  LOCK: "bg-orange-500/10 text-orange-700 dark:text-orange-400",
-  UNLOCK: "bg-teal-500/10 text-teal-700 dark:text-teal-400",
-  EXPORT: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400",
+  CREATE: "bg-imperium-gold/10 text-imperium-gold border-imperium-gold/30",
+  UPDATE: "bg-imperium-warp/10 text-imperium-warp border-imperium-warp/30",
+  DELETE: "bg-imperium-crimson/10 text-imperium-crimson border-imperium-crimson/30",
+  PUBLISH: "bg-imperium-iron/10 text-imperium-bone border-imperium-iron-dark",
+  UNPUBLISH: "bg-imperium-steel/10 text-imperium-steel border-imperium-steel-dark",
+  LOGIN: "bg-imperium-gold/10 text-imperium-gold border-imperium-gold/30",
+  LOGOUT: "bg-imperium-steel/10 text-imperium-steel border-imperium-steel-dark",
+  LOCK: "bg-imperium-crimson/10 text-imperium-crimson border-imperium-crimson/30",
+  UNLOCK: "bg-imperium-gold/10 text-imperium-gold border-imperium-gold/30",
+  EXPORT: "bg-imperium-warp/10 text-imperium-warp border-imperium-warp/30",
 }
 
 export function ActivityLog({ userId, entityType, entityId, className }: ActivityLogProps) {
@@ -143,32 +143,36 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
 
   if (!canReadActivity) {
     return (
-      <Card>
+      <Card variant="steel">
         <CardContent className="p-6">
-          <p className="text-slate-500">You don't have permission to view activity logs.</p>
+          <p className="font-terminal text-imperium-steel-dark">{'>'} You don't have permission to view activity logs.</p>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card className={className}>
+    <Card variant="steel" className={className}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Activity Log</CardTitle>
-            <CardDescription>Track all user actions and system events</CardDescription>
+            <CardTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+              [ Activity Log ]
+            </CardTitle>
+            <CardDescription className="font-terminal text-imperium-steel-dark">
+              {'>'} Track all user actions and system events
+            </CardDescription>
           </div>
           <div className="flex gap-2">
             {canDelete && (
-              <Button variant="outline" size="sm" onClick={handleCleanup}>
+              <Button variant="outline" size="sm" onClick={handleCleanup} className="border-imperium-steel-dark font-terminal text-imperium-bone hover:bg-imperium-iron">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Clean Up
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="border-imperium-steel-dark font-terminal text-imperium-bone hover:bg-imperium-iron">
               {exporting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-4 w-4 mr-2 animate-spin text-imperium-gold" />
               ) : (
                 <Download className="h-4 w-4 mr-2" />
               )}
@@ -180,15 +184,15 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
       <CardContent>
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="flex-1 min-w-[200px]">
-            <Label htmlFor="filter-action">Action</Label>
+            <Label htmlFor="filter-action" className="font-display text-imperium-bone">Action</Label>
             <Select
               value={filters.action}
               onValueChange={(value) => setFilters({ ...filters, action: value })}
             >
-              <SelectTrigger id="filter-action">
+              <SelectTrigger id="filter-action" className="border-imperium-steel-dark bg-imperium-black font-terminal text-imperium-bone">
                 <SelectValue placeholder="All actions" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-imperium-steel-dark bg-imperium-black">
                 <SelectItem value="">All actions</SelectItem>
                 <SelectItem value="CREATE">Create</SelectItem>
                 <SelectItem value="UPDATE">Update</SelectItem>
@@ -204,22 +208,24 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
           </div>
 
           <div className="flex-1 min-w-[200px]">
-            <Label htmlFor="filter-start">Start Date</Label>
+            <Label htmlFor="filter-start" className="font-display text-imperium-bone">Start Date</Label>
             <Input
               id="filter-start"
               type="date"
               value={filters.startDate}
               onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+              className="border-imperium-steel-dark bg-imperium-black font-terminal text-imperium-bone"
             />
           </div>
 
           <div className="flex-1 min-w-[200px]">
-            <Label htmlFor="filter-end">End Date</Label>
+            <Label htmlFor="filter-end" className="font-display text-imperium-bone">End Date</Label>
             <Input
               id="filter-end"
               type="date"
               value={filters.endDate}
               onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+              className="border-imperium-steel-dark bg-imperium-black font-terminal text-imperium-bone"
             />
           </div>
 
@@ -229,6 +235,7 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
                 variant="ghost"
                 size="sm"
                 onClick={() => setFilters({ action: "", entityType: "", userId: "", startDate: "", endDate: "" })}
+                className="font-terminal text-imperium-steel hover:text-imperium-crimson"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 Clear Filters
@@ -240,40 +247,42 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
         <ScrollArea className="h-[500px]">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-imperium-gold" />
             </div>
           ) : activities.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">No activity found</div>
+            <div className="text-center py-12 font-terminal text-imperium-steel-dark">
+              {'>'} No activity found
+            </div>
           ) : (
             <div className="space-y-2">
               {activities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-start gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-900"
+                  className="flex items-start gap-4 p-3 rounded-none border-2 border-imperium-steel-dark bg-imperium-black"
                 >
                   <Badge
                     variant="secondary"
-                    className={actionColors[activity.action] || "bg-slate-500/10 text-slate-700"}
+                    className={actionColors[activity.action] || "border-imperium-steel-dark bg-imperium-iron text-imperium-steel"}
                   >
                     {activity.action}
                   </Badge>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{activity.user?.name || "Unknown user"}</span>
+                      <span className="font-display uppercase text-imperium-bone">{activity.user?.name || "Unknown user"}</span>
                       {activity.user?.email && (
-                        <span className="text-sm text-slate-500">({activity.user.email})</span>
+                        <span className="font-terminal text-sm text-imperium-steel-dark">({activity.user.email})</span>
                       )}
                     </div>
 
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                    <p className="font-terminal text-sm text-imperium-steel">
                       {activity.description || `${activity.action.toLowerCase()} ${activity.entityType}`}
                       {activity.entityId && (
-                        <span className="text-slate-500"> #{activity.entityId.slice(0, 8)}</span>
+                        <span className="text-imperium-steel-dark"> #{activity.entityId.slice(0, 8)}</span>
                       )}
                     </p>
 
-                    <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
+                    <div className="flex items-center gap-4 mt-1 font-terminal text-xs text-imperium-steel-dark">
                       <time dateTime={activity.createdAt.toISOString()}>
                         {format(new Date(activity.createdAt), "PPp")}
                       </time>
@@ -287,8 +296,8 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
         </ScrollArea>
 
         {total > 50 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t">
-            <p className="text-sm text-slate-500">
+          <div className="flex items-center justify-between mt-4 pt-4 border-t-2 border-imperium-steel-dark">
+            <p className="font-terminal text-sm text-imperium-steel-dark">
               Showing {page * 50 + 1}-{Math.min((page + 1) * 50, total)} of {total}
             </p>
             <div className="flex gap-2">
@@ -297,6 +306,7 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
                 size="sm"
                 disabled={page === 0}
                 onClick={() => setPage((p) => p - 1)}
+                className="border-imperium-steel-dark font-terminal text-imperium-bone hover:bg-imperium-iron"
               >
                 Previous
               </Button>
@@ -305,6 +315,7 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
                 size="sm"
                 disabled={(page + 1) * 50 >= total}
                 onClick={() => setPage((p) => p + 1)}
+                className="border-imperium-steel-dark font-terminal text-imperium-bone hover:bg-imperium-iron"
               >
                 Next
               </Button>

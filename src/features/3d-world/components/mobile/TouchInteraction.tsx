@@ -185,7 +185,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="bg-black/70 backdrop-blur-md rounded-lg px-3 py-2 border border-white/10"
+                className="bg-black/70 backdrop-blur-md rounded-sm px-3 py-2 border border-white/10"
               >
                 <p className="text-xs text-white/80 whitespace-nowrap">
                   {isPortal ? `Portal: ${interactTarget.name}` : interactTarget.name}
@@ -213,7 +213,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
               animate={{ scale: 1, y: position.y }}
               exit={{ scale: 0.8, y: position.y - 100 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="absolute right-4 bg-slate-900/95 backdrop-blur-md rounded-lg border border-white/10 overflow-hidden min-w-48"
+              className="absolute right-4 bg-slate-900/95 backdrop-blur-md rounded-sm border border-white/10 overflow-hidden min-w-48"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-4 py-3 border-b border-white/10">
@@ -228,7 +228,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
               <div className="p-2">
                 <button
                   onClick={handleTap}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-md hover:bg-white/10 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-sm hover:bg-white/10 transition-colors text-left"
                 >
                   <div className="w-8 h-8 rounded-full bg-d4af37/20 flex items-center justify-center">
                     <svg className="w-4 h-4 text-d4af37" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +251,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
                       window.location.href = interactTarget.route;
                       setShowContextMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-md hover:bg-white/10 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-sm hover:bg-white/10 transition-colors text-left"
                   >
                     <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
                       <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

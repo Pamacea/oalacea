@@ -1,15 +1,19 @@
-import { LoginForm } from "@/components/auth"
+import { LoginForm } from "@/components/auth/login-form"
 
 export default function LoginPage() {
   return (
-    <div className="space-y-6 p-8">
-      <div>
-        <h1 className="text-2xl font-bold">Admin Login</h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your credentials to access the admin panel.
-        </p>
+    <div className="min-h-screen flex items-center justify-center bg-imperium-black-deep p-6">
+      <div className="w-full max-w-md border-2 border-imperium-crimson p-8 shadow-[8px_8px_0_rgba(154,17,21,0.3)] bg-imperium-black">
+        <div>
+          <h1 className="font-display text-3xl uppercase tracking-wider text-imperium-crimson mb-2">
+            Admin Login
+          </h1>
+          <p className="font-terminal text-sm text-imperium-steel">
+            {'>'} Enter your credentials to access the admin panel
+          </p>
+        </div>
+        <LoginForm />
       </div>
-      <LoginForm />
     </div>
   )
 }

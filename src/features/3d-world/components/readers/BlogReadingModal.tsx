@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Clock, Tag, Eye, Loader2 } from 'lucide-react';
+import { X, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Clock, Tag, Eye, Scroll } from 'lucide-react';
 import { useBlogPost } from '@/features/blog/hooks';
 import { sanitizeInlineHtml } from '@/lib/sanitize';
+import { GlitchText, ChaoticOverlay, ScanlineBeam } from '@/components/ui/imperium';
+import { useUISound } from '@/hooks/use-ui-sound';
 
 interface BlogReadingModalProps {
   slug: string;
@@ -35,7 +37,6 @@ function MarkdownContent({ content }: { content: string }) {
       processed = processed.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
       processed = processed.replace(/`(.+?)`/g, '<code class="inline-code">$1</code>');
       processed = processed.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="markdown-link" target="_blank" rel="noopener noreferrer">$1</a>');
-      // Sanitize HTML to prevent XSS attacks
       const sanitized = sanitizeInlineHtml(processed);
       return <span dangerouslySetInnerHTML={{ __html: sanitized }} />;
     };
@@ -57,10 +58,10 @@ function MarkdownContent({ content }: { content: string }) {
                 onClick={(e) => {
                   const btn = e.currentTarget as HTMLButtonElement;
                   navigator.clipboard.writeText(codeContent);
-                  btn.textContent = 'Copied!';
-                  setTimeout(() => btn.textContent = 'Copy', 2000);
+                  btn.textContent = 'COPIED!';
+                  setTimeout(() => btn.textContent = 'COPY', 2000);
                 }}
-              >Copy</button>
+              >COPY</button>
               <code>{codeContent}</code>
             </pre>
           );
@@ -160,7 +161,6 @@ function MarkdownContent({ content }: { content: string }) {
       }
     }
 
-    // Flush any remaining list items
     if (inList && listItems.length > 0) {
       elements.push(<ul key={`ul-final`} className="markdown-ul">{listItems}</ul>);
     }
@@ -175,8 +175,8 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
   const { data: post, isLoading } = useBlogPost(slug);
   const scrollProgress = useRef(0);
   const contentRef = useRef<HTMLDivElement>(null);
+  const { playHover, playClick } = useUISound();
 
-  // Track scroll progress
   useEffect(() => {
     const container = contentRef.current;
     if (!container) return;
@@ -191,7 +191,6 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -205,20 +204,26 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-[52] flex items-center justify-center bg-black/90 backdrop-blur-sm">
-        <Loader2 className="h-8 w-8 text-amber-500 animate-spin" />
-        <p className="ml-3 text-zinc-500">Chargement...</p>
+      <div className="fixed inset-0 z-[52] flex items-center justify-center bg-imperium-black-deep/95 backdrop-blur-sm">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="text-5xl mr-4"
+        >
+          ⚙
+        </motion.div>
+        <p className="font-terminal text-imperium-steel">Loading archives...</p>
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="fixed inset-0 z-[52] flex items-center justify-center bg-black/90 backdrop-blur-sm">
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 text-center">
-          <p className="text-zinc-500">Article non trouvé</p>
-          <button onClick={onClose} className="mt-4 text-amber-500 hover:text-amber-400">
-            Fermer
+      <div className="fixed inset-0 z-[52] flex items-center justify-center bg-imperium-black-deep/95 backdrop-blur-sm">
+        <div className="border-2 border-imperium-crimson bg-imperium-black-raise p-8 text-center">
+          <p className="font-terminal text-imperium-steel mb-4">[RECORD_NOT_FOUND]</p>
+          <button onClick={onClose} className="font-terminal text-imperium-crimson hover:text-imperium-gold transition-colors uppercase">
+            Return to archives
           </button>
         </div>
       </div>
@@ -232,82 +237,110 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[52] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      className="fixed inset-0 z-[52] flex items-center justify-center bg-imperium-black-deep/95 backdrop-blur-sm"
       onClick={onClose}
     >
+      <ChaoticOverlay type="scanlines" opacity={0.2} />
+
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="w-[85vw] max-w-4xl h-[90vh] bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        initial={{ scale: 0.95, opacity: 0, rotateX: 5 }}
+        animate={{ scale: 1, opacity: 1, rotateX: 0 }}
+        exit={{ scale: 0.95, opacity: 0, rotateX: -5 }}
+        transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+        className="w-[90vw] max-w-4xl h-[92vh] bg-imperium-black-raise border-2 border-imperium-crimson rounded-none shadow-[0_0_60px_rgba(154,17,21,0.4)] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-950/50 shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <h2 className="text-sm font-semibold text-zinc-100">Blog</h2>
-              <p className="text-xs text-zinc-500">Lecture</p>
-            </div>
+        <div className="relative border-b-2 border-imperium-crimson bg-imperium-black-deep/80 px-6 py-4 shrink-0">
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_1px,rgba(154,17,21,0.2)_1px,rgba(154,17,21,0.2)_2px)]" />
           </div>
 
-          {/* Navigation */}
-          <div className="flex items-center gap-2">
-            {onPrevious && (
-              <button
-                onClick={onPrevious}
-                className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-lg transition-colors"
-                title="Article précédent"
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.button
+                onClick={onClose}
+                onMouseEnter={playHover}
+                className="p-2 text-imperium-steel hover:text-imperium-crimson border border-imperium-steel-dark hover:border-imperium-crimson transition-colors"
               >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-            )}
-            {total > 0 && (
-              <span className="text-xs text-zinc-600 min-w-[3rem] text-center">
-                {currentIndex + 1}/{total}
-              </span>
-            )}
-            {onNext && (
-              <button
-                onClick={onNext}
-                className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-lg transition-colors"
-                title="Article suivant"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            )}
+                <ArrowLeft className="h-5 w-5" />
+              </motion.button>
+              <div className="border-2 border-imperium-crimson bg-imperium-crimson/10 p-2">
+                <Scroll className="h-5 w-5 text-imperium-crimson" />
+              </div>
+              <div>
+                <h2 className="font-display text-sm uppercase tracking-wider text-imperium-bone">Archives</h2>
+                <p className="font-terminal text-xs text-imperium-steel">{'>'} Reading mode</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {onPrevious && (
+                <motion.button
+                  onClick={onPrevious}
+                  onMouseEnter={playHover}
+                  className="p-2 text-imperium-steel hover:text-imperium-crimson border border-imperium-steel-dark hover:border-imperium-crimson transition-colors"
+                  title="Article précédent"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </motion.button>
+              )}
+              {total > 0 && (
+                <span className="font-terminal text-xs text-imperium-steel-dark min-w-[3rem] text-center">
+                  {currentIndex + 1}/{total}
+                </span>
+              )}
+              {onNext && (
+                <motion.button
+                  onClick={onNext}
+                  onMouseEnter={playHover}
+                  className="p-2 text-imperium-steel hover:text-imperium-crimson border border-imperium-steel-dark hover:border-imperium-crimson transition-colors"
+                  title="Article suivant"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </motion.button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Scroll Progress Bar */}
-        <div className="h-0.5 bg-zinc-900 shrink-0">
-          <div
-            className="h-full bg-amber-500 transition-all duration-150"
-            style={{ width: `${scrollProgress.current * 100}%` }}
+        <div className="h-1 bg-imperium-black shrink-0 relative overflow-hidden">
+          <motion.div
+            className="h-full bg-imperium-crimson absolute top-0 left-0"
+            animate={{ width: `${scrollProgress.current * 100}%` }}
+            transition={{ duration: 0.15 }}
           />
         </div>
 
         {/* Content */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto px-6 py-6">
-          <article className="max-w-2xl mx-auto">
+        <div ref={contentRef} className="flex-1 overflow-y-auto px-6 py-6 relative">
+          <div className="absolute inset-0 opacity-5 pointer-events-none">
+            <div
+              className="w-full h-full"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              }}
+            />
+          </div>
+
+          <article className="max-w-3xl mx-auto relative z-10">
             {post.coverImage && (
-              <div className="aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 mb-6">
+              <div className="aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black mb-6 relative">
                 <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 border border-imperium-crimson/20 pointer-events-none" />
               </div>
             )}
 
-            <h1 className="text-3xl font-bold text-white mb-4">{post.title}</h1>
+            <h1 className="font-display text-4xl uppercase tracking-wider text-imperium-bone mb-6">
+              <GlitchText intensity="high" auto>
+                {post.title}
+              </GlitchText>
+            </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-400 mb-6">
+            <div className="flex flex-wrap items-center gap-4 font-terminal text-sm text-imperium-steel mb-6 pb-6 border-b border-imperium-steel-dark">
               <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="h-3.5 w-3.5 text-imperium-crimson" />
                 {new Date(post.publishDate ?? post.createdAt).toLocaleDateString('fr-FR', {
                   day: 'numeric',
                   month: 'long',
@@ -315,21 +348,21 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
                 })}
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5" />
-                {readingTime} min
+                <Clock className="h-3.5 w-3.5 text-imperium-gold" />
+                {readingTime} min read
               </span>
               {post.category && (
-                <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-amber-500/20 text-zinc-100">
+                <span className="inline-flex items-center px-2 py-0.5 text-xs border border-imperium-crimson text-imperium-crimson">
                   {post.category.name}
                 </span>
               )}
             </div>
 
             {post.tags && post.tags.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap mb-6">
-                <Tag className="h-3.5 w-3.5 text-zinc-500" />
+              <div className="flex items-center gap-2 flex-wrap mb-6 pb-6 border-b border-imperium-steel-dark">
+                <Tag className="h-3.5 w-3.5 text-imperium-steel-dark" />
                 {post.tags.map((tag: string) => (
-                  <span key={tag} className="text-xs text-zinc-400 hover:text-zinc-300">
+                  <span key={tag} className="font-terminal text-xs text-imperium-steel hover:text-imperium-crimson transition-colors">
                     #{tag}
                   </span>
                 ))}
@@ -337,8 +370,8 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
             )}
 
             {post.excerpt && (
-              <div className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 mb-6">
-                <p className="text-zinc-300 italic">{post.excerpt}</p>
+              <div className="border-2 border-imperium-steel-dark bg-imperium-black/50 p-4 mb-6">
+                <p className="font-terminal italic text-imperium-steel">{post.excerpt}</p>
               </div>
             )}
 
@@ -349,42 +382,33 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 bg-zinc-950/50 shrink-0">
-          <button
+        <div className="flex items-center justify-between px-6 py-4 border-t-2 border-imperium-steel-dark bg-imperium-black-deep/50 shrink-0">
+          <motion.button
             onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
-            className="flex items-center gap-2 text-sm text-zinc-400 hover:text-amber-300 transition-colors"
+            onMouseEnter={playHover}
+            className="flex items-center gap-2 font-terminal text-sm text-imperium-steel hover:text-imperium-crimson transition-colors"
           >
             <Eye className="h-4 w-4" />
-            Voir sur le site
-          </button>
+            View on site
+          </motion.button>
           <button
             onClick={onClose}
-            className="text-sm text-zinc-400 hover:text-zinc-300 transition-colors"
+            className="font-terminal text-sm text-imperium-steel hover:text-imperium-bone transition-colors"
           >
-            Fermer (ESC)
+            [ESC] Close
           </button>
+        </div>
+
+        {/* Bottom scanline */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 z-20">
+          <motion.div
+            className="h-full bg-gradient-to-r from-transparent via-imperium-crimson to-transparent"
+            animate={{ x: ['-100%', '100%'] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+            style={{ width: '30%' }}
+          />
         </div>
       </motion.div>
     </motion.div>
   );
 }
-
-const styles = `
-  .markdown-content { color: rgb(212 212 212); line-height: 1.75; }
-  .markdown-h1 { font-size: 1.875rem; font-weight: 700; color: rgb(244 244 245); margin-top: 2rem; margin-bottom: 1rem; }
-  .markdown-h2 { font-size: 1.5rem; font-weight: 600; color: rgb(244 244 245); margin-top: 1.75rem; margin-bottom: 0.75rem; }
-  .markdown-h3 { font-size: 1.25rem; font-weight: 600; color: rgb(251 191 36); margin-top: 1.5rem; margin-bottom: 0.5rem; }
-  .markdown-h4 { font-size: 1.125rem; font-weight: 500; color: rgb(244 244 245); margin-top: 1rem; margin-bottom: 0.5rem; }
-  .markdown-p { margin-top: 0.75rem; margin-bottom: 0.75rem; }
-  .markdown-ul, .markdown-ol { margin-top: 1rem; margin-bottom: 1rem; padding-left: 1.5rem; }
-  .markdown-ul li, .markdown-ol li { margin-top: 0.25rem; margin-bottom: 0.25rem; }
-  .markdown-blockquote { border-left: 3px solid rgb(251 191 36); padding-left: 1rem; margin-top: 1rem; margin-bottom: 1rem; color: rgb(161 161 170); font-style: italic; }
-  .markdown-hr { border: none; border-top: 1px solid rgb(39 39 42); margin-top: 2rem; margin-bottom: 2rem; }
-  .inline-code { background: rgb(120 53 15 / 0.5); color: rgb(244 244 245); padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: ui-monospace, monospace; font-size: 0.875em; }
-  .markdown-link { color: rgb(251 191 36); text-decoration: underline; }
-  .markdown-link:hover { color: rgb(252 211 77); }
-  .code-block { background: rgb(9 9 11); border: 1px solid rgb(39 39 42); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; margin-bottom: 1rem; overflow-x: auto; position: relative; }
-  .code-block code { color: rgb(52 211 153); font-family: ui-monospace, monospace; font-size: 0.875rem; white-space: pre-wrap; }
-  .copy-button { position: absolute; top: 0.5rem; right: 0.5rem; background: rgb(39 39 42); color: rgb(212 212 212); border: none; border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer; }
-  .copy-button:hover { background: rgb(63 63 70); }
-`;

@@ -47,10 +47,10 @@ interface UsersTableProps {
 }
 
 const roleColors: Record<string, string> = {
-  ADMIN: "bg-red-500/10 text-red-700 dark:text-red-400",
-  EDITOR: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  AUTHOR: "bg-green-500/10 text-green-700 dark:text-green-400",
-  VIEWER: "bg-slate-500/10 text-slate-700 dark:text-slate-400",
+  ADMIN: "border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson",
+  EDITOR: "border-imperium-gold bg-imperium-gold/20 text-imperium-gold",
+  AUTHOR: "border-imperium-steel bg-imperium-steel/20 text-imperium-bone",
+  VIEWER: "border-imperium-steel-dark bg-imperium-steel-dark/20 text-imperium-steel",
 }
 
 export function UsersTable({ users: initialUsers }: UsersTableProps) {
@@ -151,11 +151,11 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
   }
 
   return (
-    <Card>
+    <Card variant="steel">
       <CardContent className="p-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-imperium-steel" />
             <Input
               placeholder="Search users..."
               value={search}
@@ -191,8 +191,8 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
           <TableBody>
             {filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-slate-500">
-                  No users found
+                <TableCell colSpan={6} className="text-center py-8 font-terminal text-imperium-steel-dark">
+                  {'>'} No users found
                 </TableCell>
               </TableRow>
             ) : (
@@ -200,13 +200,17 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar>
+                      <Avatar className="border-2 border-imperium-steel-dark">
                         <AvatarImage src={user.image || undefined} />
-                        <AvatarFallback>{getInitials(user.name || "", user.email)}</AvatarFallback>
+                        <AvatarFallback className="font-display bg-imperium-iron">
+                          {getInitials(user.name || "", user.email)}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{user.name || "Unnamed User"}</p>
-                        <p className="text-sm text-slate-500">{user.email}</p>
+                        <p className="font-display text-sm uppercase tracking-wider text-imperium-bone">
+                          {user.name || "Unnamed User"}
+                        </p>
+                        <p className="font-terminal text-sm text-imperium-steel">{user.email}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -228,7 +232,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Badge variant="secondary" className={roleColors[user.role]}>
+                      <Badge className={cn("rounded-none", roleColors[user.role])}>
                         {user.role}
                       </Badge>
                     )}
@@ -236,12 +240,11 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Badge
-                        variant={user.isActive ? "default" : "secondary"}
                         className={cn(
-                          "gap-1",
+                          "rounded-none gap-1",
                           user.isActive
-                            ? "bg-green-500/10 text-green-700 dark:text-green-400"
-                            : "bg-red-500/10 text-red-700 dark:text-red-400"
+                            ? "border-imperium-steel bg-imperium-steel/20 text-imperium-bone"
+                            : "border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson"
                         )}
                       >
                         {user.isActive ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -251,7 +254,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 px-2"
+                          className="h-6 px-2 font-terminal uppercase text-xs rounded-none"
                           onClick={() => verifyEmail(user.id)}
                           disabled={updating === user.id}
                         >
@@ -262,18 +265,18 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2 text-sm text-slate-500">
+                    <div className="flex gap-2 font-terminal text-sm text-imperium-steel">
                       <span>{user._count.createdPosts} posts</span>
                       <span>{user._count.createdProjects} projects</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     {user.lastLoginAt ? (
-                      <span className="text-sm text-slate-500">
+                      <span className="font-terminal text-sm text-imperium-steel">
                         {format(new Date(user.lastLoginAt), "PPp")}
                       </span>
                     ) : (
-                      <span className="text-sm text-slate-400">Never</span>
+                      <span className="font-terminal text-sm text-imperium-steel-dark">Never</span>
                     )}
                   </TableCell>
                   {can("edit") && (

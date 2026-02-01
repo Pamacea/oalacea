@@ -226,7 +226,7 @@ export function MultiplayerStatus({ connected, playerCount, playerName, onEmoteS
   return (
     <div className="fixed top-20 right-4 z-50 flex flex-col gap-2">
       {/* Connection Status */}
-      <div className="bg-black/60 backdrop-blur-sm rounded-lg p-3 border border-white/10">
+      <div className="bg-black/60 backdrop-blur-sm rounded-sm p-3 border border-white/10">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
           <span className="text-white text-sm font-medium">
@@ -251,7 +251,7 @@ export function MultiplayerStatus({ connected, playerCount, playerName, onEmoteS
 
       {/* Emote Menu */}
       {showEmotes && connected && (
-        <div className="bg-black/60 backdrop-blur-sm rounded-lg p-2 border border-white/10">
+        <div className="bg-black/60 backdrop-blur-sm rounded-sm p-2 border border-white/10">
           {emotes.map((emote) => (
             <button
               key={emote.id}

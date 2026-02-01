@@ -21,12 +21,14 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex">
+    <div className="min-h-screen bg-imperium-black flex">
       {/* Sidebar */}
-      <aside className="w-16 lg:w-56 border-r border-zinc-800 bg-zinc-900/50 flex flex-col">
+      <aside className="w-16 lg:w-56 border-r-2 border-imperium-steel-dark bg-imperium-black flex flex-col">
         {/* Logo */}
-        <div className="p-4 lg:p-6 border-b border-zinc-800">
-          <h1 className="text-lg font-bold text-zinc-100">Admin</h1>
+        <div className="p-4 lg:p-6 border-b-2 border-imperium-steel-dark">
+          <h1 className="font-display text-lg uppercase tracking-wider text-imperium-crimson">
+            [ ADMIN ]
+          </h1>
         </div>
 
         {/* Navigation */}
@@ -35,24 +37,24 @@ export default async function AdminLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all"
+              className="flex items-center gap-3 px-3 py-2 rounded-none border-2 border-transparent font-terminal text-sm text-imperium-steel hover:text-imperium-gold hover:border-imperium-gold/50 hover:bg-imperium-gold/10 transition-all"
             >
               <item.icon className="h-4 w-4 shrink-0" />
-              <span className="hidden lg:inline">{item.label}</span>
+              <span className="hidden lg:inline uppercase">{item.label}</span>
             </Link>
           ))}
         </nav>
 
         {/* User */}
-        <div className="p-4 border-t border-zinc-800">
+        <div className="p-4 border-t-2 border-imperium-steel-dark">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-zinc-500 hidden lg:block truncate max-w-[150px]">
-              {session.user?.email}
+            <p className="font-terminal text-xs text-imperium-steel-dark hidden lg:block truncate max-w-[150px]">
+              {'>'} {session.user?.email}
             </p>
             <form action="/api/auth/signout" method="POST">
               <button
                 type="submit"
-                className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
                 title="Déconnexion"
               >
                 <LogOut className="h-4 w-4" />

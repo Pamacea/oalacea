@@ -110,16 +110,18 @@ export function Comments({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 border-b-2 border-imperium-steel-dark pb-4">
         <MessageSquareIcon className="size-5 text-imperium-gold" />
-        <h2 className="text-xl font-semibold">
+        <h2 className="font-display text-xl uppercase tracking-wider text-imperium-bone">
           Comments {count > 0 && `(${count})`}
         </h2>
       </div>
 
-      <Card>
+      <Card variant="steel">
         <CardHeader>
-          <CardTitle className="text-lg">Leave a Comment</CardTitle>
+          <CardTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+            [ Leave a Comment ]
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -129,12 +131,13 @@ export function Comments({
               className="space-y-4"
             >
               {replyTo && (
-                <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm">
-                  <span>Replying to comment</span>
+                <div className="flex items-center justify-between rounded-none bg-imperium-crimson/10 border-2 border-imperium-crimson px-3 py-2 font-terminal text-sm text-imperium-crimson">
+                  <span>{'> Replying to comment'}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="xs"
+                    className="rounded-none font-terminal uppercase text-xs"
                     onClick={() => setReplyTo(null)}
                   >
                     Cancel
@@ -148,7 +151,7 @@ export function Comments({
                   name="authorName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel className="font-display text-imperium-bone">Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Your name" {...field} />
                       </FormControl>
@@ -162,7 +165,7 @@ export function Comments({
                   name="authorEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email (optional)</FormLabel>
+                      <FormLabel className="font-display text-imperium-bone">Email (optional)</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
@@ -170,8 +173,8 @@ export function Comments({
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Only used for Gravatar
+                      <FormDescription className="font-terminal text-imperium-steel-dark">
+                        {'>'} Only used for Gravatar
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -184,7 +187,7 @@ export function Comments({
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Comment</FormLabel>
+                    <FormLabel className="font-display text-imperium-bone">Comment</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Share your thoughts..."
@@ -209,11 +212,11 @@ export function Comments({
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
+                      <FormLabel className="font-display text-imperium-bone">
                         I agree to the comment policy
                       </FormLabel>
-                      <FormDescription>
-                        Comments are moderated and may be edited for clarity.
+                      <FormDescription className="font-terminal text-imperium-steel-dark">
+                        {'>'} Comments are moderated and may be edited for clarity.
                       </FormDescription>
                     </div>
                     <FormMessage />
@@ -225,15 +228,16 @@ export function Comments({
                 type="submit"
                 disabled={isPending}
                 className="w-full sm:w-auto"
+                variant="crimson"
               >
                 {isPending ? (
                   <>
-                    <AlertCircleIcon className="mr-2 size-4 animate-spin" />
+                    <AlertCircleIcon className="mr-2 size-4 animate-spin text-imperium-bone" />
                     Submitting...
                   </>
                 ) : (
                   <>
-                    <SendIcon className="mr-2 size-4" />
+                    <SendIcon className="mr-2 size-4 text-imperium-bone" />
                     Submit Comment
                   </>
                 )}
@@ -245,10 +249,12 @@ export function Comments({
 
       <div className="space-y-4">
         {comments.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              <MessageSquareIcon className="mx-auto mb-2 size-8 opacity-50" />
-              <p>No comments yet. Be the first to share your thoughts!</p>
+          <Card variant="iron">
+            <CardContent className="py-8 text-center">
+              <MessageSquareIcon className="mx-auto mb-2 size-8 text-imperium-steel-dark opacity-50" />
+              <p className="font-terminal text-imperium-steel-dark">
+                {'>'} No comments yet. Be the first to share your thoughts!
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -285,34 +291,36 @@ function CommentItem({
   return (
     <div
       className={cn(
-        'rounded-lg border bg-card/50 p-4',
+        'rounded-none border-2 border-imperium-steel-dark bg-imperium-black p-4',
         isReply && 'ml-4 border-l-2 border-l-imperium-gold/30'
       )}
     >
       <div className="flex gap-3">
-        <Avatar size="sm">
+        <Avatar size="sm" className="border-2 border-imperium-steel-dark">
           <AvatarImage src={`https://www.gravatar.com/avatar/${comment.authorEmail}?d=mp&s=40`} />
-          <AvatarFallback className="bg-imperium-crimson text-white">
+          <AvatarFallback className="font-display bg-imperium-crimson text-imperium-bone">
             {getInitials(comment.authorName)}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold">{comment.authorName}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="font-display text-sm uppercase tracking-wider text-imperium-bone">
+              {comment.authorName}
+            </span>
+            <span className="font-terminal text-xs text-imperium-steel-dark">
               {formatDistanceToNow(new Date(comment.createdAt), {
                 addSuffix: true,
               })}
             </span>
           </div>
 
-          <p className="text-sm leading-relaxed text-foreground/80">
+          <p className="font-terminal text-sm leading-relaxed text-imperium-steel">
             {comment.content}
           </p>
 
           {comment.status === 'PENDING' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-500">
+            <span className="inline-flex items-center gap-1 rounded-none border-2 border-imperium-gold bg-imperium-gold/10 px-2 py-0.5 text-xs text-imperium-gold">
               <AlertCircleIcon className="size-3" />
               Awaiting moderation
             </span>
@@ -323,7 +331,7 @@ function CommentItem({
               variant="ghost"
               size="xs"
               onClick={() => onReply(comment.id)}
-              className="gap-1"
+              className="gap-1 rounded-none font-terminal uppercase text-xs"
             >
               <ReplyIcon className="size-3" />
               Reply

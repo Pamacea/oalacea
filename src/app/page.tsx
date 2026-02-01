@@ -44,7 +44,7 @@ export default function HomePage() {
 
   return (
     <div
-      className="fixed inset-0 -z-10 overflow-hidden bg-black"
+      className="fixed inset-0 -z-10 overflow-hidden bg-imperium-black-deep"
       tabIndex={-1}
       onKeyDown={(e) => {
         if (e.code === 'Space' && !e.repeat) {

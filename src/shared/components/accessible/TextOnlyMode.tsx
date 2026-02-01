@@ -39,7 +39,7 @@ export function TextOnlyMode({ children, textContent }: TextOnlyModeProps) {
         {children}
         <button
           onClick={handleToggle}
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-slate-900 focus:text-white focus:p-4 focus:rounded-md"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-slate-900 focus:text-white focus:p-4 focus:rounded-sm"
           aria-label="Enable text-only mode for screen readers"
         >
           Enable Text-Only Mode
@@ -125,7 +125,7 @@ export function TextOnlyMode({ children, textContent }: TextOnlyModeProps) {
                   {textContent.availableInteractions.map((interaction, index) => (
                     <li
                       key={index}
-                      className="bg-slate-900 p-4 rounded-md border border-slate-800"
+                      className="bg-slate-900 p-4 rounded-sm border border-slate-800"
                     >
                       <h3 className="font-semibold text-slate-200">{interaction.name}</h3>
                       <p className="text-slate-400 text-sm mt-1">
@@ -145,19 +145,19 @@ export function TextOnlyMode({ children, textContent }: TextOnlyModeProps) {
                 Controls
               </h2>
               <dl className="grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-slate-900 p-3 rounded-md">
+                <div className="bg-slate-900 p-3 rounded-sm">
                   <dt className="text-slate-400">Movement</dt>
                   <dd className="text-slate-200 font-mono">Right-click / WASD / Arrows</dd>
                 </div>
-                <div className="bg-slate-900 p-3 rounded-md">
+                <div className="bg-slate-900 p-3 rounded-sm">
                   <dt className="text-slate-400">Sprint</dt>
                   <dd className="text-slate-200 font-mono">Hold Shift</dd>
                 </div>
-                <div className="bg-slate-900 p-3 rounded-md">
+                <div className="bg-slate-900 p-3 rounded-sm">
                   <dt className="text-slate-400">Interact</dt>
                   <dd className="text-slate-200 font-mono">Press E</dd>
                 </div>
-                <div className="bg-slate-900 p-3 rounded-md">
+                <div className="bg-slate-900 p-3 rounded-sm">
                   <dt className="text-slate-400">Camera Mode</dt>
                   <dd className="text-slate-200 font-mono">Press Space</dd>
                 </div>

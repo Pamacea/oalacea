@@ -75,7 +75,7 @@ interface TagInputProps {
   className?: string;
 }
 
-export function TagInput({ value, onChange, placeholder = 'Ajouter des tags...', className = '' }: TagInputProps) {
+export function TagInput({ value, onChange, placeholder = 'Add tags...', className = '' }: TagInputProps) {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -140,18 +140,18 @@ export function TagInput({ value, onChange, placeholder = 'Ajouter des tags...',
   return (
     <div className={`relative ${className}`}>
       <div
-        className={`flex flex-wrap gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm focus-within:border-zinc-600`}
+        className={`flex flex-wrap gap-2 rounded-none border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm focus-within:border-imperium-crimson focus-within:shadow-[4px_4px_0_rgba(154,17,21,0.3)] transition-all`}
       >
         {value.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 rounded-md bg-zinc-700 px-2 py-0.5 text-xs font-medium text-zinc-100"
+            className="inline-flex items-center gap-1 rounded-none border-2 border-imperium-crimson bg-imperium-crimson/20 px-2 py-0.5 text-xs font-display uppercase tracking-wider text-imperium-crimson"
           >
             {tag}
             <button
               type="button"
               onClick={() => removeTag(tag)}
-              className="hover:text-red-400 transition-colors"
+              className="hover:text-imperium-bone transition-colors"
             >
               <X className="h-3 w-3" />
             </button>
@@ -167,18 +167,18 @@ export function TagInput({ value, onChange, placeholder = 'Ajouter des tags...',
           onFocus={() => setShowSuggestions(inputValue.length > 0)}
           onBlur={handleBlur}
           placeholder={value.length === 0 ? placeholder : ''}
-          className="flex-1 min-w-[120px] bg-transparent text-zinc-100 placeholder:text-zinc-600 focus:outline-none"
+          className="flex-1 min-w-[120px] bg-transparent text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none"
         />
       </div>
 
       {showSuggestions && filteredSuggestions.length > 0 && (
-        <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-lg">
+        <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-none border-2 border-imperium-steel-dark bg-imperium-black shadow-[8px_8px_0_rgba(28,28,28,0.6)]">
           {filteredSuggestions.map((suggestion) => (
             <button
               key={suggestion}
               type="button"
               onClick={() => addTag(suggestion)}
-              className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+              className="w-full px-3 py-2 text-left font-terminal text-sm text-imperium-steel hover:bg-imperium-crimson/20 hover:text-imperium-crimson transition-colors"
             >
               {suggestion}
             </button>
@@ -187,8 +187,8 @@ export function TagInput({ value, onChange, placeholder = 'Ajouter des tags...',
       )}
 
       {value.length === 0 && (
-        <p className="mt-1 text-xs text-zinc-500">
-          Sélectionnez un tag ou tapez et appuyez sur Entrée. Vous pouvez aussi coller plusieurs tags séparés par des virgules ou points-virgules.
+        <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">
+          {'>'} Select a tag or type and press Enter. You can also paste multiple tags separated by commas or semicolons.
         </p>
       )}
     </div>

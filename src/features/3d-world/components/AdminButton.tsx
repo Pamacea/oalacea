@@ -11,10 +11,10 @@ export function AdminButton() {
   return (
     <button
       onClick={() => isAdmin && openAdmin()}
-      className={`fixed top-4 right-24 z-30 h-8 w-8 rounded-full border backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold ${
+      className={`fixed top-4 right-24 z-30 h-10 w-10 rounded-none border-2 backdrop-blur-sm transition-colors flex items-center justify-center font-display text-xs uppercase ${
         isAdmin
-          ? 'bg-emerald-500/90 text-white border-emerald-400 hover:bg-emerald-500'
-          : 'bg-zinc-800/50 text-zinc-500 border-zinc-700'
+          ? 'bg-imperium-crimson text-imperium-bone border-imperium-crimson hover:bg-imperium-crimson-bright shadow-[0_0_10px_rgba(154,17,21,0.4)]'
+          : 'bg-imperium-iron text-imperium-steel border-imperium-steel-dark'
       }`}
       aria-label="Admin panel"
     >

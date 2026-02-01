@@ -11,11 +11,11 @@ export default async function ProjetsPage() {
     return (
       <div className="container py-12">
         <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Projets
+          <h1 className="font-display text-3xl uppercase tracking-wider text-imperium-crimson">
+            [ Projects ]
           </h1>
-          <p className="mt-4 text-muted-foreground">
-            Aucun projet disponible pour le moment.
+          <p className="mt-4 font-terminal text-imperium-steel-dark">
+            {'>'} Aucun projet disponible pour le moment.
           </p>
         </div>
       </div>
@@ -25,11 +25,11 @@ export default async function ProjetsPage() {
   return (
     <div className="container py-12">
       <div className="mx-auto max-w-4xl">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Projets
+        <h1 className="font-display text-3xl uppercase tracking-wider text-imperium-crimson">
+          [ Projects ]
         </h1>
-        <p className="mt-4 text-muted-foreground">
-          Découvrez mes réalisations dans le domaine du développement web, du design interactif et plus encore.
+        <p className="mt-4 font-terminal text-imperium-steel">
+          {'>'} Découvrez mes réalisations dans le domaine du développement web, du design interactif et plus encore.
         </p>
       </div>
 
@@ -48,11 +48,11 @@ function ProjectCard({
   project: ProjectListItem
 }) {
   return (
-    <article className="group relative overflow-hidden rounded-xl transition-all border border-border bg-card hover:border-primary/50">
+    <article className="group relative overflow-hidden rounded-none border-2 border-imperium-steel-dark bg-imperium-black transition-all hover:border-imperium-gold hover:shadow-[8px_8px_0_rgba(184,166,70,0.3)]">
       {/* Thumbnail */}
       {project.thumbnail && (
         <Link href={`/projets/${project.slug}`}>
-          <div className="aspect-video overflow-hidden">
+          <div className="aspect-video overflow-hidden border-b-2 border-imperium-steel-dark">
             <img
               src={project.thumbnail}
               alt={project.title}
@@ -68,15 +68,15 @@ function ProjectCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             {/* Category Badge */}
-            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded mb-2 bg-secondary/10 text-secondary">
+            <span className="inline-flex items-center px-2 py-1 font-terminal text-xs font-semibold rounded-none border-2 border-imperium-steel bg-imperium-iron text-imperium-steel mb-2">
               {CATEGORY_LABELS[project.category] || project.category}
             </span>
 
             {/* Title */}
-            <h3 className="text-lg sm:text-xl font-bold">
+            <h3 className="font-display text-lg uppercase tracking-wider">
               <Link
                 href={`/projets/${project.slug}`}
-                className="hover:underline hover:text-primary transition-colors"
+                className="hover:text-imperium-gold transition-colors text-imperium-bone"
               >
                 {project.title}
               </Link>
@@ -85,14 +85,14 @@ function ProjectCard({
 
           {/* Featured Indicator */}
           {project.featured && (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none border-2 border-imperium-gold bg-imperium-gold text-imperium-black shadow-[4px_4px_0_rgba(184,166,70,0.3)]">
               <Star className="h-4 w-4 fill-current" />
             </div>
           )}
         </div>
 
         {/* Description */}
-        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+        <p className="mt-3 font-terminal text-sm text-imperium-steel line-clamp-2">
           {project.description}
         </p>
 
@@ -102,13 +102,13 @@ function ProjectCard({
             {project.techStack.slice(0, 4).map((tech) => (
               <span
                 key={tech}
-                className="px-2 py-1 text-xs rounded bg-muted text-muted-foreground"
+                className="px-2 py-1 font-terminal text-xs rounded-none border-2 border-imperium-steel bg-imperium-iron text-imperium-steel"
               >
                 {tech}
               </span>
             ))}
             {project.techStack.length > 4 && (
-              <span className="px-2 py-1 text-xs rounded bg-muted text-muted-foreground">
+              <span className="px-2 py-1 font-terminal text-xs rounded-none border-2 border-imperium-steel bg-imperium-black text-imperium-steel-dark">
                 +{project.techStack.length - 4}
               </span>
             )}
@@ -119,15 +119,15 @@ function ProjectCard({
         <div className="mt-4 flex items-center gap-3">
           <Link
             href={`/projets/${project.slug}`}
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="font-terminal text-sm font-medium text-imperium-steel hover:text-imperium-crimson transition-colors uppercase"
           >
-            Voir le projet
+            {'>'} View Project
           </Link>
           <div className="flex-1" />
         </div>
 
         {/* Year */}
-        <div className="mt-3 text-xs text-muted-foreground">
+        <div className="mt-3 font-terminal text-xs text-imperium-steel-dark">
           {project.year}
         </div>
       </div>

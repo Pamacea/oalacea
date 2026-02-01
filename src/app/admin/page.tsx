@@ -18,16 +18,18 @@ export default async function AdminPage() {
       value: posts.pagination.total,
       href: '/admin/blog',
       icon: PenTool,
-      color: 'text-zinc-400',
-      bgColor: 'bg-zinc-800/50',
+      color: 'text-imperium-crimson',
+      bgColor: 'bg-imperium-crimson/10',
+      borderColor: 'border-imperium-crimson/30',
     },
     {
       label: 'Projets',
       value: projects.length,
       href: '/admin/projects',
       icon: FolderOpen,
-      color: 'text-zinc-400',
-      bgColor: 'bg-zinc-800/50',
+      color: 'text-imperium-gold',
+      bgColor: 'bg-imperium-gold/10',
+      borderColor: 'border-imperium-gold/30',
     },
   ];
 

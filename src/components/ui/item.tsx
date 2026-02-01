@@ -31,13 +31,13 @@ function ItemSeparator({
 }
 
 const itemVariants = cva(
-  "group/item flex items-center border border-transparent text-sm rounded-md transition-colors [a]:hover:bg-accent/50 [a]:transition-colors duration-100 flex-wrap outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+  "group/item flex items-center border-2 border-transparent font-terminal text-sm rounded-none transition-colors [a]:hover:bg-imperium-steel/10 [a]:transition-colors duration-100 flex-wrap outline-none focus-visible:border-imperium-crimson focus-visible:shadow-[4px_4px_0_rgba(154,17,21,0.3)]",
   {
     variants: {
       variant: {
         default: "bg-transparent",
-        outline: "border-border",
-        muted: "bg-muted/50",
+        outline: "border-imperium-steel-dark",
+        muted: "bg-imperium-iron/50",
       },
       size: {
         default: "p-4 gap-4 ",
@@ -77,9 +77,9 @@ const itemMediaVariants = cva(
     variants: {
       variant: {
         default: "bg-transparent",
-        icon: "size-8 border rounded-sm bg-muted [&_svg:not([class*='size-'])]:size-4",
+        icon: "size-8 border-2 border-imperium-steel-dark rounded-none bg-imperium-iron [&_svg:not([class*='size-'])]:size-4",
         image:
-          "size-10 rounded-sm overflow-hidden [&_img]:size-full [&_img]:object-cover",
+          "size-10 rounded-none overflow-hidden border-2 border-imperium-steel-dark [&_img]:size-full [&_img]:object-cover",
       },
     },
     defaultVariants: {
@@ -121,7 +121,7 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-title"
       className={cn(
-        "flex w-fit items-center gap-2 text-sm leading-snug font-medium",
+        "flex w-fit items-center gap-2 text-sm leading-snug font-display uppercase tracking-wider text-imperium-bone",
         className
       )}
       {...props}
@@ -134,8 +134,8 @@ function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="item-description"
       className={cn(
-        "text-muted-foreground line-clamp-2 text-sm leading-normal font-normal text-balance",
-        "[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
+        "text-imperium-steel-dark line-clamp-2 font-terminal text-sm leading-normal font-normal text-balance",
+        "[&>a:hover]:text-imperium-crimson [&>a]:border-b-2 [&>a]:border-dashed [&>a]:border-imperium-steel [&>a]:pb-0.5",
         className
       )}
       {...props}

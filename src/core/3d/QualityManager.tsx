@@ -98,7 +98,7 @@ function showQualityNotification(quality: QualityPreset) {
   const notification = document.createElement('div');
   notification.id = 'quality-notification';
   notification.className =
-    'fixed bottom-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg border border-slate-700 animate-in slide-in-from-bottom-2 fade-in duration-300';
+    'fixed bottom-4 right-4 z-50 bg-slate-900 text-white px-4 py-3 rounded-sm shadow-lg border border-slate-700 animate-in slide-in-from-bottom-2 fade-in duration-300';
   notification.setAttribute('role', 'status');
   notification.setAttribute('aria-live', 'polite');
   notification.innerHTML = `

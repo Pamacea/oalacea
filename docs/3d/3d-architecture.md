@@ -866,7 +866,7 @@ export function FloatingUI() {
         transition={{ delay: 0.8, duration: 0.6 }}
         className="fixed bottom-6 right-6 z-40"
       >
-        <div className="rounded-lg bg-black/50 backdrop-blur-md p-4 text-sm">
+        <div className="rounded-sm bg-black/50 backdrop-blur-md p-4 text-sm">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <kbd className="rounded bg-white/10 px-2 py-1">WASD</kbd>

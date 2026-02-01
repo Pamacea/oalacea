@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { ExternalLink, Github, Star } from 'lucide-react'
-import { useWorldTheme } from '@/components/theme'
 import { CATEGORY_LABELS } from '@/features/portfolio/constants'
 import type { Project } from '@/generated/prisma/client'
 
@@ -11,19 +10,11 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const { colors, isDark } = useWorldTheme()
-
   return (
-    <article
-      className="group relative overflow-hidden rounded-xl transition-all"
-      style={{
-        border: `1px solid ${colors.border}`,
-        backgroundColor: colors.surface,
-      }}
-    >
+    <article className="group relative overflow-hidden rounded-none border-2 border-imperium-steel-dark bg-imperium-black transition-all hover:border-imperium-gold hover:shadow-[4px_4px_0_rgba(184,166,70,0.3)]">
       {/* Thumbnail */}
       {project.thumbnail && (
-        <div className="aspect-video overflow-hidden">
+        <div className="aspect-video overflow-hidden border-b-2 border-imperium-steel-dark">
           <img
             src={project.thumbnail}
             alt={project.title}
@@ -38,25 +29,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             {/* Category Badge */}
-            <span
-              className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded mb-2"
-              style={{
-                backgroundColor: isDark ? `${colors.secondary}20` : `${colors.secondary}30`,
-                color: colors.secondary,
-              }}
-            >
+            <span className="inline-flex items-center px-3 py-1 text-xs font-display uppercase tracking-wider rounded-none bg-imperium-gold text-imperium-black border-2 border-imperium-gold-dark mb-2">
               {CATEGORY_LABELS[project.category] || project.category}
             </span>
 
             {/* Title */}
-            <h3
-              className="text-lg sm:text-xl font-bold transition-colors"
-              style={{ color: colors.text.primary }}
-            >
+            <h3 className="text-lg sm:text-xl font-display uppercase tracking-wider text-imperium-bone">
               <Link
                 href={`/portfolio/${project.slug}`}
-                className="hover:underline"
-                style={{ textDecorationColor: colors.text.primary }}
+                className="hover:text-imperium-gold transition-colors"
               >
                 {project.title}
               </Link>
@@ -65,23 +46,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
           {/* Featured Indicator */}
           {project.featured && (
-            <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
-              style={{
-                backgroundColor: colors.text.secondary,
-                boxShadow: `0 4px 12px ${colors.text.secondary}40`,
-              }}
-            >
-              <Star className="h-4 w-4" fill={isDark ? '#000' : '#fff'} style={{ color: isDark ? '#000' : '#fff' }} />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-imperium-gold border-2 border-imperium-gold-dark">
+              <Star className="h-4 w-4 text-imperium-black" fill="currentColor" />
             </div>
           )}
         </div>
 
         {/* Description */}
-        <p
-          className="mt-3 text-sm line-clamp-2"
-          style={{ color: colors.text.secondary }}
-        >
+        <p className="mt-3 text-sm font-terminal text-imperium-steel line-clamp-2">
           {project.description}
         </p>
 
@@ -91,23 +63,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
             {project.techStack.slice(0, 4).map((tech) => (
               <span
                 key={tech}
-                className="px-2 py-1 text-xs rounded"
-                style={{
-                  backgroundColor: colors.border,
-                  color: colors.text.muted,
-                }}
+                className="px-2 py-1 text-xs font-terminal uppercase rounded-none bg-imperium-iron text-imperium-steel border border-imperium-iron-dark"
               >
                 {tech}
               </span>
             ))}
             {project.techStack.length > 4 && (
-              <span
-                className="px-2 py-1 text-xs rounded"
-                style={{
-                  backgroundColor: colors.border,
-                  color: colors.text.muted,
-                }}
-              >
+              <span className="px-2 py-1 text-xs font-terminal uppercase rounded-none bg-imperium-iron text-imperium-steel border border-imperium-iron-dark">
                 +{project.techStack.length - 4}
               </span>
             )}
@@ -118,8 +80,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="mt-4 flex items-center gap-3">
           <Link
             href={`/portfolio/${project.slug}`}
-            className="text-sm font-medium transition-colors hover:underline"
-            style={{ color: colors.text.secondary }}
+            className="text-sm font-display uppercase text-imperium-gold hover:text-imperium-gold-bright transition-colors"
           >
             Voir le projet
           </Link>
@@ -129,8 +90,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded transition-colors hover:opacity-80"
-              style={{ color: colors.text.muted }}
+              className="p-2 rounded-none border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-crimson hover:text-imperium-crimson transition-colors"
               aria-label="Voir sur GitHub"
             >
               <Github className="h-4 w-4" />
@@ -141,8 +101,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded transition-colors hover:opacity-80"
-              style={{ color: colors.text.muted }}
+              className="p-2 rounded-none border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-crimson hover:text-imperium-crimson transition-colors"
               aria-label="Voir le site en ligne"
             >
               <ExternalLink className="h-4 w-4" />
@@ -151,10 +110,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         {/* Year */}
-        <div
-          className="mt-3 text-xs"
-          style={{ color: colors.text.muted }}
-        >
+        <div className="mt-3 text-xs font-terminal text-imperium-steel-dark">
           {project.year}
         </div>
       </div>

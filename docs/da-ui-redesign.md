@@ -1452,7 +1452,7 @@ const imperiumStyles = css`
 ```typescript
 // BREAKING: Tous les rounded-* deviennent rounded-none
 // Avant:
-<Button className="rounded-md" />
+<Button className="rounded-sm" />
 // Apres:
 <Button className="rounded-none" /> // ou juste sans la classe
 

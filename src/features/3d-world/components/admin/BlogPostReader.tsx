@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Calendar, Clock, Eye, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Eye, Tag, Scroll, ExternalLink } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { getPostBySlug } from '@/actions/blog';
 import { useInWorldAdminStore } from '@/features/admin/store';
+import { GlitchText } from '@/components/ui/imperium';
+import { useUISound } from '@/hooks/use-ui-sound';
 
 // Simple markdown renderer for basic content with proper React keys
 function MarkdownRenderer({ content }: { content: string }) {
@@ -24,8 +27,8 @@ function MarkdownRenderer({ content }: { content: string }) {
       processed = processed.replace(/__(.+?)__/g, '<strong>$1</strong>');
       processed = processed.replace(/\*(.+?)\*/g, '<em>$1</em>');
       processed = processed.replace(/_(.+?)_/g, '<em>$1</em>');
-      processed = processed.replace(/`(.+?)`/g, '<code class="bg-amber-950/50 text-zinc-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
-      processed = processed.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-zinc-100 hover:text-amber-300 underline" target="_blank" rel="noopener noreferrer">$1</a>');
+      processed = processed.replace(/`(.+?)`/g, '<code class="bg-imperium-black border border-imperium-crimson text-imperium-bone px-2 py-1 text-sm font-mono">$1</code>');
+      processed = processed.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-imperium-gold hover:text-imperium-crimson underline" target="_blank" rel="noopener noreferrer">$1</a>');
       return <span dangerouslySetInnerHTML={{ __html: processed }} />;
     };
 
@@ -34,14 +37,14 @@ function MarkdownRenderer({ content }: { content: string }) {
 
       if (line.startsWith('```')) {
         if (inList) {
-          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-imperium-steel">{listItems}</ul>);
           listItems = [];
           inList = false;
         }
         if (inCodeBlock) {
           result.push(
-            <pre key={`code-${i}`} className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 my-4 overflow-x-auto">
-              <code className="text-sm text-emerald-400 font-mono whitespace-pre-wrap">{codeContent}</code>
+            <pre key={`code-${i}`} className="border-2 border-imperium-steel-dark bg-imperium-black p-4 my-4 overflow-x-auto">
+              <code className="text-sm text-imperium-teal font-mono whitespace-pre-wrap">{codeContent}</code>
             </pre>
           );
           codeContent = '';
@@ -59,12 +62,12 @@ function MarkdownRenderer({ content }: { content: string }) {
 
       if (line.startsWith('# ')) {
         if (inList) {
-          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-imperium-steel">{listItems}</ul>);
           listItems = [];
           inList = false;
         }
         result.push(
-          <h2 key={`h2-${i}`} className="text-2xl font-bold text-zinc-100 mt-8 mb-4 first:mt-0">
+          <h2 key={`h2-${i}`} className="font-display text-2xl uppercase tracking-wider text-imperium-bone mt-8 mb-4 first:mt-0">
             {processInline(line.substring(2))}
           </h2>
         );
@@ -73,12 +76,12 @@ function MarkdownRenderer({ content }: { content: string }) {
 
       if (line.startsWith('## ')) {
         if (inList) {
-          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-imperium-steel">{listItems}</ul>);
           listItems = [];
           inList = false;
         }
         result.push(
-          <h3 key={`h3-${i}`} className="text-xl font-semibold text-zinc-100 mt-6 mb-3 first:mt-0">
+          <h3 key={`h3-${i}`} className="font-display text-xl uppercase tracking-wider text-imperium-bone mt-6 mb-3 first:mt-0">
             {processInline(line.substring(3))}
           </h3>
         );
@@ -87,12 +90,12 @@ function MarkdownRenderer({ content }: { content: string }) {
 
       if (line.startsWith('### ')) {
         if (inList) {
-          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-imperium-steel">{listItems}</ul>);
           listItems = [];
           inList = false;
         }
         result.push(
-          <h4 key={`h4-${i}`} className="text-lg font-semibold text-amber-300 mt-4 mb-2 first:mt-0">
+          <h4 key={`h4-${i}`} className="font-display text-lg uppercase tracking-wider text-imperium-gold mt-4 mb-2 first:mt-0">
             {processInline(line.substring(4))}
           </h4>
         );
@@ -110,7 +113,7 @@ function MarkdownRenderer({ content }: { content: string }) {
 
       if (/^\d+\.\s/.test(line.trim())) {
         if (inList && listItems.length > 0) {
-          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+          result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-imperium-steel">{listItems}</ul>);
           listItems = [];
         }
         if (!inList) {
@@ -122,7 +125,7 @@ function MarkdownRenderer({ content }: { content: string }) {
       }
 
       if (inList && listItems.length > 0) {
-        result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+        result.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-2 my-4 text-imperium-steel">{listItems}</ul>);
         listItems = [];
         inList = false;
       }
@@ -134,7 +137,7 @@ function MarkdownRenderer({ content }: { content: string }) {
 
       if (line.trim() !== '') {
         result.push(
-          <p key={`p-${i}`} className="text-zinc-300 leading-relaxed my-3">
+          <p key={`p-${i}`} className="font-terminal text-imperium-steel leading-relaxed my-3">
             {processInline(line)}
           </p>
         );
@@ -142,7 +145,7 @@ function MarkdownRenderer({ content }: { content: string }) {
     }
 
     if (inList && listItems.length > 0) {
-      result.push(<ul key={`ul-final`} className="list-disc list-inside space-y-2 my-4 text-zinc-300">{listItems}</ul>);
+      result.push(<ul key={`ul-final`} className="list-disc list-inside space-y-2 my-4 text-imperium-steel">{listItems}</ul>);
     }
 
     return result;
@@ -155,6 +158,7 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
   const { setView } = useInWorldAdminStore();
   const [post, setPost] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { playHover, playClick } = useUISound();
 
   useEffect(() => {
     async function loadPost() {
@@ -172,8 +176,15 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-zinc-500 text-sm">Chargement...</div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="text-5xl mb-4"
+        >
+          ⚙
+        </motion.div>
+        <p className="font-terminal text-imperium-steel">Loading archive data...</p>
       </div>
     );
   }
@@ -181,47 +192,63 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
   if (!post) {
     return (
       <div className="text-center py-12">
-        <p className="text-zinc-500">Article non trouvé</p>
-        <button
+        <Scroll className="h-16 w-16 text-imperium-steel-dark mx-auto mb-4 opacity-50" />
+        <p className="font-terminal text-imperium-steel mb-4">[ARCHIVE_NOT_FOUND]</p>
+        <motion.button
+          onMouseEnter={playHover}
           onClick={() => setView('posts')}
-          className="mt-4 text-zinc-400 hover:text-zinc-300"
+          className="inline-flex items-center gap-2 px-4 py-2 font-display text-sm uppercase tracking-wider border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-crimson hover:text-imperium-crimson transition-all"
         >
-          Retour aux articles
-        </button>
+          Return to archives
+        </motion.button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setView('posts')}
-          className="flex items-center gap-2 text-sm border border-zinc-700 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-400 px-3 py-2 rounded-lg transition-colors"
+      <div className="flex items-center justify-between border-b-2 border-imperium-steel-dark pb-4">
+        <motion.button
+          onMouseEnter={playHover}
+          onClick={() => {
+            setView('posts');
+            playClick();
+          }}
+          className="flex items-center gap-2 font-terminal text-sm border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone px-4 py-2 transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour
-        </button>
-        <h2 className="text-lg font-bold text-zinc-100">Lecture</h2>
+          RETURN
+        </motion.button>
+        <div className="flex items-center gap-3">
+          <div className="border-2 border-imperium-crimson bg-imperium-crimson/10 p-2">
+            <Scroll className="h-5 w-5 text-imperium-crimson" />
+          </div>
+          <h2 className="font-display text-lg uppercase tracking-wider text-imperium-bone">DATA TERMINAL</h2>
+        </div>
         <div className="w-6" />
       </div>
 
       {/* Cover Image */}
       {post.coverImage && (
-        <div className="aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950">
+        <div className="aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black relative">
           <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 border border-imperium-crimson/20 pointer-events-none" />
         </div>
       )}
 
       {/* Title */}
-      <div className="space-y-3">
-        <h1 className="text-3xl font-bold text-white">{post.title}</h1>
+      <div className="space-y-4 border-b-2 border-imperium-steel-dark pb-6">
+        <h1 className="font-display text-4xl uppercase tracking-widest text-imperium-bone">
+          <GlitchText intensity="high" auto>
+            {post.title}
+          </GlitchText>
+        </h1>
 
         {/* Meta */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
+        <div className="flex flex-wrap items-center gap-4 font-terminal text-sm text-imperium-steel">
           <span className="flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5" />
+            <Calendar className="h-3.5 w-3.5 text-imperium-crimson" />
             {new Date(post.publishDate ?? post.createdAt).toLocaleDateString('fr-FR', {
               day: 'numeric',
               month: 'long',
@@ -229,11 +256,11 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
             })}
           </span>
           <span className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" />
-            {post.readingTime || Math.ceil(post.content.length / 1000)} min
+            <Clock className="h-3.5 w-3.5 text-imperium-gold" />
+            {post.readingTime || Math.ceil(post.content.length / 1000)} MIN READ
           </span>
           {post.category && (
-            <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-amber-500/20 text-zinc-100">
+            <span className="inline-flex items-center px-2 py-1 text-xs border border-imperium-crimson text-imperium-crimson">
               {post.category.name}
             </span>
           )}
@@ -242,9 +269,9 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
-            <Tag className="h-3.5 w-3.5 text-zinc-500" />
+            <Tag className="h-3.5 w-3.5 text-imperium-steel-dark" />
             {post.tags.map((tag: string) => (
-              <span key={tag} className="text-xs text-zinc-400">
+              <span key={tag} className="font-terminal text-xs text-imperium-steel hover:text-imperium-crimson transition-colors">
                 #{tag}
               </span>
             ))}
@@ -254,8 +281,8 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
 
       {/* Excerpt */}
       {post.excerpt && (
-        <div className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
-          <p className="text-zinc-300 italic">{post.excerpt}</p>
+        <div className="border-2 border-imperium-steel-dark bg-imperium-black/50 p-4">
+          <p className="font-terminal text-imperium-italic italic text-imperium-steel">{'>'} {post.excerpt}</p>
         </div>
       )}
 
@@ -265,22 +292,24 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-zinc-800 pt-6">
-        <a
+      <div className="flex items-center justify-between border-t-2 border-imperium-steel-dark pt-6">
+        <motion.a
+          onMouseEnter={playHover}
           href={`/blog/${post.slug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-sm text-zinc-100 hover:text-amber-300 transition-colors"
+          className="inline-flex items-center gap-2 font-terminal text-sm border-2 border-imperium-gold bg-imperium-gold/10 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
         >
-          <Eye className="h-4 w-4" />
-          Voir sur le site
-        </a>
-        <button
+          <ExternalLink className="h-4 w-4" />
+          VIEW ON SITE
+        </motion.a>
+        <motion.button
+          onMouseEnter={playHover}
           onClick={() => setView('posts')}
-          className="text-sm text-zinc-400 hover:text-zinc-300 transition-colors"
+          className="font-terminal text-sm text-imperium-steel hover:text-imperium-bone transition-colors"
         >
-          Fermer
-        </button>
+          [ESC] CLOSE
+        </motion.button>
       </div>
     </div>
   );

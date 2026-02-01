@@ -130,13 +130,13 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+      <div className="w-full max-w-lg rounded-sm border border-zinc-800 bg-zinc-950 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
           <h3 className="text-lg font-medium text-zinc-100">Insert Link</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
+            className="rounded-sm p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -193,7 +193,7 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className={`w-full bg-zinc-900 border rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 ${
+                  className={`w-full bg-zinc-900 border rounded-sm px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 ${
                     urlError ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : 'border-zinc-700 focus:ring-blue-500/50 focus:border-blue-500'
                   }`}
                   autoFocus
@@ -218,7 +218,7 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search blog posts..."
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg pl-10 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-sm pl-10 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
                   autoFocus
                 />
               </div>
@@ -243,7 +243,7 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
                         onClose();
                         reset();
                       }}
-                      className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-zinc-900 transition-colors text-left"
+                      className="w-full flex items-start gap-3 p-3 rounded-sm hover:bg-zinc-900 transition-colors text-left"
                     >
                       <Hash className="h-4 w-4 text-zinc-600 mt-0.5 shrink-0" />
                       <span className="text-sm text-zinc-300">{blog.title}</span>
@@ -263,7 +263,7 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search projects..."
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg pl-10 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-sm pl-10 pr-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
                   autoFocus
                 />
               </div>
@@ -288,7 +288,7 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
                         onClose();
                         reset();
                       }}
-                      className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-zinc-900 transition-colors text-left"
+                      className="w-full flex items-start gap-3 p-3 rounded-sm hover:bg-zinc-900 transition-colors text-left"
                     >
                       <Folder className="h-4 w-4 text-zinc-600 mt-0.5 shrink-0" />
                       <span className="text-sm text-zinc-300">{project.title}</span>
@@ -311,7 +311,7 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
           <button
             onClick={handleInsert}
             disabled={tab === 'external' ? !url : !searchQuery}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-sm hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Insert Link
           </button>

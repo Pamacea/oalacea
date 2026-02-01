@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, FolderKanban, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Hammer, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { getProjectById } from '@/actions/projects';
 import { useCreateProject, useUpdateProject, type CreateProjectInput } from './queries/use-project-mutations';
-import { ArrowLeft, FolderKanban, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { TagInput } from '@/components/ui/tag-input';
+import { GlitchText } from '@/components/ui/imperium';
+import { useUISound } from '@/hooks/use-ui-sound';
 import { useProjectCategories } from './queries/use-project-categories';
 import dynamic from 'next/dynamic';
 
@@ -29,14 +32,10 @@ type FormData = {
   categoryId: string;
 };
 
-// Zinc color scheme - minimal and consistent
-const inputBorder = 'border-zinc-700 focus:border-zinc-600';
-const buttonPrimary = 'bg-zinc-700 hover:bg-zinc-600 text-zinc-100';
-const buttonSecondary = 'border-zinc-700 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-400';
-
 export function ProjectForm({ projectId, world }: { projectId?: string; world: 'dev' | 'art' }) {
   const { setView } = useInWorldAdminStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { playHover, playClick } = useUISound();
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -60,12 +59,10 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
 
   const createMutation = useCreateProject();
   const updateMutation = useUpdateProject();
-
   const isPending = createMutation.isPending || updateMutation.isPending;
-
   const isLoading = categoriesLoading || (projectId && !formData.title);
 
-  // Load project data when editing (categories are loaded separately)
+  // Load project data when editing
   useEffect(() => {
     async function loadProject() {
       if (!projectId) return;
@@ -127,9 +124,8 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 5MB for reasonable base64)
     if (file.size > 5 * 1024 * 1024) {
-      alert('L\'image est trop grosse. Maximum 5MB.');
+      alert('Image trop volumineux. Maximum 5MB.');
       return;
     }
 
@@ -137,21 +133,16 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
     setUploadProgress(0);
 
     try {
-      // Create a canvas to compress the image
       const img = new Image();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
+      if (!ctx) throw new Error('Could not get canvas context');
 
       const reader = new FileReader();
 
       reader.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setUploadProgress(Math.round((e.loaded / e.total) * 50));
-        }
+        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 50));
       };
 
       reader.onload = (event) => {
@@ -159,7 +150,6 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
       };
 
       img.onload = () => {
-        // Calculate new dimensions (max 1200px width/height)
         const maxDimension = 1200;
         let width = img.width;
         let height = img.height;
@@ -176,11 +166,7 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
 
         canvas.width = width;
         canvas.height = height;
-
-        // Draw and compress
         ctx.drawImage(img, 0, 0, width, height);
-
-        // Compress to JPEG with 0.8 quality (smaller than PNG)
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
         setFormData((prev) => ({ ...prev, thumbnail: compressedDataUrl }));
@@ -204,7 +190,6 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
   };
 
   const handleSubmit = async () => {
-    // Check if category is selected
     if (!formData.categoryId && categories.length > 0) {
       alert('Veuillez sélectionner une catégorie');
       return;
@@ -256,40 +241,59 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className={`text-zinc-300`}>Chargement...</div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="text-5xl mb-4"
+        >
+          ⚙
+        </motion.div>
+        <p className="font-terminal text-imperium-steel">Loading blueprint data...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setView('projects')}
-          className={`flex items-center gap-2 text-sm ${buttonSecondary} px-3 py-2 rounded-lg transition-colors`}
+      <div className="flex items-center justify-between border-b-2 border-imperium-steel-dark pb-4">
+        <motion.button
+          onMouseEnter={playHover}
+          onClick={() => {
+            setView('projects');
+            playClick();
+          }}
+          className="flex items-center gap-2 font-terminal text-sm border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone px-4 py-2 transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour
-        </button>
-        <h2 className={`text-lg font-bold text-zinc-300`}>
-          {projectId ? 'Modifier le projet' : 'Nouveau projet'}
-        </h2>
+          RETURN
+        </motion.button>
+        <div className="flex items-center gap-3">
+          <div className="border-2 border-imperium-gold bg-imperium-gold/10 p-2">
+            <Hammer className="h-5 w-5 text-imperium-gold" />
+          </div>
+          <h2 className="font-display text-lg uppercase tracking-wider text-imperium-bone">
+            <GlitchText intensity="low" auto>
+              {projectId ? 'MODIFY BLUEPRINT' : 'NEW BLUEPRINT ENTRY'}
+            </GlitchText>
+          </h2>
+        </div>
         <div className="w-6" />
       </div>
 
       {/* Thumbnail Preview */}
       {formData.thumbnail && (
-        <div className="relative aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-white/10">
+        <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
           <img src={formData.thumbnail} alt="Thumbnail preview" className="w-full h-full object-cover" />
-          <button
+          <motion.button
             type="button"
+            onMouseEnter={playHover}
             onClick={() => setFormData((prev) => ({ ...prev, thumbnail: '' }))}
-            className="absolute top-3 right-3 rounded-lg bg-black/50 p-2 text-zinc-100 hover:bg-black/70 transition-colors"
+            className="absolute top-3 right-3 border-2 border-imperium-gold bg-imperium-gold/10 p-2 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
           >
             <XIcon className="h-4 w-4" />
-          </button>
+          </motion.button>
         </div>
       )}
 
@@ -301,11 +305,11 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
           value={formData.title}
           onChange={handleTitleChange}
           required
-          placeholder="Nom du projet..."
-          className={`w-full rounded-xl border ${inputBorder} bg-zinc-900 px-4 py-3 text-xl font-semibold text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-colors`}
+          placeholder="ENTER BLUEPRINT DESIGNATION..."
+          className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold transition-colors"
         />
-        <p className={`text-xs text-zinc-300font-mono text-zinc-600 pl-1`}>
-          /{formData.slug || 'slug-auto-genere'}
+        <p className="font-terminal text-xs text-imperium-steel-dark pl-1">
+          /{formData.slug || 'SLUG-AUTO-GENERATED'}
         </p>
       </div>
 
@@ -316,15 +320,17 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
           {/* Category and Year */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Catégorie</label>
+              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                {'>'} CATEGORY
+              </label>
               <select
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
-                className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none`}
+                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
                 required
               >
-                <option value="">Sélectionner...</option>
+                <option value="">-- SELECT CATEGORY --</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -332,52 +338,60 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
                 ))}
               </select>
               {categories.length === 0 && (
-                <p className="mt-1 text-xs text-amber-500">Aucune catégorie disponible. Créez-en d'abord dans l'onglet Catégories.</p>
+                <p className="mt-1 font-terminal text-xs text-imperium-crimson">No categories available. Create one first.</p>
               )}
             </div>
             <div>
-              <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Année</label>
+              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                {'>'} YEAR
+              </label>
               <input
                 type="number"
                 name="year"
                 value={formData.year}
                 onChange={handleChange}
                 required
-                className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none`}
+                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Description courte *</label>
+            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+              {'>'} BRIEF DESCRIPTION *
+            </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows={2}
               required
-              placeholder="Une brève description du projet..."
-              className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none resize-none`}
+              placeholder="Brief project description..."
+              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold resize-none"
             />
           </div>
 
           {/* Long Description */}
           <div>
-            <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Description longue</label>
+            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+              {'>'} FULL SPECIFICATIONS
+            </label>
             <MarkdownEditor
               content={formData.longDescription}
               onChange={(content) => setFormData(prev => ({ ...prev, longDescription: content }))}
-              placeholder="# Description du projet
+              placeholder="# Project Blueprint
 
-Décrivez le **contexte**, les **challenges** et les **solutions**..."
+Describe the **context**, **challenges**, and **solutions**..."
               editable
             />
           </div>
 
-          {/* Tech Stack - Now using TagInput */}
+          {/* Tech Stack */}
           <div>
-            <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Tags</label>
+            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+              {'>'} TECH STACK
+            </label>
             <TagInput
               value={formData.techStack}
               onChange={(tags) => setFormData((prev) => ({ ...prev, techStack: tags }))}
@@ -389,25 +403,29 @@ Décrivez le **contexte**, les **challenges** et les **solutions**..."
           {/* Links */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`mb-2 block text-sm font-medium text-zinc-300`}>GitHub</label>
+              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                {'>'} SOURCE CODE
+              </label>
               <input
                 type="url"
                 name="githubUrl"
                 value={formData.githubUrl}
                 onChange={handleChange}
                 placeholder="https://github.com/..."
-                className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none`}
+                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
               />
             </div>
             <div>
-              <label className={`mb-2 block text-sm font-medium text-zinc-300`}>Site en ligne</label>
+              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                {'>'} DEPLOYED UNIT
+              </label>
               <input
                 type="url"
                 name="liveUrl"
                 value={formData.liveUrl}
                 onChange={handleChange}
                 placeholder="https://..."
-                className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none`}
+                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
               />
             </div>
           </div>
@@ -416,8 +434,11 @@ Décrivez le **contexte**, les **challenges** et les **solutions**..."
         {/* Right - Sidebar */}
         <div className="space-y-4">
           {/* Thumbnail Upload */}
-          <div className={`rounded-xl border ${inputBorder} bg-slate-900/30 p-4`}>
-            <h3 className={`mb-3 text-sm font-semibold text-zinc-300}`}>Miniature</h3>
+          <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
+            <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
+              <span className="w-1 h-4 bg-imperium-gold" />
+              BLUEPRINT IMAGE
+            </h3>
             <input
               ref={fileInputRef}
               type="file"
@@ -425,40 +446,47 @@ Décrivez le **contexte**, les **challenges** et les **solutions**..."
               onChange={handleImageUpload}
               className="hidden"
             />
-            <button
+            <motion.button
               type="button"
+              onMouseEnter={playHover}
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className={`w-full rounded-lg border-2 border-dashed ${inputBorder} py-4 text-center transition-colors hover:bg-white/5 disabled:opacity-50`}
+              className="w-full border-2 border-dashed border-imperium-steel-dark py-6 text-center transition-all hover:border-imperium-steel hover:bg-imperium-steel/10 disabled:opacity-50"
             >
               {isUploading ? (
                 <div className="space-y-2">
-                  <div className="h-1 w-full bg-slate-700 rounded-full overflow-hidden">
-                    <div className={`h-full bg-zinc-700 transition-all`} style={{ width: `${uploadProgress}%` }} />
+                  <div className="h-1 w-full bg-imperium-steel overflow-hidden">
+                    <div
+                      className="h-full bg-imperium-gold transition-all"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
                   </div>
-                  <p className="text-xs text-zinc-500">{uploadProgress}%</p>
+                  <p className="font-terminal text-xs text-imperium-steel">{uploadProgress}%</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Upload className="h-6 w-6 mx-auto text-zinc-500" />
-                  <p className="text-sm text-zinc-400">Cliquez pour uploader</p>
-                  <p className="text-xs text-zinc-600">ou collez une URL</p>
+                  <Upload className="h-6 w-6 mx-auto text-imperium-steel" />
+                  <p className="font-terminal text-sm text-imperium-steel">CLICK TO UPLOAD</p>
+                  <p className="font-terminal text-xs text-imperium-steel-dark">or paste URL</p>
                 </div>
               )}
-            </button>
+            </motion.button>
             <input
               type="url"
               name="thumbnail"
               value={formData.thumbnail}
               onChange={handleChange}
-              placeholder="Ou collez une URL..."
-              className={`mt-3 w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-xs text-zinc-100 focus:outline-none`}
+              placeholder="https://..."
+              className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-gold"
             />
           </div>
 
           {/* Display Options */}
-          <div className={`rounded-xl border ${inputBorder} bg-slate-900/30 p-4`}>
-            <h3 className={`mb-3 text-sm font-semibold text-zinc-300`}>Affichage</h3>
+          <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
+            <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
+              <span className="w-1 h-4 bg-imperium-crimson" />
+              DISPLAY OPTIONS
+            </h3>
 
             <div className="space-y-3">
               <label className="flex items-center gap-3 cursor-pointer">
@@ -467,36 +495,36 @@ Décrivez le **contexte**, les **challenges** et les **solutions**..."
                   name="featured"
                   checked={formData.featured}
                   onChange={handleChange}
-                  className={`h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-zinc-300 focus:ring-zinc-500`}
+                  className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black checked:bg-imperium-gold checked:border-imperium-gold focus:ring-imperium-gold"
                 />
-                <span className="text-sm text-zinc-100">Projet à la une</span>
+                <span className="font-terminal text-sm text-imperium-bone">Featured blueprint</span>
               </label>
 
               <div>
-                <label className="mb-1 block text-xs text-zinc-400">Ordre d&apos;affichage</label>
+                <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">DISPLAY PRIORITY</label>
                 <input
                   type="number"
                   name="sortOrder"
                   value={formData.sortOrder}
                   onChange={handleChange}
-                  className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:outline-none`}
+                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
                 />
-                <p className="mt-1 text-xs text-zinc-500">Plus bas = affiché en premier</p>
+                <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">Lower = shown first</p>
               </div>
             </div>
           </div>
 
           {/* Preview Link */}
           {formData.slug && (
-            <div className={`rounded-xl border ${inputBorder} bg-slate-900/30 p-4`}>
+            <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
               <a
                 href={`/portfolio#${formData.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center gap-2 text-sm text-zinc-300 hover:text-zinc-400 transition-colors`}
+                className="flex items-center gap-2 font-terminal text-sm text-imperium-bone hover:text-imperium-gold transition-colors"
               >
                 <Eye className="h-4 w-4" />
-                Voir dans le portfolio
+                PREVIEW
               </a>
             </div>
           )}
@@ -504,36 +532,37 @@ Décrivez le **contexte**, les **challenges** et les **solutions**..."
       </div>
 
       {/* Action Buttons */}
-      <div className={`flex items-center justify-between border-t ${inputBorder} pt-6`}>
-        <button
-          type="button"
+      <div className="flex items-center justify-between border-t-2 border-imperium-steel-dark pt-6">
+        <motion.button
+          onMouseEnter={playHover}
           onClick={() => setView('projects')}
-          className="rounded-lg border border-white/10 px-6 py-3 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5"
+          className="border-2 border-imperium-steel-dark px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone transition-all"
         >
-          Annuler
-        </button>
+          ABORT
+        </motion.button>
         <div className="flex items-center gap-3">
           {saveStatus === 'success' && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-400">
+            <span className="flex items-center gap-1.5 font-terminal text-sm text-emerald-400">
               <CheckCircle className="h-4 w-4" />
-              Enregistré
+              SAVED
             </span>
           )}
           {saveStatus === 'error' && (
-            <span className="flex items-center gap-1.5 text-sm text-red-400">
+            <span className="flex items-center gap-1.5 font-terminal text-sm text-red-500">
               <AlertCircle className="h-4 w-4" />
-              Erreur
+              ERROR
             </span>
           )}
-          <button
+          <motion.button
             type="button"
+            onMouseEnter={playHover}
             onClick={handleSubmit}
             disabled={isPending || !formData.title || !formData.description || !formData.categoryId}
-            className={`rounded-lg ${buttonPrimary} px-6 py-3 text-sm font-medium text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+            className="border-2 border-imperium-gold bg-imperium-gold/20 px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            <FolderKanban className="h-4 w-4" />
-            {isPending ? 'Enregistrement...' : projectId ? 'Mettre à jour' : 'Créer'}
-          </button>
+            <Hammer className="h-4 w-4" />
+            {isPending ? 'FORGING...' : projectId ? 'UPDATE' : 'FORGE'}
+          </motion.button>
         </div>
       </div>
     </div>

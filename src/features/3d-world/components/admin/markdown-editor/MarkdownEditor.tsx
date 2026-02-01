@@ -79,7 +79,7 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
 
     if (!editor) {
       return (
-        <div className="w-full h-64 bg-zinc-900 border border-zinc-700 rounded-lg animate-pulse" />
+        <div className="w-full h-64 bg-zinc-900 border border-zinc-700 rounded-sm animate-pulse" />
       );
     }
 
@@ -91,7 +91,7 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
             onChange={handleMarkdownChange}
             readOnly={readonly}
             placeholder={placeholder}
-            className="w-full min-h-[300px] bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 font-mono text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-y"
+            className="w-full min-h-[300px] bg-zinc-900 border border-zinc-700 rounded-sm px-4 py-3 font-mono text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-y"
             style={{ minHeight: '300px' }}
           />
         </div>
@@ -99,7 +99,7 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
     }
 
     return (
-      <div className="w-full border border-zinc-700 rounded-lg overflow-hidden bg-zinc-900">
+      <div className="w-full border border-zinc-700 rounded-sm overflow-hidden bg-zinc-900">
         {!readonly && <EditorToolbar editor={editor} showMarkdown={showMarkdown} onToggleMarkdown={() => setShowMarkdown(!showMarkdown)} />}
         <EditorContent editor={editor} />
       </div>

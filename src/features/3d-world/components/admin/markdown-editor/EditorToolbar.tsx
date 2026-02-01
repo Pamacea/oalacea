@@ -247,7 +247,7 @@ export function EditorToolbar({ editor, showMarkdown, onToggleMarkdown }: Editor
                     type="button"
                     onClick={button.action}
                     disabled={button.hasDropdown}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-2 rounded-sm transition-colors ${
                       isActive
                         ? 'bg-blue-600/20 text-blue-400'
                         : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
@@ -274,7 +274,7 @@ export function EditorToolbar({ editor, showMarkdown, onToggleMarkdown }: Editor
           <button
             type="button"
             onClick={onToggleMarkdown}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2 rounded-sm transition-colors ${
               showMarkdown
                 ? 'bg-blue-600/20 text-blue-400'
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'

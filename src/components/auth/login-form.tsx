@@ -3,6 +3,8 @@
 import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -33,43 +35,51 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <div className="rounded-none border-2 border-imperium-crimson bg-imperium-crimson/10 px-4 py-3">
+          <p className="font-terminal text-sm text-imperium-crimson">{error}</p>
+        </div>
       )}
+
       <div>
-        <label htmlFor="email" className="block text-sm font-medium">
+        <label htmlFor="email" className="block font-display text-xs uppercase tracking-wider text-imperium-bone mb-2">
           Email
         </label>
-        <input
+        <Input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          className="w-full"
+          placeholder="votre@email.com"
           required
         />
       </div>
+
       <div>
-        <label htmlFor="password" className="block text-sm font-medium">
+        <label htmlFor="password" className="block font-display text-xs uppercase tracking-wider text-imperium-bone mb-2">
           Password
         </label>
-        <input
+        <Input
           id="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2"
+          className="w-full"
+          placeholder="••••••••"
           required
         />
       </div>
-      <button
+
+      <Button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
+        variant="crimson"
+        className="w-full uppercase font-display tracking-wider"
       >
-        {isLoading ? "Signing in..." : "Sign In"}
-      </button>
+        {isLoading ? "Connexion..." : "Se Connecter"}
+      </Button>
     </form>
   )
 }

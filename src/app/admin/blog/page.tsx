@@ -7,7 +7,7 @@ function DeleteButton({ slug }: { slug: string }) {
     <form action={deletePostWithRevalidate.bind(null, slug)}>
       <button
         type="submit"
-        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+        className="p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
         title="Supprimer"
       >
         <Trash2 className="h-4 w-4" />
@@ -26,78 +26,82 @@ export default async function AdminBlogPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-100">Blog</h1>
-          <p className="text-zinc-500 text-sm mt-1">{posts.pagination.total} article{posts.pagination.total > 1 ? 's' : ''}</p>
+          <h1 className="font-display text-2xl uppercase tracking-wider text-imperium-crimson">
+            [ Blog ]
+          </h1>
+          <p className="font-terminal text-imperium-steel-dark text-sm mt-1">
+            {'>'} {posts.pagination.total} article{posts.pagination.total > 1 ? 's' : ''}
+          </p>
         </div>
         <div className="flex gap-3">
           <Link
             href="/admin/blog/categories"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:text-zinc-300 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black rounded-none hover:border-imperium-gold hover:text-imperium-gold transition-all"
           >
             <Folder className="h-4 w-4" />
-            Catégories
+            Categories
           </Link>
           <Link
             href="/admin/blog/new"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 hover:border-zinc-700 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-bone border-2 border-imperium-crimson bg-imperium-crimson rounded-none hover:bg-imperium-crimson/90 hover:shadow-[4px_4px_0_rgba(154,17,21,0.4)] transition-all"
           >
             <Plus className="h-4 w-4" />
-            Nouvel article
+            New Article
           </Link>
         </div>
       </div>
 
       {/* Posts List */}
       {posts.posts.length === 0 ? (
-        <div className="text-center py-20 border-2 border-dashed border-zinc-800 rounded-xl">
-          <p className="text-zinc-500 mb-4">Aucun article</p>
+        <div className="text-center py-20 border-2 border-dashed border-imperium-steel-dark rounded-none">
+          <p className="font-terminal text-imperium-steel-dark mb-4">{'>'} No articles</p>
           <Link
             href="/admin/blog/new"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black rounded-none hover:border-imperium-gold hover:bg-imperium-gold/10 transition-all"
           >
             <Plus className="h-4 w-4" />
-            Créer le premier
+            Create first
           </Link>
         </div>
       ) : (
-        <div className="border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="border-2 border-imperium-steel-dark rounded-none overflow-hidden">
           <table className="w-full">
-            <thead className="bg-zinc-900/50 border-b border-zinc-800">
+            <thead className="bg-imperium-iron border-b-2 border-imperium-steel-dark">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Article</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Statut</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Article</th>
+                <th className="px-6 py-4 text-left font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Statut</th>
+                <th className="px-6 py-4 text-left font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-right font-terminal text-xs font-medium text-imperium-gold uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800">
+            <tbody className="divide-y divide-imperium-steel-dark">
               {posts.posts.map((post) => (
-                <tr key={post.id} className="hover:bg-zinc-900/30 transition-colors">
+                <tr key={post.id} className="hover:bg-imperium-iron transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       {post.coverImage && (
-                        <div className="h-12 w-16 rounded overflow-hidden bg-zinc-900 shrink-0">
+                        <div className="h-12 w-16 rounded-none overflow-hidden border-2 border-imperium-steel-dark bg-imperium-black shrink-0">
                           <img src={post.coverImage} alt="" className="h-full w-full object-cover" />
                         </div>
                       )}
                       <div>
-                        <p className="font-medium text-zinc-200">{post.title}</p>
-                        <p className="text-xs text-zinc-500">{post.slug}</p>
+                        <p className="font-display text-sm uppercase text-imperium-bone">{post.title}</p>
+                        <p className="font-terminal text-xs text-imperium-steel-dark">{post.slug}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     {post.published ? (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        Publié
+                      <span className="inline-flex items-center px-2 py-1 font-terminal text-xs font-semibold rounded-none border-2 border-imperium-gold bg-imperium-gold/20 text-imperium-gold">
+                        Published
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">
-                        Brouillon
+                      <span className="inline-flex items-center px-2 py-1 font-terminal text-xs font-semibold rounded-none border-2 border-imperium-steel bg-imperium-steel text-imperium-steel-dark">
+                        Draft
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-zinc-500">
+                  <td className="px-6 py-4 font-terminal text-sm text-imperium-steel-dark">
                     {new Date(post.createdAt).toLocaleDateString('fr-FR', {
                       day: 'numeric',
                       month: 'short',
@@ -109,14 +113,14 @@ export default async function AdminBlogPage() {
                       <Link
                         href={`/blog/${post.slug}`}
                         target="_blank"
-                        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                        className="p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
                         title="Voir"
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
                       <Link
                         href={`/admin/blog/${post.id}`}
-                        className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                        className="p-2 text-imperium-steel hover:text-imperium-gold transition-colors"
                         title="Modifier"
                       >
                         <Pencil className="h-4 w-4" />

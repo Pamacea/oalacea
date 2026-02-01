@@ -205,7 +205,7 @@ export function CollaborationStatus({
 
       <CardContent className="space-y-4">
         {isLocked && lockedBy && (
-          <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900">
+          <div className="flex items-center justify-between p-3 rounded-sm bg-slate-50 dark:bg-slate-900">
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarFallback className="text-xs">
@@ -402,7 +402,7 @@ export function LockIndicator({ entityType, entityId, className }: LockIndicator
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg",
+        "flex items-center gap-2 px-3 py-2 rounded-sm",
         isLockedByMe
           ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
           : "bg-orange-500/10 text-orange-700 dark:text-orange-400",
@@ -452,7 +452,7 @@ export function MentionAutocomplete({ search, onSelect }: MentionAutocompletePro
   if (users.length === 0) return null
 
   return (
-    <div className="absolute bottom-full left-0 mb-1 w-64 bg-white dark:bg-slate-900 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+    <div className="absolute bottom-full left-0 mb-1 w-64 bg-white dark:bg-slate-900 rounded-sm shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
       {users.map((user) => (
         <button
           key={user.id}

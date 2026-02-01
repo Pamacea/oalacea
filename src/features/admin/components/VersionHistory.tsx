@@ -57,7 +57,7 @@ const getVersionDiff = (oldVersion: PostVersion, newVersion: PostVersion) => {
   const changes: string[] = [];
 
   if (oldVersion.title !== newVersion.title) {
-    changes.push(`Title: "${oldVersion.title}" &rarr; "${newVersion.title}"`);
+    changes.push(`Title: "${oldVersion.title}" → "${newVersion.title}"`);
   }
 
   if (oldVersion.excerpt !== newVersion.excerpt) {
@@ -89,17 +89,17 @@ const renderContentDiff = (oldContent: string, newContent: string) => {
   const maxWords = 50;
 
   return (
-    <div className="grid grid-cols-2 gap-4 text-sm">
+    <div className="grid grid-cols-2 gap-4 font-terminal text-sm">
       <div>
-        <p className="text-xs font-semibold text-zinc-400 mb-2">Previous</p>
-        <div className="bg-red-950/30 border border-red-900/50 rounded p-3 max-h-64 overflow-y-auto">
+        <p className="font-display uppercase text-imperium-crimson text-xs mb-2">{'>'} Previous</p>
+        <div className="bg-imperium-crimson/10 border-2 border-imperium-crimson/30 rounded-none p-3 max-h-64 overflow-y-auto">
           {oldWords.slice(0, maxWords).join(' ')}
           {oldWords.length > maxWords && '...'}
         </div>
       </div>
       <div>
-        <p className="text-xs font-semibold text-zinc-400 mb-2">Current</p>
-        <div className="bg-emerald-950/30 border border-emerald-900/50 rounded p-3 max-h-64 overflow-y-auto">
+        <p className="font-display uppercase text-imperium-gold text-xs mb-2">{'>'} Current</p>
+        <div className="bg-imperium-gold/10 border-2 border-imperium-gold/30 rounded-none p-3 max-h-64 overflow-y-auto">
           {newWords.slice(0, maxWords).join(' ')}
           {newWords.length > maxWords && '...'}
         </div>
@@ -156,28 +156,30 @@ export function VersionHistory({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2 font-terminal">
             <History className="h-4 w-4" />
             Version History
             {hasVersions && (
-              <span className="bg-zinc-800 text-zinc-300 text-xs px-1.5 rounded-full">
+              <span className="bg-imperium-steel text-imperium-bone font-terminal text-xs px-1.5 rounded-none border-2 border-imperium-steel-dark">
                 {sortedVersions.length}
               </span>
             )}
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden rounded-none border-2 border-imperium-steel-dark bg-imperium-black">
           <DialogHeader>
-            <DialogTitle>Version History</DialogTitle>
+            <DialogTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+              [ Version History ]
+            </DialogTitle>
           </DialogHeader>
 
           <ScrollArea className="h-[calc(80vh-140px)] pr-4">
             {!hasVersions ? (
-              <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
+              <div className="flex flex-col items-center justify-center py-12 text-imperium-steel-dark">
                 <History className="h-12 w-12 mb-3 opacity-50" />
-                <p>No version history yet</p>
+                <p className="font-terminal">No version history yet</p>
                 <p className="text-xs mt-1">
-                  Versions are created automatically when you update a post
+                  {'>'} Versions are created automatically when you update a post
                 </p>
               </div>
             ) : (
@@ -193,40 +195,38 @@ export function VersionHistory({
                     <div
                       key={version.id}
                       className={cn(
-                        'rounded-lg border transition-all',
+                        'rounded-none border-2 transition-all',
                         version.version === currentVersion
-                          ? 'border-zinc-500/50 bg-zinc-500/5'
-                          : 'border-zinc-800 bg-zinc-900/30'
+                          ? 'border-imperium-gold bg-imperium-gold/10 shadow-[4px_4px_0_rgba(184,166,70,0.3)]'
+                          : 'border-imperium-steel-dark bg-imperium-black'
                       )}
                     >
                       <div className="flex items-start gap-3 p-4">
                         <div className="flex-shrink-0">
                           <div
                             className={cn(
-                              'flex items-center justify-center w-10 h-10 rounded-full',
+                              'flex items-center justify-center w-10 h-10 rounded-none border-2 font-terminal text-sm font-bold',
                               version.version === currentVersion
-                                ? 'bg-zinc-500/20 text-zinc-400'
-                                : 'bg-zinc-800 text-zinc-400'
+                                ? 'border-imperium-gold bg-imperium-gold text-imperium-black'
+                                : 'border-imperium-steel-dark bg-imperium-black text-imperium-steel'
                             )}
                           >
-                            <span className="text-sm font-semibold">
-                              v{version.version}
-                            </span>
+                            {`v${version.version}`}
                           </div>
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <p className="font-medium text-zinc-100">
+                              <p className="font-display uppercase text-imperium-bone">
                                 {version.title}
                                 {version.version === currentVersion && (
-                                  <span className="ml-2 text-xs bg-zinc-500/20 text-zinc-400 px-2 py-0.5 rounded-full">
+                                  <span className="ml-2 bg-imperium-gold text-imperium-black font-terminal text-xs px-2 py-0.5 rounded-none border-2 border-imperium-gold-dark">
                                     Current
                                   </span>
                                 )}
                               </p>
-                              <div className="flex items-center gap-3 mt-1 text-xs text-zinc-500">
+                              <div className="flex items-center gap-3 mt-1 font-terminal text-xs text-imperium-steel-dark">
                                 <span className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
                                   {formatRelativeTime(new Date(version.createdAt))}
@@ -239,7 +239,7 @@ export function VersionHistory({
                                 )}
                               </div>
                               {version.changeNote && (
-                                <p className="text-sm text-zinc-400 mt-2">
+                                <p className="text-imperium-steel mt-2">
                                   {version.changeNote}
                                 </p>
                               )}
@@ -262,7 +262,7 @@ export function VersionHistory({
                                   variant="ghost"
                                   size="icon-xs"
                                   onClick={() => setRestoreVersion(version)}
-                                  className="text-zinc-400 hover:text-zinc-300 hover:bg-zinc-500/10"
+                                  className="text-imperium-steel hover:text-imperium-crimson hover:bg-imperium-crimson/10"
                                 >
                                   <RotateCcw className="h-3 w-3" />
                                 </Button>
@@ -273,16 +273,16 @@ export function VersionHistory({
                           {isExpanded && (
                             <div className="mt-4 space-y-3">
                               <div>
-                                <p className="text-xs font-semibold text-zinc-400 mb-2">
-                                  Changes
+                                <p className="font-display uppercase text-imperium-gold text-xs mb-2">
+                                  {'>'} Changes
                                 </p>
                                 <ul className="space-y-1">
                                   {changes.map((change, i) => (
                                     <li
                                       key={i}
-                                      className="text-xs text-zinc-500 flex items-start gap-2"
+                                      className="font-terminal text-xs text-imperium-steel-dark flex items-start gap-2"
                                     >
-                                      <span className="text-zinc-500">•</span>
+                                      <span className="text-imperium-steel">{'>'}</span>
                                       <span dangerouslySetInnerHTML={{ __html: change }} />
                                     </li>
                                   ))}
@@ -295,7 +295,7 @@ export function VersionHistory({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => showDiff(prevVersion, version)}
-                                    className="w-full gap-2"
+                                    className="w-full gap-2 font-terminal"
                                   >
                                     <Diff className="h-3 w-3" />
                                     Show Content Diff
@@ -303,14 +303,14 @@ export function VersionHistory({
                                 </div>
                               )}
 
-                              <div className="grid grid-cols-2 gap-4 text-xs">
+                              <div className="grid grid-cols-2 gap-4 font-terminal text-xs">
                                 <div>
-                                  <span className="text-zinc-500">Tags:</span>
+                                  <span className="text-imperium-steel-dark">Tags:</span>
                                   <div className="flex flex-wrap gap-1 mt-1">
                                     {version.tags.map((tag) => (
                                       <span
                                         key={tag}
-                                        className="bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded"
+                                        className="bg-imperium-iron text-imperium-steel px-1.5 py-0.5 rounded-none border border-imperium-iron-dark"
                                       >
                                         {tag}
                                       </span>
@@ -318,8 +318,8 @@ export function VersionHistory({
                                   </div>
                                 </div>
                                 <div>
-                                  <span className="text-zinc-500">Content:</span>
-                                  <p className="text-zinc-400 mt-1">
+                                  <span className="text-imperium-steel-dark">Content:</span>
+                                  <p className="text-imperium-steel mt-1">
                                     {version.content.length} characters
                                   </p>
                                 </div>
@@ -341,18 +341,20 @@ export function VersionHistory({
         open={!!restoreVersion}
         onOpenChange={(open) => !open && setRestoreVersion(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-none border-2 border-imperium-crimson bg-imperium-black">
           <AlertDialogHeader>
-            <AlertDialogTitle>Restore version?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="font-display uppercase text-imperium-crimson">
+              Restore version?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-terminal text-imperium-steel-dark">
               Are you sure you want to restore version {restoreVersion?.version} of
               &quot;{restoreVersion?.title}&quot;? This will replace the current
               content with the selected version.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRestore} disabled={isRestoring}>
+            <AlertDialogCancel className="rounded-none font-terminal">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestore} disabled={isRestoring} className="rounded-none font-display uppercase bg-imperium-crimson text-imperium-bone hover:bg-imperium-crimson-bright">
               {isRestoring ? 'Restoring...' : 'Restore'}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -363,10 +365,10 @@ export function VersionHistory({
         open={!!selectedVersions}
         onOpenChange={(open) => !open && setSelectedVersions(null)}
       >
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl rounded-none border-2 border-imperium-steel-dark bg-imperium-black">
           <DialogHeader>
-            <DialogTitle>
-              Version Comparison: v{selectedVersions?.[0]?.version} &rarr; v
+            <DialogTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+              Version Comparison: v{selectedVersions?.[0]?.version} → v
               {selectedVersions?.[1]?.version}
             </DialogTitle>
           </DialogHeader>
@@ -374,18 +376,18 @@ export function VersionHistory({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-semibold text-zinc-100">
+                  <p className="font-display uppercase text-imperium-bone">
                     {selectedVersions[0].title}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="font-terminal text-xs text-imperium-steel-dark">
                     {new Date(selectedVersions[0].createdAt).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-zinc-100">
+                  <p className="font-display uppercase text-imperium-bone">
                     {selectedVersions[1].title}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="font-terminal text-xs text-imperium-steel-dark">
                     {new Date(selectedVersions[1].createdAt).toLocaleString()}
                   </p>
                 </div>

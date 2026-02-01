@@ -22,14 +22,14 @@ export function QuickActions() {
         <Link
           key={action.href}
           href={action.href}
-          className="flex items-center gap-3 p-4 border border-zinc-800 rounded-xl bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
+          className="flex items-center gap-3 p-4 border-2 border-imperium-steel-dark rounded-none bg-imperium-black hover:border-imperium-crimson hover:shadow-[4px_4px_0_rgba(154,17,21,0.3)] transition-all group"
         >
-          <div className="p-2 bg-zinc-800 rounded-lg group-hover:bg-zinc-700 transition-colors">
-            <Plus className="h-4 w-4 text-zinc-400" />
+          <div className="p-2 border-2 border-imperium-steel-dark rounded-none bg-imperium-iron group-hover:border-imperium-crimson group-hover:bg-imperium-crimson/20 transition-colors">
+            <Plus className="h-4 w-4 text-imperium-steel group-hover:text-imperium-crimson" />
           </div>
           <div>
-            <p className="font-medium text-zinc-200">{action.title}</p>
-            <p className="text-xs text-zinc-500">{action.description}</p>
+            <p className="font-display text-sm uppercase tracking-wider text-imperium-bone">{action.title}</p>
+            <p className="font-terminal text-xs text-imperium-steel-dark">{action.description}</p>
           </div>
         </Link>
       ))}

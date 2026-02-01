@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Scroll, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { getPostBySlug } from '@/actions/blog';
 import { getAllCategories } from '@/actions/blog';
 import { useCreatePost, useUpdatePost } from '@/features/blog/queries';
-import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { useInWorldAdminStore } from '@/features/admin/store';
+import { GlitchText } from '@/components/ui/imperium';
+import { useUISound } from '@/hooks/use-ui-sound';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
@@ -27,9 +30,7 @@ type FormData = {
 export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' | 'art' }) {
   const { setView } = useInWorldAdminStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Theme classes - conditional for Tailwind JIT
-  const isDev = world === 'dev';
+  const { playHover, playClick } = useUISound();
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -50,31 +51,25 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
 
   const createMutation = useCreatePost();
   const updateMutation = useUpdatePost();
-
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   // Load categories and post data
   useEffect(() => {
     async function loadData() {
-      // If no postId (creating new post), we're done loading
       if (!postId) {
         setIsLoading(false);
         return;
       }
 
       try {
-        // Load categories in parallel with post
         const [cats, post] = await Promise.all([
           getAllCategories().catch(() => []),
           getPostBySlug(postId),
         ]);
 
-        if (cats) {
-          setCategories(cats);
-        }
+        if (cats) setCategories(cats);
 
         if (post) {
-          // Find category id from loaded categories by matching slug
           const catId = cats?.find((c) => c.slug === post.category?.slug)?.id || '';
           setFormData({
             title: post.title,
@@ -118,9 +113,8 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (max 5MB for reasonable base64)
     if (file.size > 5 * 1024 * 1024) {
-      alert('L\'image est trop grosse. Maximum 5MB.');
+      alert('Image trop volumineux. Maximum 5MB.');
       return;
     }
 
@@ -128,21 +122,16 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
     setUploadProgress(0);
 
     try {
-      // Create a canvas to compress the image
       const img = new Image();
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
+      if (!ctx) throw new Error('Could not get canvas context');
 
       const reader = new FileReader();
 
       reader.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setUploadProgress(Math.round((e.loaded / e.total) * 50));
-        }
+        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 50));
       };
 
       reader.onload = (event) => {
@@ -150,7 +139,6 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
       };
 
       img.onload = () => {
-        // Calculate new dimensions (max 1200px width/height)
         const maxDimension = 1200;
         let width = img.width;
         let height = img.height;
@@ -167,11 +155,7 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
 
         canvas.width = width;
         canvas.height = height;
-
-        // Draw and compress
         ctx.drawImage(img, 0, 0, width, height);
-
-        // Compress to JPEG with 0.8 quality (smaller than PNG)
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
         setFormData((prev) => ({ ...prev, coverImage: compressedDataUrl }));
@@ -233,48 +217,59 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-zinc-500 text-sm">Chargement...</div>
+      <div className="flex flex-col items-center justify-center py-20">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="text-5xl mb-4"
+        >
+          ⚙
+        </motion.div>
+        <p className="font-terminal text-imperium-steel">Loading data slate...</p>
       </div>
     );
   }
 
-  const titleClass = 'text-zinc-100';
-  const labelClass = 'text-zinc-300';
-  const labelDimClass = 'text-zinc-600';
-  const inputBorder = 'border-zinc-700 focus:border-zinc-600';
-  const buttonPrimary = 'bg-zinc-700 hover:bg-zinc-600 text-zinc-100';
-  const buttonSecondary = 'border-zinc-700 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-400';
-  const checkboxBorder = 'border-zinc-700';
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setView('posts')}
-          className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg transition-colors ${buttonSecondary}`}
+      <div className="flex items-center justify-between border-b-2 border-imperium-steel-dark pb-4">
+        <motion.button
+          onMouseEnter={playHover}
+          onClick={() => {
+            setView('posts');
+            playClick();
+          }}
+          className="flex items-center gap-2 font-terminal text-sm border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone px-4 py-2 transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour
-        </button>
-        <h2 className={`text-lg font-bold ${titleClass}`}>
-          {postId ? 'Modifier l&apos;article' : 'Nouvel article'}
-        </h2>
+          RETURN
+        </motion.button>
+        <div className="flex items-center gap-3">
+          <div className="border-2 border-imperium-gold bg-imperium-gold/10 p-2">
+            <Shield className="h-5 w-5 text-imperium-gold" />
+          </div>
+          <h2 className="font-display text-lg uppercase tracking-wider text-imperium-bone">
+            <GlitchText intensity="low" auto>
+              {postId ? 'MODIFY ARCHIVE' : 'NEW ARCHIVE ENTRY'}
+            </GlitchText>
+          </h2>
+        </div>
         <div className="w-6" />
       </div>
 
       {/* Cover Image Preview */}
       {formData.coverImage && (
-        <div className="relative aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-white/10">
+        <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
           <img src={formData.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
-          <button
+          <motion.button
             type="button"
+            onMouseEnter={playHover}
             onClick={() => setFormData((prev) => ({ ...prev, coverImage: '' }))}
-            className="absolute top-3 right-3 rounded-lg bg-black/50 p-2 text-zinc-100 hover:bg-black/70 transition-colors"
+            className="absolute top-3 right-3 border-2 border-imperium-crimson bg-imperium-crimson/10 p-2 text-imperium-crimson hover:bg-imperium-crimson hover:text-imperium-bone transition-all"
           >
             <XIcon className="h-4 w-4" />
-          </button>
+          </motion.button>
         </div>
       )}
 
@@ -286,11 +281,11 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
           value={formData.title}
           onChange={handleTitleChange}
           required
-          placeholder="Titre de l'article..."
-          className={`w-full rounded-xl border ${inputBorder} bg-zinc-900 px-4 py-3 text-xl font-semibold text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-colors`}
+          placeholder="ENTER ARCHIVE TITLE..."
+          className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson transition-colors"
         />
-        <p className={`text-xs font-mono pl-1 ${labelDimClass}`}>
-          /{formData.slug || 'slug-auto-genere'}
+        <p className="font-terminal text-xs text-imperium-steel-dark pl-1">
+          /{formData.slug || 'SLUG-AUTO-GENERATED'}
         </p>
       </div>
 
@@ -300,40 +295,46 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
         <div className="col-span-2 space-y-4">
           {/* Excerpt */}
           <div>
-            <label className={`mb-2 block text-sm font-medium ${labelClass}`}>Extrait</label>
+            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+              {'>'} EXCERPT
+            </label>
             <textarea
               name="excerpt"
               value={formData.excerpt}
               onChange={handleChange}
               rows={2}
-              placeholder="Un bref résumé pour l'accroche..."
-              className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none resize-none`}
+              placeholder="Brief summary for archive display..."
+              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson resize-none"
             />
           </div>
 
           {/* Content */}
           <div>
-            <label className={`mb-2 block text-sm font-medium ${labelClass}`}>Contenu *</label>
+            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+              {'>'} CONTENT *
+            </label>
             <MarkdownEditor
               content={formData.content}
               onChange={(content) => setFormData(prev => ({ ...prev, content }))}
-              placeholder="# Titre de l'article
+              placeholder="# Archive Title
 
-Écrivez votre contenu ici en **markdown**..."
+Write your content here in **markdown**..."
               editable
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className={`mb-2 block text-sm font-medium ${labelClass}`}>Catégorie</label>
+            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+              {'>'} CATEGORY
+            </label>
             <select
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
-              className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-zinc-100 text-sm focus:outline-none`}
+              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
             >
-              <option value="">Aucune catégorie</option>
+              <option value="">-- NO CATEGORY --</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -341,7 +342,7 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
               ))}
             </select>
             {categories.length === 0 && (
-              <p className="mt-1 text-xs text-zinc-500">Aucune catégorie disponible</p>
+              <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">No categories available</p>
             )}
           </div>
         </div>
@@ -349,8 +350,11 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
         {/* Right - Sidebar */}
         <div className="space-y-4">
           {/* Cover Image Upload */}
-          <div className={`rounded-xl border ${inputBorder} bg-zinc-900 p-4`}>
-            <h3 className={`mb-3 text-sm font-semibold ${labelClass}`}>Image de couverture</h3>
+          <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
+            <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
+              <span className="w-1 h-4 bg-imperium-gold" />
+              COVER IMAGE
+            </h3>
             <input
               ref={fileInputRef}
               type="file"
@@ -358,54 +362,64 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
               onChange={handleImageUpload}
               className="hidden"
             />
-            <button
+            <motion.button
               type="button"
+              onMouseEnter={playHover}
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className={`w-full rounded-lg border-2 border-dashed ${inputBorder} py-4 text-center transition-colors hover:bg-white/5 disabled:opacity-50`}
+              className="w-full border-2 border-dashed border-imperium-steel-dark py-6 text-center transition-all hover:border-imperium-steel hover:bg-imperium-steel/10 disabled:opacity-50"
             >
               {isUploading ? (
                 <div className="space-y-2">
-                  <div className="h-1 w-full bg-zinc-700 rounded-full overflow-hidden">
-                    <div className={`h-full transition-all ${isDev ? 'bg-amber-500' : 'bg-teal-500'}`} style={{ width: `${uploadProgress}%` }} />
+                  <div className="h-1 w-full bg-imperium-steel overflow-hidden">
+                    <div
+                      className="h-full bg-imperium-crimson transition-all"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
                   </div>
-                  <p className="text-xs text-zinc-500">{uploadProgress}%</p>
+                  <p className="font-terminal text-xs text-imperium-steel">{uploadProgress}%</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Upload className="h-6 w-6 mx-auto text-zinc-500" />
-                  <p className="text-sm text-zinc-400">Cliquez pour uploader</p>
-                  <p className="text-xs text-zinc-600">ou collez une URL ci-dessous</p>
+                  <Upload className="h-6 w-6 mx-auto text-imperium-steel" />
+                  <p className="font-terminal text-sm text-imperium-steel">CLICK TO UPLOAD</p>
+                  <p className="font-terminal text-xs text-imperium-steel-dark">or paste URL below</p>
                 </div>
               )}
-            </button>
+            </motion.button>
             <input
               type="url"
               name="coverImage"
               value={formData.coverImage}
               onChange={handleChange}
-              placeholder="Ou collez une URL d'image..."
-              className={`mt-3 w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-xs text-zinc-100 focus:outline-none`}
+              placeholder="https://..."
+              className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-crimson"
             />
           </div>
 
           {/* Tags */}
-          <div className={`rounded-xl border ${inputBorder} bg-zinc-900 p-4`}>
-            <h3 className={`mb-3 text-sm font-semibold ${labelClass}`}>Tags</h3>
+          <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
+            <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
+              <span className="w-1 h-4 bg-imperium-crimson" />
+              TAGS
+            </h3>
             <input
               type="text"
               name="tags"
               value={formData.tags}
               onChange={handleChange}
               placeholder="react, nextjs, typescript"
-              className={`w-full rounded-lg border ${inputBorder} bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:outline-none`}
+              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
             />
-            <p className="mt-1 text-xs text-zinc-500">Séparés par des virgules</p>
+            <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">Comma separated</p>
           </div>
 
           {/* Options */}
-          <div className={`rounded-xl border ${inputBorder} bg-zinc-900 p-4`}>
-            <h3 className={`mb-3 text-sm font-semibold ${labelClass}`}>Options</h3>
+          <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
+            <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
+              <span className="w-1 h-4 bg-imperium-gold" />
+              OPTIONS
+            </h3>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -413,23 +427,23 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
                 id="featured"
                 checked={formData.featured}
                 onChange={handleChange}
-                className={`h-4 w-4 rounded ${checkboxBorder} bg-zinc-900 focus:ring-zinc-500`}
+                className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black focus:ring-imperium-crimson checked:bg-imperium-crimson checked:border-imperium-crimson"
               />
-              <span className="text-sm text-zinc-100">Article à la une</span>
+              <span className="font-terminal text-sm text-imperium-bone">Featured archive</span>
             </label>
           </div>
 
           {/* Preview Link */}
           {formData.slug && (
-            <div className={`rounded-xl border ${inputBorder} bg-zinc-900 p-4`}>
+            <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
               <a
                 href={`/blog/${formData.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center gap-2 text-sm ${titleClass} hover:opacity-80 transition-colors`}
+                className="flex items-center gap-2 font-terminal text-sm text-imperium-bone hover:text-imperium-gold transition-colors"
               >
                 <Eye className="h-4 w-4" />
-                Prévisualiser l&apos;article
+                PREVIEW
               </a>
             </div>
           )}
@@ -437,46 +451,48 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
       </div>
 
       {/* Action Buttons */}
-      <div className={`flex items-center justify-between border-t ${inputBorder} pt-6`}>
-        <button
-          type="button"
+      <div className="flex items-center justify-between border-t-2 border-imperium-steel-dark pt-6">
+        <motion.button
+          onMouseEnter={playHover}
           onClick={() => setView('posts')}
-          className="rounded-lg border border-white/10 px-6 py-3 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5"
+          className="border-2 border-imperium-steel-dark px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone transition-all"
         >
-          Annuler
-        </button>
+          ABORT
+        </motion.button>
         <div className="flex items-center gap-3">
           {saveStatus === 'success' && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-400">
+            <span className="flex items-center gap-1.5 font-terminal text-sm text-emerald-400">
               <CheckCircle className="h-4 w-4" />
-              Enregistré
+              SAVED
             </span>
           )}
           {saveStatus === 'error' && (
-            <span className="flex items-center gap-1.5 text-sm text-red-400">
+            <span className="flex items-center gap-1.5 font-terminal text-sm text-red-500">
               <AlertCircle className="h-4 w-4" />
-              Erreur
+              ERROR
             </span>
           )}
           <div className="flex gap-3">
-            <button
+            <motion.button
               type="button"
+              onMouseEnter={playHover}
               onClick={() => handleSubmit(false)}
               disabled={isPending || !formData.title || !formData.content}
-              className={`rounded-lg border-2 ${buttonSecondary} px-6 py-3 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+              className="border-2 border-imperium-steel-dark px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
-              {isPending ? 'Enregistrement...' : 'Brouillon'}
-            </button>
-            <button
+              {isPending ? 'SAVING...' : 'SAVE DRAFT'}
+            </motion.button>
+            <motion.button
               type="button"
+              onMouseEnter={playHover}
               onClick={() => handleSubmit(true)}
               disabled={isPending || !formData.title || !formData.content}
-              className={`rounded-lg ${buttonPrimary} px-6 py-3 text-sm font-medium text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+              className="border-2 border-imperium-crimson bg-imperium-crimson/20 px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-crimson hover:bg-imperium-crimson hover:text-imperium-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <FileText className="h-4 w-4" />
-              {isPending ? 'Publication...' : postId ? 'Mettre à jour' : 'Publier'}
-            </button>
+              {isPending ? 'PUBLISHING...' : postId ? 'UPDATE' : 'PUBLISH'}
+            </motion.button>
           </div>
         </div>
       </div>

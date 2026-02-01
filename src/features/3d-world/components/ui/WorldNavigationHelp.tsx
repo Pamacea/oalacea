@@ -48,7 +48,7 @@ export function WorldNavigationHelp() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 right-4 z-30 h-8 w-8 rounded-full bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold"
+        className="fixed bottom-4 right-4 z-30 h-8 w-8 rounded-full bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold"
         aria-label="Open help (press ?)"
       >
         ?
@@ -72,7 +72,7 @@ export function WorldNavigationHelp() {
               transition={{ type: 'spring', duration: 0.3 }}
               className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2"
             >
-              <div className="mx-4 rounded-lg bg-zinc-900 border border-zinc-800 p-6 shadow-2xl">
+              <div className="mx-4 rounded-sm bg-zinc-900 border border-zinc-800 p-6 shadow-2xl">
                 <div className="mb-4 flex items-center justify-between border-b border-zinc-800 pb-4">
                   <h2 className="text-xl font-bold text-zinc-100">CONTROLS</h2>
                   <button
@@ -119,7 +119,7 @@ export function WorldNavigationHelp() {
                 <div className="mt-6 pt-4 border-t border-zinc-800 flex justify-end">
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
+                    className="px-4 py-2 rounded-sm text-sm font-medium bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
                   >
                     Close (ESC)
                   </button>

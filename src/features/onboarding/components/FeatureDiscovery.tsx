@@ -96,7 +96,7 @@ function FeatureTooltip({ featureId, onDismiss }: FeatureTooltipProps) {
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="fixed bottom-24 right-8 z-50 w-80"
     >
-      <div className="relative overflow-hidden rounded-lg border border-imperium-gold/30 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-md">
+      <div className="relative overflow-hidden rounded-sm border border-imperium-gold/30 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-md">
         {/* Glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-imperium-gold/10 to-imperium-crimson/10" />
 
@@ -150,7 +150,7 @@ export function FeatureBadges({ isDiscovered }: FeatureBadgesProps) {
     >
       <button
         onClick={() => setShowBadges(false)}
-        className="flex items-center gap-2 rounded-md bg-slate-950/80 px-3 py-2 text-xs text-slate-400 hover:text-white"
+        className="flex items-center gap-2 rounded-sm bg-slate-950/80 px-3 py-2 text-xs text-slate-400 hover:text-white"
       >
         <Info className="h-3 w-3" />
         Newly Discovered
@@ -161,7 +161,7 @@ export function FeatureBadges({ isDiscovered }: FeatureBadgesProps) {
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: parseInt(id) * 0.1 }}
-          className="flex items-center gap-2 rounded-md bg-slate-950/80 px-3 py-2"
+          className="flex items-center gap-2 rounded-sm bg-slate-950/80 px-3 py-2"
         >
           <Sparkles className="h-3 w-3 text-imperium-gold" />
           <span className="text-sm text-slate-300">{feature.title}</span>
@@ -210,7 +210,7 @@ export function ContextualTooltip({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             className={cn(
-              'absolute z-50 whitespace-nowrap rounded-md bg-imperium-gold px-2 py-1 text-xs font-semibold text-black',
+              'absolute z-50 whitespace-nowrap rounded-sm bg-imperium-gold px-2 py-1 text-xs font-semibold text-black',
               {
                 'bottom-full left-1/2 -translate-x-1/2 mb-2': position === 'top',
                 'top-full left-1/2 -translate-x-1/2 mt-2': position === 'bottom',

@@ -8,8 +8,8 @@ interface ProjectGridProps {
 export function ProjectGrid({ projects }: ProjectGridProps) {
   if (projects.length === 0) {
     return (
-      <div className="rounded-xl p-8 sm:p-12 text-center border border-dashed">
-        <p className="text-muted-foreground">Aucun projet disponible pour le moment.</p>
+      <div className="rounded-none p-8 sm:p-12 text-center border-2 border-dashed border-imperium-steel-dark">
+        <p className="font-terminal text-imperium-steel">Aucun projet disponible pour le moment.</p>
       </div>
     )
   }

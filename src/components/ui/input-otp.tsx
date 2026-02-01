@@ -51,7 +51,7 @@ function InputOTPSlot({
       data-slot="input-otp-slot"
       data-active={isActive}
       className={cn(
-        "data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:ring-destructive/20 dark:data-[active=true]:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive dark:bg-input/30 border-input relative flex h-9 w-9 items-center justify-center border-y border-r text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md data-[active=true]:z-10 data-[active=true]:ring-[3px]",
+        "data-[active=true]:border-imperium-crimson data-[active=true]:shadow-[0_0_10px_rgba(154,17,21,0.4)] aria-invalid:border-imperium-crimson border-2 border-y-2 border-r-2 border-imperium-steel-dark relative flex h-9 w-9 items-center justify-center bg-imperium-black text-sm transition-all outline-none first:rounded-l-none first:border-l-2 last:rounded-r-none data-[active=true]:z-10",
         className
       )}
       {...props}
@@ -59,7 +59,7 @@ function InputOTPSlot({
       {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="animate-caret-blink bg-foreground h-4 w-px duration-1000" />
+          <div className="animate-caret-blink bg-imperium-bone h-4 w-px duration-1000" />
         </div>
       )}
     </div>
@@ -69,7 +69,7 @@ function InputOTPSlot({
 function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
   return (
     <div data-slot="input-otp-separator" role="separator" {...props}>
-      <MinusIcon />
+      <MinusIcon className="text-imperium-steel" />
     </div>
   )
 }

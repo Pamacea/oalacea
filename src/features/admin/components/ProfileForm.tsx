@@ -29,10 +29,10 @@ interface ProfileFormProps {
 }
 
 const roleColors: Record<string, string> = {
-  ADMIN: "bg-red-500/10 text-red-700 dark:text-red-400",
-  EDITOR: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  AUTHOR: "bg-green-500/10 text-green-700 dark:text-green-400",
-  VIEWER: "bg-zinc-500/10 text-zinc-700 dark:text-zinc-400",
+  ADMIN: "border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson",
+  EDITOR: "border-imperium-gold bg-imperium-gold/20 text-imperium-gold",
+  AUTHOR: "border-imperium-steel bg-imperium-steel/20 text-imperium-bone",
+  VIEWER: "border-imperium-steel-dark bg-imperium-steel-dark/20 text-imperium-steel",
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {
@@ -93,37 +93,42 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
-      <Card className="lg:col-span-2">
+      <Card variant="steel" className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Update your account details</CardDescription>
+          <CardTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+            [ Profile Information ]
+          </CardTitle>
+          <CardDescription className="font-terminal text-imperium-steel">
+            {'>'} Update your account details
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name" className="font-display text-imperium-bone">Name</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-zinc-900/50 border-zinc-800 text-zinc-100 focus:border-zinc-700"
               />
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="font-display text-imperium-bone">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 disabled
-                className="bg-zinc-900/50 border-zinc-800 text-zinc-100/50 cursor-not-allowed"
+                className="cursor-not-allowed"
               />
-              <p className="mt-1 text-xs text-zinc-500">Contact an admin to change your email</p>
+              <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">
+                {'>'} Contact an admin to change your email
+              </p>
             </div>
 
-            <Button type="submit" disabled={isPending} className="bg-zinc-600 hover:bg-zinc-500">
-              {isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+            <Button type="submit" disabled={isPending} variant="crimson">
+              {isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin text-imperium-bone" /> : null}
               Save Changes
             </Button>
           </form>
@@ -131,48 +136,54 @@ export function ProfileForm({ user }: ProfileFormProps) {
       </Card>
 
       <div className="space-y-6">
-        <Card>
+        <Card variant="iron">
           <CardHeader>
-            <CardTitle>Your Profile</CardTitle>
+            <CardTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+              [ Your Profile ]
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
-            <Avatar className="h-24 w-24">
+            <Avatar className="h-24 w-24 border-2 border-imperium-steel-dark">
               <AvatarImage src={user.image || undefined} />
-              <AvatarFallback className="text-2xl">
+              <AvatarFallback className="font-display text-imperium-bone bg-imperium-iron">
                 {getInitials(user.name || "", user.email)}
               </AvatarFallback>
             </Avatar>
             <div className="text-center">
-              <h3 className="font-semibold text-zinc-100">{user.name || "Unnamed User"}</h3>
-              <p className="text-sm text-zinc-500">{user.email}</p>
-              <Badge variant="secondary" className={cn("mt-2", roleColors[user.role])}>
+              <h3 className="font-display text-sm uppercase tracking-wider text-imperium-bone">
+                {user.name || "Unnamed User"}
+              </h3>
+              <p className="font-terminal text-sm text-imperium-steel">{user.email}</p>
+              <Badge className={cn("mt-2 rounded-none", roleColors[user.role])}>
                 {user.role}
               </Badge>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="iron">
           <CardHeader>
-            <CardTitle className="text-base">Account Status</CardTitle>
+            <CardTitle className="font-display uppercase tracking-wider text-imperium-crimson text-sm">
+              [ Account Status ]
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4 text-zinc-500" />
-              <span className="text-zinc-400">Email:</span>
+              <Mail className="h-4 w-4 text-imperium-steel" />
+              <span className="font-terminal text-imperium-steel">Email:</span>
               {user.emailVerified ? (
-                <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
+                <Badge className="rounded-none border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson">
                   Verified
                 </Badge>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-orange-500/10 text-orange-400 border-orange-500/20">
+                  <Badge className="rounded-none border-imperium-gold bg-imperium-gold/20 text-imperium-gold">
                     Not Verified
                   </Badge>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 px-2 text-xs"
+                    className="h-6 px-2 font-terminal uppercase text-xs rounded-none"
                     onClick={handleSendVerification}
                     disabled={isPending}
                   >
@@ -182,14 +193,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
               )}
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <User className="h-4 w-4 text-zinc-500" />
-              <span className="text-zinc-400">Role:</span>
-              <span className="text-zinc-100">{user.role}</span>
+              <User className="h-4 w-4 text-imperium-steel" />
+              <span className="font-terminal text-imperium-steel">Role:</span>
+              <span className="font-display text-imperium-bone">{user.role}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-zinc-500" />
-              <span className="text-zinc-400">Member since:</span>
-              <span className="text-zinc-100">{format(new Date(user.createdAt), "MMM yyyy")}</span>
+              <Calendar className="h-4 w-4 text-imperium-steel" />
+              <span className="font-terminal text-imperium-steel">Member since:</span>
+              <span className="font-terminal text-imperium-bone">
+                {format(new Date(user.createdAt), "MMM yyyy")}
+              </span>
             </div>
           </CardContent>
         </Card>

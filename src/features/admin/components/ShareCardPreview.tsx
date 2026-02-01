@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DownloadIcon, RefreshCwIcon, ImageIcon } from 'lucide-react';
+import { Download, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ShareCardPreviewProps {
@@ -78,10 +78,12 @@ export function ShareCardPreview({
   };
 
   return (
-    <Card>
+    <Card variant="steel">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Share Card Preview</CardTitle>
+          <CardTitle className="font-display uppercase tracking-wider text-imperium-crimson">
+            [ Share Card Preview ]
+          </CardTitle>
           <div className="flex items-center gap-2">
             {onChangeTheme && (
               <Select value={theme} onValueChange={onChangeTheme}>
@@ -100,7 +102,7 @@ export function ShareCardPreview({
               onClick={handleRefresh}
               disabled={isLoading}
             >
-              <RefreshCwIcon className={cn('size-4', isLoading && 'animate-spin')} />
+              <RefreshCw className={cn('size-4', isLoading && 'animate-spin text-imperium-gold')} />
             </Button>
             <Button
               variant="outline"
@@ -108,13 +110,13 @@ export function ShareCardPreview({
               onClick={handleDownload}
               disabled={!cardUrl || isLoading}
             >
-              <DownloadIcon className="size-4" />
+              <Download className="size-4" />
             </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="relative aspect-[1200/630] w-full overflow-hidden rounded-lg border bg-muted">
+        <div className="relative aspect-[1200/630] w-full overflow-hidden rounded-none border-2 border-imperium-steel-dark bg-imperium-black">
           {cardUrl && !isLoading ? (
             <img
               src={cardUrl}
@@ -127,27 +129,26 @@ export function ShareCardPreview({
               onLoad={() => setIsLoading(false)}
             />
           ) : imageError ? (
-            <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-imperium-steel-dark">
               <ImageIcon className="size-12" />
-              <p>Failed to load preview</p>
-              <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <p className="font-terminal">Failed to load preview</p>
+              <Button variant="crimson" size="sm" onClick={handleRefresh}>
                 Retry
               </Button>
             </div>
           ) : (
             <div className="flex h-full items-center justify-center">
-              <RefreshCwIcon className="size-8 animate-spin text-muted-foreground" />
+              <RefreshCwIcon className="size-8 animate-spin text-imperium-gold" />
             </div>
           )}
         </div>
 
-        <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+        <div className="mt-4 space-y-2 font-terminal text-sm text-imperium-steel-dark">
           <p>
-            <strong>OG URL:</strong> {cardUrl}
+            <span className="text-imperium-bone">{'>'} OG URL:</span> {cardUrl}
           </p>
           <p className="text-xs">
-            Share cards are automatically generated and cached. Use the refresh button to
-            regenerate after making changes.
+            {'>'} Share cards are automatically generated and cached. Use the refresh button to regenerate after making changes.
           </p>
         </div>
       </CardContent>

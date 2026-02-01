@@ -8,8 +8,8 @@ interface BlogGridProps {
 export function BlogGrid({ posts }: BlogGridProps) {
   if (posts.length === 0) {
     return (
-      <div className="rounded-xl p-8 sm:p-12 text-center border border-dashed">
-        <p className="text-muted-foreground">Aucun article disponible pour le moment.</p>
+      <div className="rounded-none p-8 sm:p-12 text-center border-2 border-dashed border-imperium-steel-dark">
+        <p className="font-terminal text-imperium-steel">Aucun article disponible pour le moment.</p>
       </div>
     )
   }

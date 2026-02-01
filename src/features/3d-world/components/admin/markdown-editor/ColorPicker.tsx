@@ -21,7 +21,7 @@ export function ColorPicker({ currentColor, onColorChange, onClose }: ColorPicke
 
   return (
     <div className="relative">
-      <div className="absolute top-full mt-2 left-0 z-10 p-2 rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
+      <div className="absolute top-full mt-2 left-0 z-10 p-2 rounded-sm border border-zinc-700 bg-zinc-900 shadow-xl">
         <div className="grid grid-cols-5 gap-1">
           {COLOR_PALETTE.map((color) => (
             <button
