@@ -93,7 +93,7 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
         animate={{ scale: 1, opacity: 1, rotateX: 0 }}
         exit={{ scale: 0.95, opacity: 0, rotateX: -5 }}
         transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-        className="w-[90vw] max-w-5xl h-[92vh] bg-imperium-black-raise border-2 border-imperium-gold rounded-none shadow-[0_0_60px_rgba(212,175,55,0.3)] overflow-hidden flex flex-col"
+        className="w-[90vw] max-w-4/5 h-[92vh] bg-imperium-black-raise border-2 border-imperium-gold rounded-none shadow-[0_0_60px_rgba(212,175,55,0.3)] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

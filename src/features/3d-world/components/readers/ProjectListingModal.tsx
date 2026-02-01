@@ -100,7 +100,7 @@ export function ProjectListingModal() {
         animate={{ scale: 1, opacity: 1, rotateX: 0, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, rotateX: -10, y: 50 }}
         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-        className="relative z-[51] w-[90vw] max-w-5xl h-[85vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+        className="relative z-[51] w-[90vw] max-w-4/5 h-[85vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-imperium-black-raise border-2 border-imperium-gold rounded-none shadow-[0_0_60px_rgba(212,175,55,0.3),_8px_8px_0_rgba(212,175,55,0.15)] overflow-hidden flex flex-col h-full">

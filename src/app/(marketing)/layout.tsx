@@ -1,4 +1,6 @@
-import { Header, Footer } from "@/components/layout"
+import { FloatingNav } from "@/components/navigation/FloatingNav"
+import { BrutalBackground } from "@/components/navigation/BrutalBackground"
+import { WeaponEffects } from "@/components/effects/WeaponEffects"
 
 export default function MarketingLayout({
   children,
@@ -7,9 +9,12 @@ export default function MarketingLayout({
 }) {
   return (
     <>
-      <Header />
-      <main className="min-h-[calc(100vh-8rem)]">{children}</main>
-      <Footer />
+      <BrutalBackground />
+      <WeaponEffects />
+      <main className="min-h-[80vh] pb-40 pt-8 relative z-10">
+        {children}
+      </main>
+      <FloatingNav />
     </>
   )
 }

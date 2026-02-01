@@ -20,7 +20,7 @@ export default function HomePage() {
       {/* Loading Screen */}
       <LoadingScreen />
 
-      {/* Floating UI */}
+      {/* Floating UI - 3D scene specific controls */}
       <FloatingUI />
 
       {/* Welcome Overlay - Disparaît au premier clic */}

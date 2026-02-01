@@ -1,0 +1,18 @@
+{
+  "workflow": "predator",
+  "task": "Améliorer les formulaires de création et d'édition des blogs et projets pour inclure un véritable éditeur Markdown puissant (changement de couleurs du texte, liens entre blogs/projets, dossier séparé pour l'éditeur)",
+  "flags": {
+    "auto": true,
+    "examine": true,
+    "pr": true,
+    "verbose": true,
+    "max_attempts": "unlimited"
+  },
+  "state": {
+    "current_step": "INIT",
+    "issues_found": [],
+    "files_created": [],
+    "files_modified": []
+  },
+  "start_time": "2025-01-31T14:30:00Z"
+}

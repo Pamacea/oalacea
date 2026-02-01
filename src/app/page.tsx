@@ -10,6 +10,7 @@ import {
   FloatingUI,
 } from '@/features/3d-world';
 import { useWorldStore } from '@/features/3d-world/store';
+import { FloatingNav } from '@/components/navigation/FloatingNav';
 
 // Camera position interface
 interface CameraPosition {
@@ -61,6 +62,7 @@ export default function HomePage() {
       <LoadingScreen />
       <WorldTransitionScreen />
       <FloatingUI />
+      <FloatingNav />
       <ControlsPanel
         cameraMode={cameraMode}
         onToggleCamera={toggleCamera}

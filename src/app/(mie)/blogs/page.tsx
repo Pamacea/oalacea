@@ -2,8 +2,9 @@ import { getPosts } from "@/actions/blog"
 import type { PostListItem } from "@/actions/blog"
 import Link from "next/link"
 import { Calendar, Clock } from "lucide-react"
+import { GlitchText } from "@/components/ui/imperium"
+import { BrutalCard } from "@/components/navigation/BrutalBackground"
 
-// Force dynamic rendering - don't attempt to prerender at build time
 export const dynamic = 'force-dynamic'
 
 export default async function BlogsPage() {
@@ -11,13 +12,13 @@ export default async function BlogsPage() {
 
   if (posts.length === 0) {
     return (
-      <div className="container py-12">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="font-display text-3xl uppercase tracking-wider text-imperium-crimson">
-            [ Blog ]
+      <div className="w-full max-w-4xl mx-auto px-4 text-center py-12">
+        <div className="inline-block border-2 border-imperium-crimson bg-imperium-black-raise px-8 py-6">
+          <h1 className="font-display text-4xl uppercase tracking-widest text-imperium-crimson mb-4">
+            <GlitchText>Archives</GlitchText>
           </h1>
-          <p className="mt-4 font-terminal text-imperium-steel-dark">
-            {'>'} Aucun article disponible pour le moment.
+          <p className="font-terminal text-imperium-steel-dark">
+            {'>'} No records found in database
           </p>
         </div>
       </div>
@@ -25,104 +26,107 @@ export default async function BlogsPage() {
   }
 
   return (
-    <div className="container py-12">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="font-display text-3xl uppercase tracking-wider text-imperium-crimson">
-          [ Blog ]
-        </h1>
-        <p className="mt-4 font-terminal text-imperium-steel">
-          {'>'} Découvrez mes derniers articles sur le développement web, le design et plus encore.
-        </p>
-      </div>
+    <div className="w-full max-w-4/5 mx-auto px-4">
+      <header className="mb-12">
+        <div className="inline-block border-2 border-imperium-crimson bg-imperium-black-raise px-6 py-4">
+          <div className="absolute w-full h-full border-2 border-imperium-silver"/>
+          <div className="absolute w-1/2 h-1/2 border-2 border-imperium-black-raise"/>
+          <h1 className="font-display text-4xl md:text-5xl uppercase tracking-widest text-imperium-crimson">
+            <GlitchText>Archives</GlitchText>
+          </h1>
+          <p className="font-terminal text-imperium-steel mt-2">
+            {'>'} Knowledge database access terminal
+          </p>
+        </div>
+      </header>
 
-      <div className="mt-12 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post, index) => (
+          <PostCard key={post.id} post={post} index={index} />
         ))}
       </div>
     </div>
   )
 }
 
-function PostCard({ post }: { post: PostListItem }) {
+function PostCard({ post, index }: { post: PostListItem; index: number }) {
   return (
-    <article className="group relative overflow-hidden rounded-none border-2 border-imperium-steel-dark bg-imperium-black transition-all hover:border-imperium-crimson hover:shadow-[8px_8px_0_rgba(154,17,21,0.3)]">
-      {/* Cover Image */}
-      {post.coverImage && (
-        <Link href={`/blogs/${post.slug}`}>
-          <div className="aspect-video overflow-hidden border-b-2 border-imperium-steel-dark">
+    <BrutalCard hovered className="group cursor-pointer">
+      <Link href={`/blogs/${post.slug}`} className="block">
+        {/* Cover Image */}
+        {post.coverImage && (
+          <div className="aspect-video overflow-hidden border-b-2 border-imperium-steel-dark/50 relative">
+            <div className="absolute inset-0 bg-imperium-crimson/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="w-full h-full" style={{
+                background: 'repeating-linear-gradient(0deg, transparent, transparent_1px, rgba(154,17,21,0.2)_1px, rgba(154,17,21,0.2)_2px)',
+              }} />
+            </div>
             <img
               src={post.coverImage}
               alt={post.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           </div>
-        </Link>
-      )}
-
-      {/* Content */}
-      <div className="p-4 sm:p-6">
-        {/* Category Badge */}
-        {post.category && (
-          <span className="inline-flex items-center px-2 py-1 font-terminal text-xs font-semibold rounded-none border-2 border-imperium-gold bg-imperium-gold/20 text-imperium-gold">
-            {post.category.name}
-          </span>
         )}
 
-        {/* Title */}
-        <h2 className="mt-3 font-display text-lg uppercase tracking-wider">
-          <Link
-            href={`/blogs/${post.slug}`}
-            className="hover:text-imperium-crimson transition-colors text-imperium-bone"
-          >
-            {post.title}
-          </Link>
-        </h2>
+        {/* Content */}
+        <div className="p-5">
+          {/* Category Badge */}
+          {post.category && (
+            <span className="inline-flex items-center px-2 py-0.5 font-terminal text-xs font-semibold border border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson mb-3">
+              {post.category.name}
+            </span>
+          )}
 
-        {/* Excerpt */}
-        {post.excerpt && (
-          <p className="mt-2 font-terminal text-sm text-imperium-steel line-clamp-2">
-            {post.excerpt}
-          </p>
+          {/* Title */}
+          <h2 className="font-display text-lg uppercase tracking-wider mb-2">
+            <span className="text-imperium-bone group-hover:text-imperium-crimson transition-colors">
+              {post.title}
+            </span>
+          </h2>
+
+          {/* Excerpt */}
+          {post.excerpt && (
+            <p className="font-terminal text-sm text-imperium-steel line-clamp-2 mb-4">
+              {post.excerpt}
+            </p>
+          )}
+
+          {/* Meta */}
+          <div className="flex flex-wrap items-center gap-4 font-terminal text-xs text-imperium-steel-dark mb-4">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-3 w-3 text-imperium-gold" />
+              {new Date(post.publishDate ?? post.createdAt).toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "short",
+              })}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3 text-imperium-steel" />
+              {post.readingTime || 5} min
+            </span>
+          </div>
+
+          {/* Read More Link */}
+          <div className="flex items-center gap-2 font-terminal text-sm text-imperium-crimson uppercase">
+            <span>{'>'}</span>
+            <span className="group-hover:text-imperium-gold transition-colors">Access record</span>
+            <svg className="h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Featured Indicator */}
+        {post.featured && (
+          <div className="absolute top-4 right-4 flex h-6 w-6 items-center justify-center border border-imperium-crimson bg-imperium-crimson text-imperium-bone text-xs font-bold">
+            ★
+          </div>
         )}
 
-        {/* Meta */}
-        <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-4 font-terminal text-xs text-imperium-steel-dark">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5 text-imperium-gold" />
-            {new Date(post.publishDate ?? post.createdAt).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5 text-imperium-steel" />
-            {post.readingTime || 5} min
-          </span>
-        </div>
-
-        {/* Read More Link */}
-        <Link
-          href={`/blogs/${post.slug}`}
-          className="mt-4 inline-flex items-center gap-2 font-terminal text-sm font-medium text-imperium-crimson hover:text-imperium-gold transition-colors uppercase"
-        >
-          {'>'} Read More
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
-      </div>
-
-      {/* Featured Indicator */}
-      {post.featured && (
-        <div className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-none border-2 border-imperium-crimson bg-imperium-crimson shadow-[4px_4px_0_rgba(154,17,21,0.3)]">
-          <svg className="h-4 w-4 text-imperium-bone" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-        </div>
-      )}
-    </article>
+        {/* Glitch line at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-imperium-crimson to-transparent opacity-50" />
+      </Link>
+    </BrutalCard>
   )
 }
