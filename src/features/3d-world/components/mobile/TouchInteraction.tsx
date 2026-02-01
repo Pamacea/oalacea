@@ -134,7 +134,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
                 transition={{ duration: 0.1 }}
                 className="relative"
               >
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-d4af37 bg-d4af37/20 backdrop-blur-sm flex items-center justify-center">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-sm border-2 border-d4af37 bg-d4af37/20 backdrop-blur-sm flex items-center justify-center">
                   <motion.svg
                     className="w-6 h-6 md:w-8 md:h-8 text-d4af37"
                     animate={{ scale: isPressed ? 0.9 : 1 }}
@@ -153,7 +153,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
                 </div>
 
                 <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-d4af37/50"
+                  className="absolute inset-0 rounded-sm border-2 border-d4af37/50"
                   animate={{
                     scale: [1, 1.2, 1],
                     opacity: [0.5, 0, 0.5],
@@ -170,7 +170,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
                     initial={{ scale: 1, opacity: 0.5 }}
                     animate={{ scale: 1.5, opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="absolute inset-0 rounded-full bg-d4af37/30"
+                    className="absolute inset-0 rounded-sm bg-d4af37/30"
                   />
                 )}
               </motion.div>
@@ -230,7 +230,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
                   onClick={handleTap}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-sm hover:bg-white/10 transition-colors text-left"
                 >
-                  <div className="w-8 h-8 rounded-full bg-d4af37/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-sm bg-d4af37/20 flex items-center justify-center">
                     <svg className="w-4 h-4 text-d4af37" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
@@ -253,7 +253,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
                     }}
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-sm hover:bg-white/10 transition-colors text-left"
                   >
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-sm bg-blue-500/20 flex items-center justify-center">
                       <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>

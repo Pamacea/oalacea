@@ -4,10 +4,29 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import { Text } from '@react-three/drei';
-import type { Post } from '@/generated/prisma/client';
+
+interface BlogCategory {
+  id?: string;
+  name: string;
+  slug: string;
+}
+
+interface BlogPostData {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  coverImage: string | null;
+  publishDate: Date | null;
+  createdAt: Date;
+  readingTime: number | null;
+  featured: boolean;
+  published: boolean;
+  category: BlogCategory | null;
+}
 
 interface BlogDocumentProps {
-  post: Post;
+  post: BlogPostData;
   position: [number, number, number];
   world: 'DEV' | 'ART';
   isActive?: boolean;

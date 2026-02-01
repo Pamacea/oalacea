@@ -4,12 +4,24 @@ import { useRef, useMemo, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import { Text } from '@react-three/drei';
-import type { Post } from '@/generated/prisma/client';
+
+interface BlogPostBasic {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  publishDate?: Date | null;
+  createdAt?: Date;
+  category?: {
+    name: string;
+    slug: string;
+  } | null;
+}
 
 interface BlogTerminalProps {
-  posts: Post[];
+  posts: BlogPostBasic[];
   position?: [number, number, number];
-  onPostSelect?: (post: Post) => void;
+  onPostSelect?: (post: BlogPostBasic) => void;
   activePostId?: string;
 }
 
@@ -199,7 +211,7 @@ export function BlogTerminal({ posts, position = [0, 0, 0], onPostSelect, active
                 anchorX="right"
                 anchorY="top"
               >
-                {new Date(post.publishDate ?? post.createdAt).toLocaleDateString('fr-FR', {
+                {new Date(post.publishDate ?? post.createdAt ?? new Date()).toLocaleDateString('fr-FR', {
                   day: '2-digit',
                   month: '2-digit',
                 })}

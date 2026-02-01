@@ -133,7 +133,7 @@ export function ProjectListingModal() {
                 </div>
                 <div>
                   <h2 className="font-display text-2xl uppercase tracking-widest text-imperium-bone">
-                    <GlitchText intensity="high" auto>
+                    <GlitchText intensity="high">
                       Forge Projects
                     </GlitchText>
                   </h2>
@@ -189,7 +189,8 @@ export function ProjectListingModal() {
             ) : (
               <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
                 {projectsList.map((project, index) => {
-                  const config = CATEGORY_CONFIG[project.category] || CATEGORY_CONFIG.OTHER;
+                  const categorySlug = typeof project.category === 'string' ? project.category : project.category?.slug || 'other';
+                  const config = CATEGORY_CONFIG[categorySlug] || CATEGORY_CONFIG.OTHER;
                   const Icon = config.icon;
                   return (
                     <motion.div

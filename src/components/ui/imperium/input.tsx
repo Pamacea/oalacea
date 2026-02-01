@@ -21,6 +21,7 @@ const inputVariants = cva(
         default: "border-imperium-iron focus:border-imperium-crimson focus:ring-1 focus:ring-imperium-crimson/50",
         crimson: "border-imperium-crimson focus:border-imperium-crimson-glow focus:ring-1 focus:ring-imperium-crimson/50",
         gold: "border-imperium-gold focus:border-imperium-glow-gold focus:ring-1 focus:ring-imperium-gold/50",
+        steel: "border-imperium-steel focus:border-imperium-crimson focus:ring-1 focus:ring-imperium-crimson/50",
       },
       size: {
         sm: "h-10 px-3 text-sm",
@@ -36,7 +37,7 @@ const inputVariants = cva(
 )
 
 export interface ImperiumInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
     VariantProps<typeof inputVariants> {}
 
 const ImperiumInput = React.forwardRef<HTMLInputElement, ImperiumInputProps>(

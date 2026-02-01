@@ -31,7 +31,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         {/* Header */}
         <header className="mb-8">
           <span className="inline-block px-3 py-1 font-terminal text-xs font-semibold rounded-none border-2 border-imperium-gold bg-imperium-gold/20 text-imperium-gold mb-4">
-            {CATEGORY_LABELS[project.category] || project.category}
+            {CATEGORY_LABELS[project.category.slug] || project.category.name}
           </span>
           <h1 className="font-display text-3xl uppercase tracking-[0.2em] text-imperium-bone">
             {project.title}

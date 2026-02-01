@@ -4,13 +4,15 @@
  */
 
 import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, HTMLMotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
 
-export interface BrutalCardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BrutalCardProps {
   variant?: "crimson" | "gold" | "rusted" | "corrupted"
   children: React.ReactNode
   intensity?: "subtle" | "medium" | "severe"
+  className?: string
+  id?: string
 }
 
 const variantStyles = {

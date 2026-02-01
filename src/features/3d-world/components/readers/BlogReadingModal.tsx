@@ -333,7 +333,7 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
             )}
 
             <h1 className="font-display text-4xl uppercase tracking-wider text-imperium-bone mb-6">
-              <GlitchText intensity="high" auto>
+              <GlitchText intensity="high">
                 {post.title}
               </GlitchText>
             </h1>

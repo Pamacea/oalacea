@@ -47,7 +47,7 @@ export function RecentContent({ posts, projects }: RecentContentProps) {
                 className="block p-4 hover:bg-imperium-gold/10 transition-colors border-l-2 border-transparent hover:border-imperium-gold"
               >
                 <p className="font-display text-sm uppercase tracking-wider text-imperium-bone">{project.title}</p>
-                <p className="font-terminal text-xs text-imperium-steel-dark mt-1">{project.year} · {project.category}</p>
+                <p className="font-terminal text-xs text-imperium-steel-dark mt-1">{project.year} · {typeof project.category === 'string' ? project.category : project.category?.name || ''}</p>
               </Link>
             ))}
           </div>

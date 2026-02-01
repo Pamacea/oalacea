@@ -127,7 +127,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
               </p>
             </div>
 
-            <Button type="submit" disabled={isPending} variant="crimson">
+            <Button type="submit" disabled={isPending} variant="primary">
               {isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin text-imperium-bone" /> : null}
               Save Changes
             </Button>

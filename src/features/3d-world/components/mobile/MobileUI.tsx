@@ -135,7 +135,7 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
             <motion.div
               animate={{ rotate: isExpanded ? 180 : 0 }}
               transition={{ duration: 0.2 }}
-              className="w-10 h-1 bg-white/30 rounded-full"
+              className="w-10 h-1 bg-white/30 rounded-sm"
             />
           </motion.button>
 
@@ -144,10 +144,10 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
+                    className="w-10 h-10 rounded-sm flex items-center justify-center"
                     style={{ backgroundColor: worldColors.primary + '30' }}
                   >
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: worldColors.primary }} />
+                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: worldColors.primary }} />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">
@@ -161,11 +161,11 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
 
                 <div className="flex items-center gap-2">
                   <Button
-                    size="icon-sm"
+                    size="icon"
                     variant="ghost"
                     onClick={handleSwitchWorld}
                     aria-label="Switch world"
-                    className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                    className="h-9 w-9 rounded-sm bg-white/10 hover:bg-white/20 text-white"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -178,10 +178,10 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
                 <div className="flex items-center justify-between pb-2 border-b border-white/10">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center"
+                      className="w-12 h-12 rounded-sm flex items-center justify-center"
                       style={{ backgroundColor: worldColors.primary + '30' }}
                     >
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: worldColors.primary }} />
+                      <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: worldColors.primary }} />
                     </div>
                     <div>
                       <p className="text-base font-semibold text-white">
@@ -258,7 +258,7 @@ export function MobileUI({ currentWorld }: MobileUIProps) {
           exit={{ scale: 0, opacity: 0 }}
           onClick={closeOverlay}
           aria-label="Close overlay"
-          className="fixed top-20 right-4 z-50 w-12 h-12 rounded-full bg-black/70 backdrop-blur-md border border-white/10 flex items-center justify-center touch-none"
+          className="fixed top-20 right-4 z-50 w-12 h-12 rounded-sm bg-black/70 backdrop-blur-md border border-white/10 flex items-center justify-center touch-none"
           whileTap={{ scale: 0.9 }}
         >
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

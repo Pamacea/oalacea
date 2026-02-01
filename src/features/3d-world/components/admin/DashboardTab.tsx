@@ -30,7 +30,7 @@ export function DashboardTab() {
       {/* Header */}
       <div className="border-b-2 border-imperium-steel-dark pb-6">
         <h2 className="font-display text-3xl uppercase tracking-widest text-imperium-bone">
-          <GlitchText intensity="medium" auto>
+          <GlitchText intensity="medium">
             Command Center
           </GlitchText>
         </h2>

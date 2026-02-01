@@ -920,7 +920,7 @@ export function WorldSwitch() {
   const { currentWorld, switchWorld } = useWorldStore();
 
   return (
-    <div className="flex items-center gap-2 rounded-full bg-black/50 backdrop-blur-md p-1">
+    <div className="flex items-center gap-2 rounded-sm bg-black/50 backdrop-blur-md p-1">
       {WORLDS.map((world) => (
         <Button
           key={world.id}
@@ -1077,7 +1077,7 @@ export function InteractionPrompt({ target }: InteractionPromptProps) {
       exit={{ scale: 0.8, opacity: 0 }}
       className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40"
     >
-      <div className="flex items-center gap-4 rounded-full bg-black/70 px-6 py-3 backdrop-blur-md">
+      <div className="flex items-center gap-4 rounded-sm bg-black/70 px-6 py-3 backdrop-blur-md">
         <span className="text-sm font-medium">{target.name}</span>
         <div className="flex items-center gap-2">
           <kbd className="rounded bg-white/10 px-2 py-1 text-xs">E</kbd>
@@ -1593,7 +1593,7 @@ export function LoadingScreen() {
               <span>Loading world</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-white/10">
+            <div className="h-1 overflow-hidden rounded-sm bg-white/10">
               <motion.div
                 className="h-full bg-white"
                 initial={{ width: 0 }}

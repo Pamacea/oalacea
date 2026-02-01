@@ -26,7 +26,8 @@ function getStepLabel(step: LoadingStep): string {
     case 'assets': return 'LOADING ASSETS'
     case 'world': return 'BUILDING WORLD'
     case 'character': return 'INITIALIZING CHARACTER'
-    case 'complete': 'READY'
+    case 'complete': return 'READY'
+    default: return 'LOADING'
   }
 }
 
@@ -65,92 +66,48 @@ export function LoadingScreen() {
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="relative z-10 mb-12 px-6 py-3 font-display text-5xl uppercase tracking-[0.3em] text-imperium-bone border-2 border-imperium-crimson shadow-[8px_8px_0_rgba(154,17,21,0.4)]"
+            transition={{ duration: 0.6 }}
+            className="font-display text-4xl md:text-6xl uppercase tracking-[0.3em] text-imperium-bone relative z-10"
           >
             OALACEA
           </motion.h1>
 
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: '320px' }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-            className="relative z-10 w-full max-w-[320px]"
-          >
-            <div className="mb-3 flex justify-between text-sm">
-              <span className="font-terminal text-imperium-crimson uppercase">{getStepLabel(currentStep)}</span>
-              <span className="font-terminal text-imperium-steel">{Math.round(progress)}%</span>
-            </div>
-
-            {/* Brutal progress bar */}
-            <div className="relative h-3 border-2 border-imperium-steel-dark bg-imperium-black p-0.5">
-              <motion.div
-                className="h-full bg-imperium-crimson shadow-[0_0_10px_rgba(154,17,21,0.6)]"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.3 }}
-                suppressHydrationWarning
-              />
-              {/* Glitch overlay on progress bar */}
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(154,17,21,0.2)_50%,transparent_100%)] animate-[shimmer_2s_infinite]" />
-            </div>
-
-            {/* Step indicators */}
+          {/* Loading bar */}
+          <div className="w-64 md:w-96 h-1 bg-imperium-steel-dark/30 mt-8 relative overflow-hidden">
             <motion.div
-              className="mt-2 flex gap-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              {(['assets', 'world', 'character'] as const).map((step, idx) => {
-                const isActive = currentStep === step
-                const isPast = progress > (idx + 1) * 33
-                return (
-                  <motion.div
-                    key={step}
-                    className="h-1 flex-1 border-2 border-imperium-steel-dark"
-                    initial={{ backgroundColor: 'rgba(28,28,28,1)' }}
-                    animate={{
-                      backgroundColor: isPast ? '#5a0a0a' : isActive ? '#9a1115' : '#1c1c1c',
-                      borderColor: isPast || isActive ? '#9a1115' : '#3a3f42',
-                    }}
-                    transition={{ duration: 0.3 }}
-                    suppressHydrationWarning
-                  />
-                )
-              })}
-            </motion.div>
-          </motion.div>
+              className="h-full bg-imperium-crimson"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+
+          {/* Status text */}
+          <motion.p
+            key={currentStep}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-terminal text-sm text-imperium-steel mt-4 tracking-wider"
+          >
+            {getStepLabel(currentStep)}... {Math.round(progress)}%
+          </motion.p>
 
           {/* Hints */}
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={hintIndex}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4 }}
-              className="relative z-10 mt-8 font-terminal text-sm text-imperium-steel max-w-xs text-center border-l-2 border-imperium-steel-dark pl-3"
-            >
-              {'>'} {hints[hintIndex]}
-            </motion.p>
-          </AnimatePresence>
+          <motion.p
+            key={hintIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            exit={{ opacity: 0 }}
+            className="font-terminal text-xs text-imperium-steel-muted mt-8 max-w-md text-center px-4"
+          >
+            {hints[hintIndex]}
+          </motion.p>
 
-          {/* Decorative corner elements */}
-          <div className="absolute top-8 left-8 w-16 h-16 border-l-2 border-t-2 border-imperium-steel-dark opacity-50" />
-          <div className="absolute top-8 right-8 w-16 h-16 border-r-2 border-t-2 border-imperium-steel-dark opacity-50" />
-          <div className="absolute bottom-8 left-8 w-16 h-16 border-l-2 border-b-2 border-imperium-steel-dark opacity-50" />
-          <div className="absolute bottom-8 right-8 w-16 h-16 border-r-2 border-b-2 border-imperium-steel-dark opacity-50" />
-
-          {progress === 100 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="absolute bottom-12 font-terminal text-imperium-steel-dark text-xs uppercase tracking-wider"
-            >
-              [ Entering the Imperium ]
-            </motion.div>
-          )}
+          {/* Corner decorations */}
+          <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-imperium-gold" />
+          <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-imperium-gold" />
+          <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-imperium-gold" />
+          <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-imperium-gold" />
         </motion.div>
       )}
     </AnimatePresence>

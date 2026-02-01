@@ -14,11 +14,13 @@ import { motion, useMotionTemplate, useMotionValue } from "framer-motion"
  * - NO border radius - brutalist square shape
  */
 
-export interface MineralCardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface MineralCardProps {
   variant?: "crimson" | "gold" | "brutal" | "glitch"
   padding?: "none" | "sm" | "md" | "lg"
   children: React.ReactNode
   showScanlines?: boolean
+  className?: string
+  id?: string
 }
 
 const paddingMap = {

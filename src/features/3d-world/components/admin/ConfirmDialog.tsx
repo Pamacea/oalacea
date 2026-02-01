@@ -92,7 +92,7 @@ export function ConfirmDialog({
             </div>
           )}
           <h3 className="font-display text-xl uppercase tracking-widest text-center text-imperium-bone">
-            <GlitchText intensity="high" auto>
+            <GlitchText intensity="high">
               {title}
             </GlitchText>
           </h3>

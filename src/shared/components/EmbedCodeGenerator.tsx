@@ -161,12 +161,12 @@ export function EmbedCodeGenerator({
           <div className="space-y-4">
             <h3 className="font-semibold">Settings</h3>
 
-            {Select && SelectContent && SelectItem && SelectTrigger && SelectValue && (
+            {Select && SelectContent && SelectItem && SelectTrigger && SelectValue && Label && (
               <div className="space-y-2">
                 <Label htmlFor="world">World</Label>
                 <Select
                   value={options.world}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setOptions({ ...options, world: value as "dev" | "art" })
                   }
                 >
@@ -189,7 +189,7 @@ export function EmbedCodeGenerator({
                     id="width"
                     type="number"
                     value={options.width}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setOptions({ ...options, width: parseInt(e.target.value) || 800 })
                     }
                   />
@@ -201,7 +201,7 @@ export function EmbedCodeGenerator({
                     id="height"
                     type="number"
                     value={options.height}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setOptions({ ...options, height: parseInt(e.target.value) || 600 })
                     }
                   />
@@ -216,7 +216,7 @@ export function EmbedCodeGenerator({
                   <Switch
                     id="branding"
                     checked={options.branding}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked: boolean) =>
                       setOptions({ ...options, branding: checked })
                     }
                   />
@@ -227,7 +227,7 @@ export function EmbedCodeGenerator({
                   <Switch
                     id="controls"
                     checked={options.controls}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked: boolean) =>
                       setOptions({ ...options, controls: checked })
                     }
                   />

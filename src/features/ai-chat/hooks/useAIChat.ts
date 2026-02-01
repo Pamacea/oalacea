@@ -11,7 +11,7 @@ type NPCId = 'tech-priest-guide' | 'art-curator-guide';
 interface UseAIChatOptions {
   npcId: NPCId;
   onError?: (error: Error) => void;
-  onFinish?: (message: UIMessage) => void;
+  onFinish?: (options: { message: UIMessage; messages: UIMessage[] }) => void;
 }
 
 const NPC_CONFIGS = {
@@ -58,7 +58,6 @@ export function useAIChat({ npcId, onError, onFinish }: UseAIChatOptions) {
         npcId,
       },
     }),
-    initialMessages,
     onError,
     onFinish,
   });

@@ -63,8 +63,8 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
   const [total, setTotal] = useState(0)
   const [exporting, setExporting] = useState(false)
 
-  const canReadActivity = permissions.hasPermission("view")
-  const canDelete = permissions.hasPermission("delete")
+  const canReadActivity = permissions.can("activity:read")
+  const canDelete = permissions.can("users:delete") // Admins can delete via user management
 
   useEffect(() => {
     if (canReadActivity) {
@@ -261,7 +261,7 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
                   className="flex items-start gap-4 p-3 rounded-none border-2 border-imperium-steel-dark bg-imperium-black"
                 >
                   <Badge
-                    variant="secondary"
+                    variant="default"
                     className={actionColors[activity.action] || "border-imperium-steel-dark bg-imperium-iron text-imperium-steel"}
                   >
                     {activity.action}

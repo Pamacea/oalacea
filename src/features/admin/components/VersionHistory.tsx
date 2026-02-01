@@ -248,7 +248,7 @@ export function VersionHistory({
                             <div className="flex items-center gap-1">
                               <Button
                                 variant="ghost"
-                                size="icon-xs"
+                                size="icon"
                                 onClick={() => toggleExpand(version.version)}
                               >
                                 {isExpanded ? (
@@ -260,7 +260,7 @@ export function VersionHistory({
                               {version.version !== currentVersion && (
                                 <Button
                                   variant="ghost"
-                                  size="icon-xs"
+                                  size="icon"
                                   onClick={() => setRestoreVersion(version)}
                                   className="text-imperium-steel hover:text-imperium-crimson hover:bg-imperium-crimson/10"
                                 >

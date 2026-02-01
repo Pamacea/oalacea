@@ -117,7 +117,7 @@ export function MediaLibrary({
             {selectedItem && (
               <Button
                 size="sm"
-                variant="crimson"
+                variant="primary"
                 onClick={() => handleSelect(selectedItem)}
               >
                 Select Image
@@ -167,8 +167,8 @@ export function MediaLibrary({
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="flex gap-2">
                           <Button
-                            size="icon-xs"
-                            variant="secondary"
+                            size="icon"
+                            variant="ghost"
                             onClick={(e) => {
                               e.stopPropagation();
                               setPreviewItem(item);
@@ -179,8 +179,8 @@ export function MediaLibrary({
                           </Button>
                           {onDelete && (
                             <Button
-                              size="icon-xs"
-                              variant="destructive"
+                              size="icon"
+                              variant="primary"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setDeleteItem(item);

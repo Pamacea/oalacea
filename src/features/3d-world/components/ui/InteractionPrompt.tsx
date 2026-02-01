@@ -60,7 +60,7 @@ export function InteractionPrompt() {
           role="alert"
           aria-live="polite"
         >
-          <div className="flex items-center gap-4 rounded-full bg-black/70 px-6 py-3 backdrop-blur-md border border-white/10">
+          <div className="flex items-center gap-4 rounded-sm bg-black/70 px-6 py-3 backdrop-blur-md border border-white/10">
             <span className="text-sm font-medium text-white">
               {isPortal ? `Portal to ${interactTarget.name}` : interactTarget.name}
             </span>
@@ -75,7 +75,7 @@ export function InteractionPrompt() {
             </div>
             <button
               onClick={handleInteract}
-              className="ml-2 rounded-full bg-white/20 p-1 hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              className="ml-2 rounded-sm bg-white/20 p-1 hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               aria-label={`${actionText} ${interactTarget.name}`}
               role="button"
             >

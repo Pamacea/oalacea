@@ -228,7 +228,7 @@ export function MultiplayerStatus({ connected, playerCount, playerName, onEmoteS
       {/* Connection Status */}
       <div className="bg-black/60 backdrop-blur-sm rounded-sm p-3 border border-white/10">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
+          <div className={`w-2 h-2 reounded-sm ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
           <span className="text-white text-sm font-medium">
             {connected ? 'Multiplayer' : 'Offline'}
           </span>

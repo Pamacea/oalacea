@@ -185,7 +185,7 @@ export function ShareButtons({
         </Button>
       )}
 
-      {!canNativeShare && DropdownMenu && (
+      {!canNativeShare && DropdownMenu && DropdownMenuTrigger && DropdownMenuContent && DropdownMenuLabel && DropdownMenuSeparator && DropdownMenuItem && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={variant} size={size} className="gap-2">
@@ -230,11 +230,11 @@ export function ShareButtons({
               </DropdownMenuItem>
             )}
 
-            {Dialog && (
+            {Dialog && DialogTrigger && DialogContent && DialogHeader && DialogTitle && DialogDescription && (
               <Dialog>
                 <DialogTrigger asChild>
                   <DropdownMenuItem
-                    onSelect={(e) => {
+                    onSelect={(e: Event) => {
                       e.preventDefault()
                       generateQRCode()
                     }}

@@ -175,7 +175,7 @@ export function ImperiumModal({
                   {title && (
                     <h2 className="font-display text-xl uppercase tracking-widest text-imperium-bone">
                       {glitchTitle ? (
-                        <GlitchText intensity="severe" auto>
+                        <GlitchText intensity="high">
                           {title}
                         </GlitchText>
                       ) : (

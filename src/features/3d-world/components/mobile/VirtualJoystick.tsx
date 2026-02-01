@@ -109,7 +109,7 @@ export function VirtualJoystick() {
       }}
     >
       <motion.div
-        className="relative rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
+        className="relative rounded-sm bg-white/5 border border-white/10 backdrop-blur-sm"
         style={{
           width: JOYSTICK_SIZE,
           height: JOYSTICK_SIZE,
@@ -121,7 +121,7 @@ export function VirtualJoystick() {
         transition={{ duration: 0.1 }}
       >
         <motion.div
-          className="absolute rounded-full bg-gradient-to-br from-amber-400/80 to-amber-600/80 shadow-lg"
+          className="absolute rounded-sm bg-gradient-to-br from-amber-400/80 to-amber-600/80 shadow-lg"
           style={{
             width: KNOB_SIZE,
             height: KNOB_SIZE,

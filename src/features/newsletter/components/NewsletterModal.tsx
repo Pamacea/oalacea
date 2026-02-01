@@ -110,7 +110,7 @@ export function NewsletterModal({
               <CheckCircle className="size-10 text-imperium-crimson" />
             </motion.div>
             <h3 className="font-display text-2xl uppercase tracking-widest text-imperium-bone mb-3">
-              <GlitchText intensity="severe" auto>
+              <GlitchText intensity="severe">
                 Transmission Initiated
               </GlitchText>
             </h3>
@@ -202,7 +202,7 @@ export function NewsletterModal({
               >
                 <ImperiumButton
                   type="submit"
-                  variant="crimson"
+                  variant="primary"
                   size="lg"
                   className="w-full uppercase tracking-widest"
                   disabled={isPending}

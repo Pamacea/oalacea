@@ -6,6 +6,7 @@ export interface StatCard {
   icon: React.ComponentType<{ className?: string }>;
   color?: string;
   bgColor?: string;
+  borderColor?: string;
 }
 
 export interface QuickAction {
@@ -25,7 +26,11 @@ export interface DashboardProjectItem {
   id: string;
   title: string;
   year: number;
-  category: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
 }
 
 // Admin dashboard data

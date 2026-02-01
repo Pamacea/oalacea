@@ -5,7 +5,6 @@ import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import { Text } from '@react-three/drei';
 import { useModalStore } from '@/store/modal-store';
-import type { Project } from '@/generated/prisma/client';
 
 const colors = {
   pedestal: '#3a3a4a',
@@ -19,8 +18,24 @@ const colors = {
   concrete: '#2a2a3a',
 };
 
+type ProjectCategory = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+type ProjectData = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  techStack: string[];
+  year: number;
+  category: string | ProjectCategory;
+};
+
 interface ArtDisplayProps {
-  project: Project;
+  project: ProjectData;
   position: [number, number, number];
   isActive?: boolean;
   onInteract?: () => void;
@@ -51,8 +66,8 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
     }
   });
 
-  const getNeonColor = (category: Project['category']) => {
-    switch (category) {
+  const getNeonColor = (categorySlug: string) => {
+    switch (categorySlug) {
       case 'web': return colors.neonTeal;
       case 'mobile': return colors.neonPink;
       case 'ai': return colors.neonRed;
@@ -61,7 +76,10 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
     }
   };
 
-  const neonColor = getNeonColor(project.category);
+  const categorySlug = typeof project.category === 'string' ? project.category : project.category?.slug || 'web';
+  const categoryName = typeof project.category === 'string' ? project.category.toUpperCase() : project.category?.name.toUpperCase() || 'PROJECT';
+
+  const neonColor = getNeonColor(categorySlug);
 
   const handleClick = useCallback(() => {
     openProjectListing();
@@ -177,7 +195,7 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
           anchorX="center"
           anchorY="top"
         >
-          [{project.category.toUpperCase()}]
+          [{categoryName}]
         </Text>
       </group>
 
@@ -367,7 +385,7 @@ export function ArtProjectDisplays({ activeProjectId }: { activeProjectId?: stri
       {projects.map(({ id, position, project }) => (
         <ArtDisplay
           key={id}
-          project={project as Project}
+          project={project}
           position={position}
           isActive={activeProjectId === id}
         />

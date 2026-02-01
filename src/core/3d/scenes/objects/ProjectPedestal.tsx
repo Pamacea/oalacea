@@ -5,7 +5,6 @@ import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, DoubleSide, Vector3 } from 'three';
 import { Text } from '@react-three/drei';
 import { useModalStore } from '@/store/modal-store';
-import type { Project } from '@/generated/prisma/client';
 
 const COLORS = {
   black: '#1a1a1a',
@@ -15,7 +14,19 @@ const COLORS = {
 };
 
 interface ProjectPedestalProps {
-  project: Project;
+  project: {
+    id: string;
+    slug: string;
+    title: string;
+    description: string;
+    techStack: string[];
+    year: number;
+    category: string | {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  };
   position: [number, number, number];
   isActive?: boolean;
   onInteract?: () => void;
@@ -288,7 +299,7 @@ export function DevProjectPedestals({ activeProjectId }: { activeProjectId?: str
             techStack: ['Next.js', 'R3F', 'Three.js', 'Prisma'],
             year: 2025,
             category: '3d',
-          } as Project}
+          }}
           position={position}
           isActive={activeProjectId === id}
         />

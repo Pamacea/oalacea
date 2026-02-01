@@ -103,7 +103,7 @@ function showQualityNotification(quality: QualityPreset) {
   notification.setAttribute('aria-live', 'polite');
   notification.innerHTML = `
     <div class="flex items-center gap-3">
-      <div class="w-2 h-2 rounded-full ${quality === 'low' ? 'bg-yellow-500' : quality === 'medium' ? 'bg-blue-500' : 'bg-green-500'}"></div>
+      <div class="w-2 h-2 rounded-sm ${quality === 'low' ? 'bg-yellow-500' : quality === 'medium' ? 'bg-blue-500' : 'bg-green-500'}"></div>
       <span class="text-sm">${messages[quality]}</span>
     </div>
   `;
@@ -144,14 +144,14 @@ export function QualitySelector({ className = '' }: QualitySelectorProps) {
         <span className="text-sm text-slate-400">Auto Quality</span>
         <button
           onClick={() => setAutoQuality(!autoQuality)}
-          className={`w-12 h-6 rounded-full transition-colors ${
+          className={`w-12 h-6 rounded-sm transition-colors ${
             autoQuality ? 'bg-amber-500' : 'bg-slate-700'
           }`}
           aria-pressed={autoQuality}
           aria-label="Toggle auto quality"
         >
           <div
-            className={`w-5 h-5 bg-white rounded-full transition-transform ${
+            className={`w-5 h-5 bg-white rounded-sm transition-transform ${
               autoQuality ? 'translate-x-6' : 'translate-x-0.5'
             }`}
           />

@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo } from 'react';
 import { BlogDocument } from './BlogDocument';
 import { BlogTerminal } from './BlogTerminal';
 import { usePosts } from '@/features/blog/queries';
-import type { Post } from '@/generated/prisma/client';
 import { BlogPostReader } from '@/features/3d-world/components/admin';
 
 interface BlogDocumentsProps {
@@ -14,13 +13,13 @@ interface BlogDocumentsProps {
 export function BlogDocuments({ world }: BlogDocumentsProps) {
   const { posts, isLoading } = usePosts();
   const [currentPage, setCurrentPage] = useState(0);
-  const [activePost, setActivePost] = useState<Post | null>(null);
+  const [activePost, setActivePost] = useState<typeof posts[0] | null>(null);
   const postsPerPage = 10;
 
   const currentPagePosts = posts.slice(currentPage * postsPerPage, (currentPage + 1) * postsPerPage);
   const totalPages = Math.ceil(posts.length / postsPerPage);
 
-  const handlePostSelect = useCallback((post: Post) => {
+  const handlePostSelect = useCallback((post: any) => {
     setActivePost(post);
   }, []);
 
@@ -28,11 +27,11 @@ export function BlogDocuments({ world }: BlogDocumentsProps) {
     setActivePost(null);
   }, []);
 
-  const handleNext = useCallback((nextPost: Post) => {
+  const handleNext = useCallback((nextPost: any) => {
     setActivePost(nextPost);
   }, []);
 
-  const handlePrevious = useCallback((prevPost: Post) => {
+  const handlePrevious = useCallback((prevPost: any) => {
     setActivePost(prevPost);
   }, []);
 
@@ -91,11 +90,7 @@ export function BlogDocuments({ world }: BlogDocumentsProps) {
       {/* Blog Post Reader Modal */}
       {activePost && (
         <BlogPostReader
-          post={activePost}
-          allPosts={posts}
-          onClose={handleClose}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
+          postSlug={activePost.slug}
         />
       )}
     </>

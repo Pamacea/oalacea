@@ -59,21 +59,21 @@ export function WorldTransitionScreen() {
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
           className="absolute inset-0 flex items-center justify-center"
         >
-          <div className="h-32 w-32 rounded-full border-4 border-dashed border-white/20" />
+          <div className="h-32 w-32 rounded-sm border-4 border-dashed border-white/20" />
         </motion.div>
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
           className="absolute inset-0 flex items-center justify-center"
         >
-          <div className="h-24 w-24 rounded-full border-2 border-white/30" />
+          <div className="h-24 w-24 rounded-sm border-2 border-white/30" />
         </motion.div>
 
         {/* Vortex central */}
         <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className={`h-16 w-16 rounded-full bg-gradient-to-br ${colors.from} ${colors.to}`}
+          className={`h-16 w-16 rounded-sm bg-gradient-to-br ${colors.from} ${colors.to}`}
         />
       </motion.div>
 
@@ -103,7 +103,7 @@ export function WorldTransitionScreen() {
           <span>Transitioning</span>
           <span>{Math.round(loadingProgress)}%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/10">
+        <div className="h-2 overflow-hidden rounded-sm bg-white/10">
           <motion.div
             className={`h-full bg-gradient-to-r ${colors.from} ${colors.to}`}
             initial={{ width: 0 }}
@@ -117,7 +117,7 @@ export function WorldTransitionScreen() {
       {particles.map((particle, i) => (
         <motion.div
           key={i}
-          className="absolute h-1 w-1 rounded-full bg-white/40"
+          className="absolute h-1 w-1 rounded-sm bg-white/40"
           initial={{
             x: particle.x,
             y: particle.y,

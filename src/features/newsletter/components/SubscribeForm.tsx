@@ -113,7 +113,7 @@ export function SubscribeForm({
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isPending} size="icon" variant="crimson">
+          <Button type="submit" disabled={isPending} size="icon" variant="primary">
             {isPending ? (
               <AlertCircle className="size-4 animate-spin" />
             ) : (
@@ -184,7 +184,7 @@ export function SubscribeForm({
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={isPending} variant="crimson">
+          <Button type="submit" disabled={isPending} variant="primary">
             {isPending ? 'Uplinking...' : 'Transmit'}
           </Button>
         </form>
@@ -271,7 +271,7 @@ export function SubscribeForm({
               type="submit"
               className="w-full font-terminal uppercase"
               disabled={isPending}
-              variant="crimson"
+              variant="primary"
             >
               {isPending ? (
                 <>

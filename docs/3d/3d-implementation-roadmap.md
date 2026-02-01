@@ -254,7 +254,7 @@ export function LoadingScreen() {
               <span>Loading...</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-white/10">
+            <div className="h-1 overflow-hidden rounded-sm bg-white/10">
               <motion.div
                 className="h-full bg-white"
                 initial={{ width: 0 }}

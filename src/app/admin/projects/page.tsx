@@ -108,7 +108,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
                   </td>
                   <td className="px-6 py-4">
                     <span className="inline-flex items-center px-2 py-1 font-terminal text-xs font-medium rounded-none border-2 border-imperium-steel bg-imperium-iron text-imperium-steel">
-                      {categoryLabels[project.category]}
+                      {categoryLabels[project.category.slug] || project.category.name}
                     </span>
                   </td>
                   <td className="px-6 py-4">

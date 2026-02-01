@@ -3,10 +3,28 @@
 import Link from 'next/link'
 import { ExternalLink, Github, Star } from 'lucide-react'
 import { CATEGORY_LABELS } from '@/features/portfolio/constants'
-import type { Project } from '@/generated/prisma/client'
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
 
 interface ProjectCardProps {
-  project: Project & { worldPosition?: unknown }
+  project: {
+    id: string
+    slug: string
+    title: string
+    description: string
+    thumbnail: string | null
+    year: number
+    techStack: string[]
+    githubUrl: string | null
+    liveUrl: string | null
+    featured: boolean
+    category: Category
+    worldPosition?: unknown
+  }
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
@@ -30,7 +48,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <div className="flex-1">
             {/* Category Badge */}
             <span className="inline-flex items-center px-3 py-1 text-xs font-display uppercase tracking-wider rounded-none bg-imperium-gold text-imperium-black border-2 border-imperium-gold-dark mb-2">
-              {CATEGORY_LABELS[project.category] || project.category}
+              {CATEGORY_LABELS[project.category.slug] || project.category.name}
             </span>
 
             {/* Title */}

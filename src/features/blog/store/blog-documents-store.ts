@@ -1,23 +1,23 @@
 import { create } from 'zustand';
-import type { Post } from '@/generated/prisma/client';
+import type { PostListItem } from '@/actions/blog/query';
 
 interface BlogDocumentsState {
-  posts: Post[];
+  posts: PostListItem[];
   currentPage: number;
   postsPerPage: number;
   totalPages: number;
   isLoading: boolean;
-  activePost: Post | null;
+  activePost: PostListItem | null;
   terminalOpen: boolean;
-  setPosts: (posts: Post[]) => void;
+  setPosts: (posts: PostListItem[]) => void;
   setCurrentPage: (page: number) => void;
   setLoading: (loading: boolean) => void;
   setTotalPages: (total: number) => void;
-  setActivePost: (post: Post | null) => void;
+  setActivePost: (post: PostListItem | null) => void;
   setTerminalOpen: (open: boolean) => void;
-  getCurrentPagePosts: () => Post[];
-  getPrevPost: (currentPost: Post) => Post | null;
-  getNextPost: (currentPost: Post) => Post | null;
+  getCurrentPagePosts: () => PostListItem[];
+  getPrevPost: (currentPost: PostListItem) => PostListItem | null;
+  getNextPost: (currentPost: PostListItem) => PostListItem | null;
 }
 
 export const useBlogDocumentsStore = create<BlogDocumentsState>((set, get) => ({

@@ -136,7 +136,7 @@ export function Comments({
                   <Button
                     type="button"
                     variant="ghost"
-                    size="xs"
+                    size="sm"
                     className="rounded-none font-terminal uppercase text-xs"
                     onClick={() => setReplyTo(null)}
                   >
@@ -228,7 +228,7 @@ export function Comments({
                 type="submit"
                 disabled={isPending}
                 className="w-full sm:w-auto"
-                variant="crimson"
+                variant="primary"
               >
                 {isPending ? (
                   <>
@@ -329,7 +329,7 @@ function CommentItem({
           {depth < maxDepth && (
             <Button
               variant="ghost"
-              size="xs"
+              size="sm"
               onClick={() => onReply(comment.id)}
               className="gap-1 rounded-none font-terminal uppercase text-xs"
             >

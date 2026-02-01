@@ -125,7 +125,7 @@ export function BlogListingModal() {
                 </div>
                 <div>
                   <h2 className="font-display text-2xl uppercase tracking-widest text-imperium-bone">
-                    <GlitchText intensity="severe" auto>
+                    <GlitchText intensity="severe">
                       Archives
                     </GlitchText>
                   </h2>

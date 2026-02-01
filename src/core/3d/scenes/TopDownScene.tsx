@@ -103,8 +103,6 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -0.1, 0]}
         receiveShadow
-        role="presentation"
-        aria-label="Ground plane"
       >
         <planeGeometry args={[gridSize, gridSize]} />
         <meshStandardMaterial color={colors.ground} roughness={0.9} />
@@ -112,7 +110,7 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
 
       {worldType === 'dev' ? <DevWorld /> : <ArtWorld />}
 
-      <gridHelper args={[gridSize, gridDivisions, colors.grid, colors.gridAlt]} position={[0, 0, 0]} role="presentation" />
+      <gridHelper args={[gridSize, gridDivisions, colors.grid, colors.gridAlt]} position={[0, 0, 0]} />
 
       {visualInteractions.map((zone) => (
         <InteractionZone
@@ -140,8 +138,6 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
         <mesh
           position={[targetPosition.x, 0.05, targetPosition.z]}
           rotation={[-Math.PI / 2, 0, 0]}
-          role="presentation"
-          aria-label="Movement destination indicator"
         >
           <ringGeometry args={[0.5, 0.8, 32]} />
           <meshBasicMaterial

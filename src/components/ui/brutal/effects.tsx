@@ -468,7 +468,7 @@ export function ScanlineBeam({
 }) {
   return (
     <motion.div
-      className={cn("absolute left-0 right-0 h-2", `bg-${color}`)}
+      className={cn("absolute top-2 left-0 right-0 h-2", `bg-${color}`)}
       style={{
         background: `linear-gradient(to bottom, transparent, ${color === "imperium-crimson" ? "#9a1115" : color}, transparent)`,
         boxShadow: `0 0 30px ${color === "imperium-crimson" ? "rgba(154, 17, 21, 0.8)" : color}`,

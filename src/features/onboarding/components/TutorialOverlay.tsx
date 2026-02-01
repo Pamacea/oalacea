@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { tutorialSteps, getNextStep, getPrevStep, getStepProgress } from './tutorialSteps';
-import { TutorialStep as TutorialStepComponent } from './TutorialStep';
+import { TutorialStepCard } from './TutorialStep';
 import { cn } from '@/lib/utils';
 
 interface TutorialOverlayProps {
@@ -157,7 +157,7 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
             className="fixed pointer-events-none"
             style={spotlightStyle}
           >
-            <div className="absolute -inset-4 rounded-full border-2 border-imperium-gold shadow-[0_0_30px_rgba(212,175,55,0.5)]" />
+            <div className="absolute -inset-4 rounded-sm border-2 border-imperium-gold shadow-[0_0_30px_rgba(212,175,55,0.5)]" />
           </motion.div>
         )}
 
@@ -167,7 +167,7 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
           onClick={(e) => e.stopPropagation()}
         >
           <AnimatePresence mode="wait">
-            <TutorialStepComponent
+            <TutorialStepCard
               key={currentStepId}
               step={stepData}
               currentIndex={progress.current - 1}

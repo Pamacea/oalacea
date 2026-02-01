@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 
-export function usePosts() {
+export function usePostsClient() {
   const { data: posts, isLoading } = useQuery({
     queryKey: ["posts"],
     queryFn: async () => {

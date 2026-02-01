@@ -22,13 +22,13 @@ export function MarkdownRenderer({ content, className = '', isTerminal = true }:
       .replace(/\*(.*?)\*/g, '<em class="text-imperium-steel">$1</em>')
       .replace(/`(.*?)`/g, '<code class="bg-imperium-crimson/10 text-imperium-crimson border border-imperium-crimson/30 px-1.5 py-0.5 rounded-none text-sm font-mono">$1</code>')
 
-      .replace(/^\- (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-disc font-terminal">{'>'} $1</li>')
-      .replace(/^\* (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-disc font-terminal">{'>'} $1</li>')
-      .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-decimal font-terminal">{'>'} $2</li>')
+      .replace(/^\- (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-disc font-terminal">> $1</li>')
+      .replace(/^\* (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-disc font-terminal">> $1</li>')
+      .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-6 text-imperium-steel my-1 list-decimal font-terminal">> $2</li>')
 
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-imperium-crimson hover:text-imperium-gold border-b-2 border-imperium-steel-dark border-dashed pb-0.5 transition-colors" target="_blank" rel="noopener noreferrer">$1</a>')
 
-      .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-imperium-gold pl-4 italic text-imperium-steel my-4 font-terminal">{'>'} $1</blockquote>')
+      .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-imperium-gold pl-4 italic text-imperium-steel my-4 font-terminal">> $1</blockquote>')
 
       .replace(/---/g, '<hr class="border-imperium-steel-dark my-6 border-t-2 border-dashed" />')
 

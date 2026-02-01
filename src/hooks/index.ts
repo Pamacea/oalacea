@@ -4,7 +4,7 @@
 export { useAuth, usePermissions, useContentLock } from '@/features/auth';
 
 // Blog
-export { useBlogPosts, useBlogPost, useBlogPostSuspense, usePosts, useBlogDocuments } from '@/features/blog/hooks';
+export { useBlogPosts, useBlogPost, useBlogPostSuspense, usePostsClient, useBlogDocuments } from '@/features/blog/hooks';
 
 // Portfolio
 export { useProjects, useProject } from '@/features/portfolio/hooks';

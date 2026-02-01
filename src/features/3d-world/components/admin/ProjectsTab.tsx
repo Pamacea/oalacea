@@ -20,7 +20,7 @@ type WorldFilter = 'all' | 'DEV' | 'ART';
 
 export function ProjectsTab() {
   const { setView } = useInWorldAdminStore();
-  const { data: projects, isLoading } = useProjects();
+  const { projects, isLoading } = useProjects();
   const deleteMutation = useDeleteProject();
   const { playHover, playClick } = useUISound();
 
@@ -53,7 +53,7 @@ export function ProjectsTab() {
         {/* Header with filters and add button */}
         <div className="flex items-center justify-between border-b-2 border-imperium-steel-dark pb-4">
           <h2 className="font-display text-2xl uppercase tracking-wider text-imperium-bone">
-            <GlitchText intensity="medium" auto>
+            <GlitchText intensity="medium">
               Forge Database
             </GlitchText>
           </h2>

@@ -55,8 +55,8 @@ const roleColors: Record<string, string> = {
 
 export function UsersTable({ users: initialUsers }: UsersTableProps) {
   const permissions = usePermissions()
-  const can = permissions.hasPermission
-  const isAdmin = permissions.userRole === "admin"
+  const can = permissions.can
+  const isAdmin = permissions.role === "ADMIN"
   const [users, setUsers] = useState(initialUsers)
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
@@ -71,7 +71,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
   })
 
   async function updateRole(userId: string, newRole: string) {
-    if (!can("edit")) return
+    if (!can("users:write")) return
 
     setUpdating(userId)
     try {
@@ -185,7 +185,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
               <TableHead>Status</TableHead>
               <TableHead>Content</TableHead>
               <TableHead>Last Login</TableHead>
-              {can("edit") && <TableHead className="text-right">Actions</TableHead>}
+              {can("posts:write") && <TableHead className="text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -215,7 +215,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {can("edit") ? (
+                    {can("posts:write") ? (
                       <Select
                         value={user.role}
                         disabled={updating === user.id}
@@ -279,7 +279,7 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
                       <span className="font-terminal text-sm text-imperium-steel-dark">Never</span>
                     )}
                   </TableCell>
-                  {can("edit") && (
+                  {can("posts:write") && (
                     <TableCell className="text-right">
                       <Button
                         variant="outline"

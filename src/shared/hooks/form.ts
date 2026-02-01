@@ -7,15 +7,15 @@ export function useFormState<T>(
   onSubmit: (data: T) => void | Promise<void>
 ) {
   const [data, setData] = useState<T>(initialState)
-  const [errors, setErrors] = useState<Record<keyof T, string>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const updateField = <K extends keyof T>(field: K, value: T[K]) => {
     setData(prev => ({ ...prev, [field]: value }))
-    if (errors[field as string]) {
+    if (errors[field]) {
       setErrors(prev => {
-        const { [field as string]: omitted, ...rest } = prev
-        return rest
+        const { [field]: omitted, ...rest } = prev
+        return rest as Partial<Record<keyof T, string>>
       })
     }
   }

@@ -53,8 +53,8 @@ export function CollaborationStatus({
 }: CollaborationStatusProps) {
   const { data: session } = useSession()
   const permissions = usePermissions()
-  const can = permissions.hasPermission
-  const isAdmin = permissions.userRole === "admin"
+  const can = permissions.can
+  const isAdmin = permissions.role === "ADMIN"
   const [isPending, startTransition] = useTransition()
 
   const [comments, setComments] = useState<Comment[]>([])
@@ -62,19 +62,9 @@ export function CollaborationStatus({
   const [mentions, setMentions] = useState<string[]>([])
   const [versionHistory, setVersionHistory] = useState<VersionChange[]>([])
 
-  const {
-    isLocked,
-    lockedBy,
-    isLockedByMe,
-    isLockedByOthers,
-    isLoading,
-    lock,
-    unlock,
-    acquireLock,
-    releaseLock,
-    refreshLock,
-    forceReleaseLock,
-  } = useContentLock(`${entityType}:${entityId}`, {
+  const contentLockData = useContentLock({
+    entityType,
+    entityId,
     pollInterval: 15000,
     onLockAcquired: () => {
       fetchComments()
@@ -84,8 +74,12 @@ export function CollaborationStatus({
     },
   })
 
-  const canEdit = can("edit")
-  const canModerate = can("admin")
+  const { lock, isLockedByMe, isLockedByOthers, isLoading, acquireLock, releaseLock, refreshLock, forceReleaseLock } = contentLockData
+  const isLocked = isLockedByMe || isLockedByOthers
+  const lockedBy = lock?.user?.name || ""
+
+  const canEdit = can("posts:write")
+  const canModerate = permissions.role === "ADMIN"
 
   useEffect(() => {
     fetchComments()
@@ -176,8 +170,8 @@ export function CollaborationStatus({
   const lockStatus = isLockedByMe
     ? { text: "Editing", variant: "default" as const, icon: Lock }
     : isLockedByOthers
-    ? { text: "Locked", variant: "destructive" as const, icon: Lock }
-    : { text: "Available", variant: "secondary" as const, icon: Unlock }
+    ? { text: "Locked", variant: "crimson" as const, icon: Lock }
+    : { text: "Available", variant: "ghost" as const, icon: Unlock }
 
   return (
     <Card className={className}>
@@ -228,7 +222,7 @@ export function CollaborationStatus({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => (isLockedByMe ? releaseLock() : forceReleaseLock())}
+                  onClick={() => (isLockedByMe ? releaseLock() : forceReleaseLock(lock?.id || ""))}
                   disabled={isLoading}
                 >
                   {isLockedByMe ? "Release" : "Force Unlock"}
@@ -384,9 +378,12 @@ export interface LockIndicatorProps {
 }
 
 export function LockIndicator({ entityType, entityId, className }: LockIndicatorProps) {
-  const { isLocked, isLockedByMe, isLockedByOthers } = useContentLock(
-    `${entityType}:${entityId}`
-  )
+  const { lock, isLockedByMe, isLockedByOthers } = useContentLock({
+    entityType,
+    entityId
+  })
+
+  const isLocked = isLockedByMe || isLockedByOthers
 
   if (!isLocked) return null
 

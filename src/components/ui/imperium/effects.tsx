@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 export interface GlitchTextProps {
   children: string
   className?: string
-  intensity?: "low" | "medium" | "high"
+  intensity?: "low" | "medium" | "high" | "severe"
 }
 
 export function GlitchText({ children, className, intensity = "medium" }: GlitchTextProps) {
@@ -23,6 +23,7 @@ export function GlitchText({ children, className, intensity = "medium" }: Glitch
     low: { x: [-1, 1, -1, 0], duration: 0.4 },
     medium: { x: [-2, 2, -2, 2, -1, 0], duration: 0.3 },
     high: { x: [-4, 4, -4, 4, -2, 2, 0], duration: 0.2 },
+    severe: { x: [-8, 8, -8, 8, -4, 4, -2, 2, 0], duration: 0.15 },
   }
 
   const config = intensityMap[intensity]

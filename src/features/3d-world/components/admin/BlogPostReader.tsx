@@ -240,7 +240,7 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
       {/* Title */}
       <div className="space-y-4 border-b-2 border-imperium-steel-dark pb-6">
         <h1 className="font-display text-4xl uppercase tracking-widest text-imperium-bone">
-          <GlitchText intensity="high" auto>
+          <GlitchText intensity="high">
             {post.title}
           </GlitchText>
         </h1>

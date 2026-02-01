@@ -23,6 +23,7 @@ const DEV_COLORS = {
   green: 0x00ff88,
   darkGreen: 0x003311,
   glow: 0x00ff44,
+  neonPink: 0xff6b6b,
 };
 
 const ART_COLORS = {

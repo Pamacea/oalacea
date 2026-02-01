@@ -48,7 +48,7 @@ export function WorldNavigationHelp() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-30 h-8 w-8 rounded-full bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold"
+        className="fixed bottom-4 right-4 z-30 h-8 w-8 rounded-sm bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800 backdrop-blur-sm transition-colors flex items-center justify-center text-sm font-bold"
         aria-label="Open help (press ?)"
       >
         ?

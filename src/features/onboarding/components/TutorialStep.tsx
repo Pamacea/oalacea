@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { TutorialStepData } from './tutorialSteps';
 
-interface TutorialStepProps {
+interface TutorialStepCardProps {
   step: TutorialStepData;
   currentIndex: number;
   totalSteps: number;
@@ -19,7 +19,7 @@ interface TutorialStepProps {
   isLastStep: boolean;
 }
 
-export function TutorialStep({
+export function TutorialStepCard({
   step,
   currentIndex,
   totalSteps,
@@ -27,7 +27,7 @@ export function TutorialStep({
   onNext,
   onSkip,
   isLastStep,
-}: TutorialStepProps) {
+}: TutorialStepCardProps) {
   const variants = {
     enter: {
       x: 50,
@@ -82,7 +82,7 @@ export function TutorialStep({
             </div>
             <Button
               variant="ghost"
-              size="icon-xs"
+              size="icon"
               onClick={onSkip}
               className="text-slate-400 hover:text-white"
             >

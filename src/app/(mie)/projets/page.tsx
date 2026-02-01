@@ -69,7 +69,7 @@ function ProjectCard({
           <div className="flex-1">
             {/* Category Badge */}
             <span className="inline-flex items-center px-2 py-1 font-terminal text-xs font-semibold rounded-none border-2 border-imperium-steel bg-imperium-iron text-imperium-steel mb-2">
-              {CATEGORY_LABELS[project.category] || project.category}
+              {CATEGORY_LABELS[project.category.slug] || project.category.name}
             </span>
 
             {/* Title */}

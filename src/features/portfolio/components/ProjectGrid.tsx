@@ -1,8 +1,26 @@
 import { ProjectCard } from './ProjectCard'
-import type { Project } from '@/generated/prisma/client'
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
 
 interface ProjectGridProps {
-  projects: (Project & { worldPosition?: unknown })[]
+  projects: {
+    id: string
+    slug: string
+    title: string
+    description: string
+    thumbnail: string | null
+    year: number
+    techStack: string[]
+    githubUrl: string | null
+    liveUrl: string | null
+    featured: boolean
+    category: Category
+    worldPosition?: unknown
+  }[]
 }
 
 export function ProjectGrid({ projects }: ProjectGridProps) {

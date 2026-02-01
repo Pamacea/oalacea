@@ -125,7 +125,6 @@ export function ImageUpload({
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
-          onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
         >
@@ -158,7 +157,7 @@ export function ImageUpload({
               </div>
               <Button
                 type="button"
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 className="mt-2"
                 onClick={(e) => {

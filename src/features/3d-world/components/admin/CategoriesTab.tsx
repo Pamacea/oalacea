@@ -89,7 +89,7 @@ export function CategoriesTab() {
         <div className="flex items-center justify-between border-b-2 border-imperium-steel-dark pb-4">
           <div>
             <h2 className="font-display text-2xl uppercase tracking-wider text-imperium-bone">
-              <GlitchText intensity="medium" auto>
+              <GlitchText intensity="medium">
                 Index System
               </GlitchText>
             </h2>

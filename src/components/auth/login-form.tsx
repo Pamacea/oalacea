@@ -75,7 +75,7 @@ export function LoginForm() {
       <Button
         type="submit"
         disabled={isLoading}
-        variant="crimson"
+        variant="primary"
         className="w-full uppercase font-display tracking-wider"
       >
         {isLoading ? "Connexion..." : "Se Connecter"}

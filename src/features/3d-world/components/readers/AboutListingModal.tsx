@@ -73,7 +73,7 @@ export function AboutListingModal() {
             <div className="relative flex items-center justify-between">
               <div>
                 <h2 className="font-display text-2xl uppercase tracking-widest text-imperium-bone">
-                  <GlitchText intensity="severe" auto>
+                  <GlitchText intensity="severe">
                     Data Slate
                   </GlitchText>
                 </h2>

@@ -21,8 +21,8 @@ export function FeatureDiscovery({ autoDiscover }: FeatureDiscoveryProps) {
 
   const {
     discoverFeature,
-    discovered,
-    completed,
+    discoveredFeatures,
+    completedActions,
   } = useProgressionStore();
 
   const { firstVisit } = useOnboardingStore();
@@ -33,7 +33,7 @@ export function FeatureDiscovery({ autoDiscover }: FeatureDiscoveryProps) {
       autoDiscover.forEach((id) => {
         const def = FEATURE_DEFINITIONS[id as keyof typeof FEATURE_DEFINITIONS];
         if (def) {
-          setTimeout(() => discoverFeature(def.key), 500);
+          setTimeout(() => discoverFeature(def), 500);
         }
       });
     }
@@ -42,16 +42,16 @@ export function FeatureDiscovery({ autoDiscover }: FeatureDiscoveryProps) {
   // Auto-show tooltip for new features
   useEffect(() => {
     if (!firstVisit) {
-      discovered.forEach((featureId, index) => {
+      discoveredFeatures.forEach((feature, index) => {
         const timer = setTimeout(() => {
-          if (!dismissedTooltips.has(featureId)) {
-            setActiveTooltip(featureId);
+          if (!dismissedTooltips.has(feature.id)) {
+            setActiveTooltip(feature.id);
           }
         }, index * 1000);
         return () => clearTimeout(timer);
       });
     }
-  }, [discovered, firstVisit, dismissedTooltips]);
+  }, [discoveredFeatures, firstVisit, dismissedTooltips]);
 
   const handleDismiss = (featureId: string) => {
     setActiveTooltip(null);
@@ -59,7 +59,7 @@ export function FeatureDiscovery({ autoDiscover }: FeatureDiscoveryProps) {
   };
 
   const isDiscovered = (featureId: string) =>
-    discovered.includes(featureId as any);
+    discoveredFeatures.some(f => f.id === featureId);
 
   return (
     <>
@@ -103,17 +103,17 @@ function FeatureTooltip({ featureId, onDismiss }: FeatureTooltipProps) {
         {/* Header */}
         <div className="relative mb-3 flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-imperium-gold/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-imperium-gold/20">
               <Sparkles className="h-4 w-4 text-imperium-gold" />
             </div>
             <div>
               <Badge className="bg-imperium-crimson text-white">New!</Badge>
-              <h4 className="font-semibold text-white">{feature.title}</h4>
+              <h4 className="font-semibold text-white">{feature.name}</h4>
             </div>
           </div>
           <Button
             variant="ghost"
-            size="icon-xs"
+            size="icon"
             onClick={onDismiss}
             className="text-slate-400 hover:text-white"
           >
@@ -164,7 +164,7 @@ export function FeatureBadges({ isDiscovered }: FeatureBadgesProps) {
           className="flex items-center gap-2 rounded-sm bg-slate-950/80 px-3 py-2"
         >
           <Sparkles className="h-3 w-3 text-imperium-gold" />
-          <span className="text-sm text-slate-300">{feature.title}</span>
+          <span className="text-sm text-slate-300">{feature.name}</span>
         </motion.div>
       ))}
     </motion.div>
@@ -185,7 +185,7 @@ export function ContextualTooltip({
   position = 'top',
   show = true,
 }: ContextualTooltipProps) {
-  const isDiscovered = useProgressionStore((s) => s.discovered.includes(featureId as any));
+  const isDiscovered = useProgressionStore((s) => s.discoveredFeatures.some(f => f.id === featureId));
   const [localShow, setLocalShow] = useState(false);
 
   // Only show if not yet discovered and show is true
@@ -251,15 +251,15 @@ interface NewBadgeProps {
 }
 
 export function NewBadge({ featureId, className }: NewBadgeProps) {
-  const isDiscovered = useProgressionStore((s) => s.discovered.includes(featureId as any));
+  const isDiscovered = useProgressionStore((s) => s.discoveredFeatures.some(f => f.id === featureId));
   const isRecentlyDiscovered = useProgressionStore((s) => {
-    const discoveredAt = s.discoveredAt[featureId];
-    if (!discoveredAt) return false;
-    const hoursSinceDiscovery = (Date.now() - discoveredAt) / (1000 * 60 * 60);
+    const feature = s.discoveredFeatures.find(f => f.id === featureId);
+    if (!feature) return false;
+    const hoursSinceDiscovery = (Date.now() - feature.discoveredAt) / (1000 * 60 * 60);
     return hoursSinceDiscovery < 24; // Show "New!" for 24 hours
   });
 
-  if (!isRecentlyDiscovered || isDiscovered && !isRecentlyDiscovered) return null;
+  if (!isRecentlyDiscovered) return null;
 
   return (
     <Badge
@@ -281,14 +281,10 @@ export function useFeatureDiscovery() {
     discover: (featureId: string) => {
       const def = FEATURE_DEFINITIONS[featureId];
       if (def) {
-        discoverFeature(def.key);
+        discoverFeature(def);
       }
     },
-    discoverMovement: () => discoverFeature(FEATURE_DEFINITIONS.movement.key),
-    discoverInteraction: () => discoverFeature(FEATURE_DEFINITIONS.interaction.key),
-    discoverWorldSwitch: () => discoverFeature(FEATURE_DEFINITIONS['world-switch'].key),
-    discoverBlog: () => discoverFeature(FEATURE_DEFINITIONS.blog.key),
-    discoverPortfolio: () => discoverFeature(FEATURE_DEFINITIONS.portfolio.key),
-    discoverAdmin: () => discoverFeature(FEATURE_DEFINITIONS.admin.key),
+    discoverMovement: () => discoverFeature(FEATURE_DEFINITIONS.movement),
+    discoverInteraction: () => discoverFeature(FEATURE_DEFINITIONS.interaction),
   };
 }

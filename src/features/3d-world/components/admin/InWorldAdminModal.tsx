@@ -149,12 +149,13 @@ export function InWorldAdminModal() {
                       <Shield className="h-5 w-5 text-imperium-gold" />
                     </div>
                     <span className="font-display text-sm uppercase tracking-wider text-imperium-bone">
-                      <GlitchText intensity="medium" auto>
-                        {view === 'edit-post' && 'MODIFY ARCHIVE'}
-                        {view === 'create-post' && 'NEW ARCHIVE ENTRY'}
-                        {view === 'edit-project' && 'MODIFY BLUEPRINT'}
-                        {view === 'create-project' && 'NEW BLUEPRINT'}
-                        {view === 'read-post' && 'DATA TERMINAL'}
+                      <GlitchText intensity="medium">
+                        {view === 'edit-post' ? 'MODIFY ARCHIVE' :
+                         view === 'create-post' ? 'NEW ARCHIVE ENTRY' :
+                         view === 'edit-project' ? 'MODIFY BLUEPRINT' :
+                         view === 'create-project' ? 'NEW BLUEPRINT' :
+                         view === 'read-post' ? 'DATA TERMINAL' :
+                         'ADMIN PANEL'}
                       </GlitchText>
                     </span>
                   </div>

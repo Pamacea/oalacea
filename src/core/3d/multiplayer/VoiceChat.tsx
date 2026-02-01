@@ -426,9 +426,9 @@ export function VoiceChatIndicator({
       <div className="flex items-center gap-3">
         {/* Speaking Indicator */}
         <div className="relative">
-          <div className={`w-3 h-3 rounded-full ${isMuted ? 'bg-red-500' : isSpeaking ? 'bg-green-500' : 'bg-gray-500'}`} />
+          <div className={`w-3 h-3 rounded-sm ${isMuted ? 'bg-red-500' : isSpeaking ? 'bg-green-500' : 'bg-gray-500'}`} />
           {isSpeaking && !isMuted && (
-            <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-500 animate-ping opacity-50" />
+            <div className="absolute inset-0 w-3 h-3 rounded-sm bg-green-500 animate-ping opacity-50" />
           )}
         </div>
 
@@ -467,7 +467,7 @@ export function VoiceChatIndicator({
             step="0.1"
             value={volume}
             onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-            className="w-20 h-1 bg-white/20 rounded-full appearance-none cursor-pointer"
+            className="w-20 h-1 bg-white/20 rounded-sm appearance-none cursor-pointer"
             aria-label="Volume"
           />
         )}

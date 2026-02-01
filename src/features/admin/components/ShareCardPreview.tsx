@@ -132,13 +132,13 @@ export function ShareCardPreview({
             <div className="flex h-full flex-col items-center justify-center gap-2 text-imperium-steel-dark">
               <ImageIcon className="size-12" />
               <p className="font-terminal">Failed to load preview</p>
-              <Button variant="crimson" size="sm" onClick={handleRefresh}>
+              <Button variant="primary" size="sm" onClick={handleRefresh}>
                 Retry
               </Button>
             </div>
           ) : (
             <div className="flex h-full items-center justify-center">
-              <RefreshCwIcon className="size-8 animate-spin text-imperium-gold" />
+              <RefreshCw className="size-8 animate-spin text-imperium-gold" />
             </div>
           )}
         </div>

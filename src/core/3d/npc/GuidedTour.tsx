@@ -144,7 +144,7 @@ export function useGuidedTour({
 
   const setPosition = useCharacterStore((s) => s.setPosition);
   const switchWorld = useWorldStore((s) => s.switchWorld);
-  const currentWorld = useCharacterStore((s) => s.currentWorld);
+  const currentWorld = useWorldStore((s) => s.currentWorld);
 
   const tour = useMemo(() => GUIDED_TOURS[tourId], [tourId]);
   const currentStop = tour?.stops[currentStopIndex];

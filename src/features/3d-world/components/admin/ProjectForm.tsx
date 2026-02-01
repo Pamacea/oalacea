@@ -274,7 +274,7 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
             <Hammer className="h-5 w-5 text-imperium-gold" />
           </div>
           <h2 className="font-display text-lg uppercase tracking-wider text-imperium-bone">
-            <GlitchText intensity="low" auto>
+            <GlitchText intensity="low">
               {projectId ? 'MODIFY BLUEPRINT' : 'NEW BLUEPRINT ENTRY'}
             </GlitchText>
           </h2>

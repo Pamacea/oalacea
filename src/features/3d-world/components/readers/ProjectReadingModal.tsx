@@ -68,13 +68,13 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
     );
   }
 
-  const images = project.images || [];
+  const images = (project as any).images || [project.thumbnail].filter(Boolean);
   const hasMultipleImages = images.length > 1;
   const techStack = project.techStack || [];
   const hasGithub = project.githubUrl && project.githubUrl.length > 0;
   const hasLiveUrl = project.liveUrl && project.liveUrl.length > 0;
-  const category = project.category;
-  const categoryConfig = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.OTHER;
+  const categorySlug = typeof project.category === 'string' ? project.category : project.category?.slug || 'OTHER';
+  const categoryConfig = CATEGORY_CONFIG[categorySlug] || CATEGORY_CONFIG.OTHER;
   const Icon = categoryConfig.icon;
 
   return (
@@ -182,7 +182,7 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
 
             {/* Title */}
             <h1 className="font-display text-4xl uppercase tracking-wider text-imperium-bone mb-4">
-              <GlitchText intensity="high" auto>
+              <GlitchText intensity="high">
                 {project.title}
               </GlitchText>
             </h1>
@@ -204,7 +204,7 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
                   {hasMultipleImages && (
                     <>
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                        {images.map((_, i) => (
+                        {images.map((_: string, i: number) => (
                           <button
                             key={i}
                             onClick={() => setCurrentImageIndex(i)}
@@ -300,14 +300,14 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
             )}
 
             {/* Features List */}
-            {project.features && project.features.length > 0 && (
+            {(project as any).features && (project as any).features.length > 0 && (
               <div className="mb-6">
                 <h3 className="font-display text-sm uppercase tracking-wider text-imperium-steel mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-imperium-steel" />
                   Capabilities
                 </h3>
                 <ul className="space-y-2">
-                  {project.features.map((feature: string, i: number) => (
+                  {(project as any).features?.map((feature: string, i: number) => (
                     <li key={i} className="flex items-start gap-3 font-terminal text-imperium-steel">
                       <span className="text-imperium-gold mt-0.5">▸</span>
                       <span>{feature}</span>
