@@ -114,8 +114,8 @@ export default function ContactPage() {
                 <p className="font-terminal text-xs text-imperium-steel">Direct channel</p>
               </div>
             </div>
-            <a href="mailto:contact@oalacea.com" className="font-terminal text-imperium-bone hover:text-imperium-gold transition-colors block">
-              contact@oalacea.com
+            <a href="mailto:oalacea@oalacea.fr" className="font-terminal text-imperium-bone hover:text-imperium-gold transition-colors block">
+              oalacea@oalacea.fr
             </a>
           </BrutalCard>
 

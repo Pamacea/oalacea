@@ -188,7 +188,7 @@ export function AboutListingModal() {
                     <Github className="h-6 w-6 group-hover:scale-110 transition-transform" />
                   </motion.a>
                   <motion.a
-                    href="mailto:oalacea@proton.me"
+                    href="mailto:oalacea@oalacea.fr"
                     onMouseEnter={playHover}
                     onClick={playClick}
                     className="group p-4 border-2 border-imperium-steel-dark bg-imperium-black/30 text-imperium-steel hover:text-imperium-bone hover:border-imperium-crimson hover:bg-imperium-crimson/10 transition-all"

@@ -7,11 +7,11 @@ export const siteConfig = {
   links: {
     github: "https://github.com",
     linkedin: "https://linkedin.com",
-    email: "oalacea@proton.me",
+    email: "oalacea@oalacea.fr",
   },
   author: {
     name: "Oalacea Team",
-    email: "oalacea@proton.me",
+    email: "oalacea@oalacea.fr",
   },
 }
 
