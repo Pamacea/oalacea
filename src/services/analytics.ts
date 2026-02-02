@@ -6,7 +6,9 @@ export type AnalyticsEvent = {
 export function trackEvent({ name, properties }: AnalyticsEvent): void {
   if (typeof window === "undefined") return
 
-  console.log("[Analytics]", name, properties)
+  // Analytics tracking disabled
+  void name;
+  void properties;
 }
 
 export function trackPageView(path: string): void {

@@ -83,8 +83,8 @@ export function BlogPostForm({ postId }: { postId?: string }) {
             featured: post.featured,
           });
         }
-      } catch (error) {
-        console.error('Failed to load post:', error);
+      } catch {
+        // Error silently ignored
       } finally {
         setIsLoading(false);
       }
@@ -166,14 +166,12 @@ export function BlogPostForm({ postId }: { postId?: string }) {
       };
 
       img.onerror = () => {
-        console.error('Failed to load image');
         setIsUploading(false);
         setUploadProgress(0);
       };
 
       reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Upload failed:', error);
+    } catch {
       setIsUploading(false);
       setUploadProgress(0);
     }

@@ -45,8 +45,8 @@ export function Notifications() {
           setNotifications(data.notifications)
           setUnreadCount(data.unreadCount)
         }
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error)
+      } catch {
+        // Error silently ignored
       }
     }
 
@@ -67,8 +67,8 @@ export function Notifications() {
       if (response.ok) {
         setRefreshKey((k) => k + 1)
       }
-    } catch (error) {
-      console.error("Failed to mark as read:", error)
+    } catch {
+      // Error silently ignored
     }
   }
 
@@ -83,8 +83,8 @@ export function Notifications() {
       if (response.ok) {
         setRefreshKey((k) => k + 1)
       }
-    } catch (error) {
-      console.error("Failed to mark all as read:", error)
+    } catch {
+      // Error silently ignored
     }
   }
 
@@ -98,8 +98,8 @@ export function Notifications() {
         setNotifications((prev) => prev.filter((n) => n.id !== id))
         setRefreshKey((k) => k + 1)
       }
-    } catch (error) {
-      console.error("Failed to delete notification:", error)
+    } catch {
+      // Error silently ignored
     }
   }
 

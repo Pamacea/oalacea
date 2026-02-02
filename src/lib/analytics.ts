@@ -287,7 +287,7 @@ export async function trackAnalyticsEvent(event: ServerAnalyticsEvent): Promise<
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event),
     });
-  } catch (error) {
-    console.error('Failed to track analytics event:', error);
+  } catch {
+    // Error silently ignored
   }
 }

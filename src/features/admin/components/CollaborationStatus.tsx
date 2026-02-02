@@ -79,8 +79,8 @@ export function CollaborationStatus({
         }))
         setComments(commentsWithAuthors)
       }
-    } catch (error) {
-      console.error("Failed to fetch comments:", error)
+    } catch {
+      // Error silently ignored
     }
   }, [entityType, entityId])
 
@@ -91,8 +91,8 @@ export function CollaborationStatus({
         const data = await response.json()
         setVersionHistory(data.versions || [])
       }
-    } catch (error) {
-      console.error("Failed to fetch version history:", error)
+    } catch {
+      // Error silently ignored
     }
   }, [entityType, entityId])
 
@@ -152,8 +152,8 @@ export function CollaborationStatus({
           setMentions([])
           await fetchComments()
         }
-      } catch (error) {
-        console.error("Failed to post comment:", error)
+      } catch {
+        // Error silently ignored
       }
     })
   }

@@ -117,7 +117,6 @@ export const useWorldStore = create<WorldState>((set, get) => ({
   setFps: (fps) => {
     set({ fps });
     if (fps < 30 && !get().performanceMode) {
-      console.warn('[WorldStore] Low FPS detected, enabling performance mode');
       get().setPerformanceMode(true);
     } else if (fps > 50 && get().performanceMode) {
       get().setPerformanceMode(false);

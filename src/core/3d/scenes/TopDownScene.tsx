@@ -69,28 +69,19 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
     allVisualInteractions.find(z => z.label === interactTarget.name)?.id
   ) : null;
 
-  // Debug: log interaction state
-  console.log('[TopDownScene] canInteract:', canInteract, 'activeInteractionId:', activeInteractionId, 'interactTarget:', interactTarget);
-  console.log('[TopDownScene] allVisualInteractions:', allVisualInteractions.map(z => ({ id: z.id, label: z.label })));
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check modal state dynamically to avoid closure stale values
       const isModalOpen = useModalStore.getState().isOpen;
 
-      console.log('[TopDownScene] Key pressed:', e.code, 'canInteract:', canInteract, 'interactTarget:', interactTarget, 'isModalOpen:', isModalOpen);
-
       if (isModalOpen) return;
 
       if (e.code === 'KeyE' && !e.repeat) {
-        console.log('[TopDownScene] KeyE pressed, checking interaction...');
         if (canInteract && interactTarget) {
-          console.log('[TopDownScene] Interaction detected:', interactTarget);
           if (interactTarget.targetWorld) {
-            console.log('[TopDownScene] Switching world to:', interactTarget.targetWorld);
             switchWorld(interactTarget.targetWorld);
           } else if (interactTarget.route) {
-            console.log('[TopDownScene] Opening route:', interactTarget.route);
             if (interactTarget.route === '/blog') {
               openBlogListing();
             } else if (interactTarget.route === '/portfolio') {
@@ -99,11 +90,8 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
               openAboutListing();
             }
           } else if (interactTarget.type === 'admin') {
-            console.log('[TopDownScene] Opening admin modal');
             openAdminListing();
           }
-        } else {
-          console.log('[TopDownScene] Cannot interact - canInteract:', canInteract, 'interactTarget:', interactTarget);
         }
       }
     };

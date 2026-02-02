@@ -111,14 +111,12 @@ export function usePhysicsEngine(
     };
 
     // Convert collision zones to obstacles
-    console.log('[Physics] Initializing with', collisionZones.length, 'collision zones');
     collisionZones.forEach((zone) => {
       const obstacle = createObstacleFromZone(zone);
       if (obstacle) {
         instance.addObstacle(obstacle);
       }
     });
-    console.log('[Physics] Added all obstacles. Total:', instance.getStats().obstacleCount);
 
     // Use ref for immediate access and defer state update
     engineRef.current = instance;
@@ -129,7 +127,6 @@ export function usePhysicsEngine(
     }, 0);
 
     return () => {
-      console.log('[Physics] Cleanup - clearing engine');
       clearTimeout(timeoutId);
       engineRef.current = null;
     };

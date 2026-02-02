@@ -64,8 +64,7 @@ export const useOverlayStore = create<OverlayState>((set, get) => ({
         content: clonedContent.innerHTML,
         title: title || doc.title || 'Page',
       });
-    } catch (error) {
-      console.error('Failed to load overlay content:', error);
+    } catch {
       set({
         content: `<div class="p-8 text-white">
           <h2 class="text-xl font-bold mb-4">Erreur de chargement</h2>

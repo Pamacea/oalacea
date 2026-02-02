@@ -86,8 +86,8 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
           prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
         )
       }
-    } catch (error) {
-      console.error("Failed to update role:", error)
+    } catch {
+      // Error silently ignored
     } finally {
       setUpdating(null)
     }
@@ -109,8 +109,8 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
           prev.map((u) => (u.id === userId ? { ...u, isActive: !isActive } : u))
         )
       }
-    } catch (error) {
-      console.error("Failed to update user status:", error)
+    } catch {
+      // Error silently ignored
     } finally {
       setUpdating(null)
     }
@@ -132,8 +132,8 @@ export function UsersTable({ users: initialUsers }: UsersTableProps) {
           prev.map((u) => (u.id === userId ? { ...u, emailVerified: new Date() } : u))
         )
       }
-    } catch (error) {
-      console.error("Failed to verify email:", error)
+    } catch {
+      // Error silently ignored
     } finally {
       setUpdating(null)
     }

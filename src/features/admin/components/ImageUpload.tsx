@@ -53,8 +53,7 @@ export function ImageUpload({
         };
         reader.readAsDataURL(file);
       }
-    } catch (error) {
-      console.error('Upload failed:', error);
+    } catch {
       alert('Failed to upload image');
     } finally {
       setIsUploading(false);

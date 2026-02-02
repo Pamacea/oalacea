@@ -24,7 +24,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('[ErrorBoundary] Caught error:', error, errorInfo)
     this.props.onError?.(error, errorInfo)
   }
 
@@ -78,9 +77,6 @@ export function ThreeErrorBoundary({ children, fallback }: ThreeErrorBoundaryPro
   return (
     <ErrorBoundary
       fallback={fallback ?? defaultFallback}
-      onError={(error) => {
-        console.error('[ThreeErrorBoundary] 3D scene error:', error)
-      }}
     >
       {children}
     </ErrorBoundary>

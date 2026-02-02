@@ -106,7 +106,6 @@ export const uploadToVercelBlob = async (
       height: dimensions.height,
     };
   } catch (error) {
-    console.error('Upload error:', error);
     throw error;
   }
 };

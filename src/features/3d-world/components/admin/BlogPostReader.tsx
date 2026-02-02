@@ -166,8 +166,8 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
       try {
         const result = await getPostBySlug(postSlug);
         setPost(result);
-      } catch (error) {
-        console.error('Failed to load post:', error);
+      } catch {
+        // Error silently ignored
       } finally {
         setIsLoading(false);
       }

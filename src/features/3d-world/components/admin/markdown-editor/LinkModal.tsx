@@ -73,7 +73,7 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
         } catch (error) {
           // Ignore abort errors
           if (error instanceof Error && error.name !== 'AbortError') {
-            console.error('Failed to load content:', error);
+            // Error silently ignored
           }
         } finally {
           setIsLoading(false);

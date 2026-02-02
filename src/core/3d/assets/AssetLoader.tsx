@@ -247,8 +247,8 @@ export function ProgressiveAsset({
           });
         }
         setAsset(lowAsset);
-      } catch (error) {
-        console.error('Failed to load low quality asset:', error);
+      } catch {
+        // Error silently ignored
       }
     };
 
@@ -268,8 +268,8 @@ export function ProgressiveAsset({
           setUseHighQuality(true);
           onLoad?.(highAsset);
         }
-      } catch (error) {
-        console.error('Failed to load high quality asset:', error);
+      } catch {
+        // Error silently ignored
       }
     };
 

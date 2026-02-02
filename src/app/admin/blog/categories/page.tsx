@@ -73,8 +73,8 @@ export default function AdminCategoriesPage() {
       await createCategory({ name: newCategoryName, slug, type: 'BLOG' });
       setNewCategoryName('');
       await refreshCategories();
-    } catch (error) {
-      console.error('Failed to add category:', error);
+    } catch {
+      // Error silently ignored
     }
   };
 
@@ -93,8 +93,8 @@ export default function AdminCategoriesPage() {
       await updateCategory(editState.id, { name: editState.name });
       setEditState(null);
       await refreshCategories();
-    } catch (error) {
-      console.error('Failed to add category:', error);
+    } catch {
+      // Error silently ignored
     }
   };
 

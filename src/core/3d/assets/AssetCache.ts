@@ -40,8 +40,7 @@ class AssetCacheClass {
           },
         });
         await this.cleanExpired();
-      } catch (error) {
-        console.error('[AssetCache] Failed to initialize:', error);
+      } catch {
         this.db = null;
       }
     })();
@@ -87,8 +86,7 @@ class AssetCacheClass {
       }
 
       return record.data;
-    } catch (error) {
-      console.error('[AssetCache] Failed to get asset:', error);
+    } catch {
       return null;
     }
   }
@@ -111,8 +109,8 @@ class AssetCacheClass {
         timestamp: Date.now(),
         version,
       });
-    } catch (error) {
-      console.error('[AssetCache] Failed to cache asset:', error);
+    } catch {
+      // Error silently ignored
     }
   }
 
@@ -128,8 +126,8 @@ class AssetCacheClass {
     try {
       const key = this.getKey(url, version);
       await this.db.delete('assets', key);
-    } catch (error) {
-      console.error('[AssetCache] Failed to delete asset:', error);
+    } catch {
+      // Error silently ignored
     }
   }
 
@@ -139,8 +137,8 @@ class AssetCacheClass {
 
     try {
       await this.db.clear('assets');
-    } catch (error) {
-      console.error('[AssetCache] Failed to clear cache:', error);
+    } catch {
+      // Error silently ignored
     }
   }
 
@@ -151,8 +149,7 @@ class AssetCacheClass {
     try {
       const assets = await this.db.getAll('assets');
       return assets.reduce((total, asset) => total + asset.data.size, 0);
-    } catch (error) {
-      console.error('[AssetCache] Failed to get cache size:', error);
+    } catch {
       return 0;
     }
   }
@@ -165,8 +162,7 @@ class AssetCacheClass {
       const assets = await this.db.getAll('assets');
       const size = assets.reduce((total, asset) => total + asset.data.size, 0);
       return { count: assets.length, size };
-    } catch (error) {
-      console.error('[AssetCache] Failed to get stats:', error);
+    } catch {
       return { count: 0, size: 0 };
     }
   }

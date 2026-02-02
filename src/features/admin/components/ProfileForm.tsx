@@ -59,8 +59,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
           await update({ name: formData.name })
           router.refresh()
         }
-      } catch (error) {
-        console.error("Failed to update profile:", error)
+      } catch {
+        // Error silently ignored
       }
     })
   }
@@ -74,8 +74,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
         if (response.ok) {
           alert("Verification email sent!")
         }
-      } catch (error) {
-        console.error("Failed to send verification email:", error)
+      } catch {
+        // Error silently ignored
       }
     })
   }

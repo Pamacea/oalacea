@@ -62,8 +62,8 @@ export function ShareCardPreview({
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
-      console.error('Failed to download share card:', error);
+    } catch {
+      // Error silently ignored
     }
   };
 

@@ -13,8 +13,8 @@ export function useBlogDocuments() {
         const result = await getPosts({ published: true });
         setPosts(result.posts);
         setTotalPages(Math.ceil(result.pagination.total / postsPerPage));
-      } catch (error) {
-        console.error('Failed to fetch blog posts:', error);
+      } catch {
+        // Error silently ignored
       } finally {
         setLoading(false);
       }

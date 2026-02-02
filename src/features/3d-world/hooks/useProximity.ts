@@ -47,13 +47,9 @@ export function useProximity(
       let closestObject: ProximityObject | null = null;
       let closestDistance = Infinity;
 
-      console.log('[useProximity] Char pos:', characterPos, 'checking', objects.length, 'objects');
-
       for (const obj of objects) {
         const objPosition = new Vector3(...obj.position);
         const distance = charPosition.distanceTo(objPosition);
-
-        console.log(`[useProximity] Distance to ${obj.data.name}:`, distance.toFixed(2), '(radius:', obj.radius, ')');
 
         if (distance < obj.radius && distance < closestDistance) {
           closestObject = obj;
@@ -62,7 +58,6 @@ export function useProximity(
       }
 
       if (closestObject) {
-        console.log('[useProximity] ✓ INTERACT:', closestObject.data.name, 'dist:', closestDistance.toFixed(2));
         setCanInteract(
           true,
           {
@@ -74,7 +69,6 @@ export function useProximity(
           }
         );
       } else {
-        console.log('[useProximity] ✗ No interaction in range');
         setCanInteract(false);
       }
     };

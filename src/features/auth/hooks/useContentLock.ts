@@ -70,7 +70,7 @@ export function useContentLock({
         }
       }
     } catch {
-      console.error("Failed to fetch lock status")
+      // Error silently ignored
     }
   }, [enabled, entityType, entityId, session?.user?.id, isLockedByMe, isLockedByOthers, onLockAcquired, onLockLost, onLockConflict])
 

@@ -79,7 +79,6 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
         if (lowPerformanceFrames.current > sampleSize * 2) {
           if (currentQuality !== 'low') {
-            console.warn(`[PerformanceMonitor] Low FPS detected (${Math.round(avgFps)}), reducing quality`);
             setQuality('low');
             lowPerformanceFrames.current = 0;
           }
@@ -90,7 +89,6 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
         if (highPerformanceFrames.current > sampleSize * 3) {
           if (currentQuality === 'low') {
-            console.info(`[PerformanceMonitor] Performance improved (${Math.round(avgFps)}), increasing quality`);
             setQuality('medium');
             highPerformanceFrames.current = 0;
           }

@@ -100,8 +100,8 @@ export function ShareButtons({
         },
       })
       setQrCode(dataUrl)
-    } catch (error) {
-      console.error("Failed to generate QR code:", error)
+    } catch {
+      // Error silently ignored
     } finally {
       setQrLoading(false)
     }
@@ -126,8 +126,8 @@ export function ShareButtons({
           text: description,
           url: shareUrl,
         })
-      } catch (error) {
-        console.error("Error sharing:", error)
+      } catch {
+        // Error silently ignored
       }
     }
   }

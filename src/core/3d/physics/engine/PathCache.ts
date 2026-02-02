@@ -371,10 +371,8 @@ export class PathCache {
   // DEBUGGING
   // ============================================
 
-  private logDebug(message: string): void {
-    if (this.config.debug) {
-      console.log(`[PathCache] ${message}`);
-    }
+  private logDebug(_message: string): void {
+    // Debug logging disabled
   }
 
   /**

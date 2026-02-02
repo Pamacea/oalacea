@@ -32,8 +32,8 @@ export function useFormState<T>(
     try {
       await onSubmit(data)
       setErrors({})
-    } catch (error) {
-      console.error('Form submission error:', error)
+    } catch {
+      // Error silently ignored
     } finally {
       setIsSubmitting(false)
     }

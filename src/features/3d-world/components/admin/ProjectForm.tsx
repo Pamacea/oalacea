@@ -86,8 +86,8 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
             categoryId: project.categoryId || '',
           });
         }
-      } catch (error) {
-        console.error('Failed to load project:', error);
+      } catch {
+        // Error silently ignored
       }
     }
     loadProject();
@@ -178,14 +178,12 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
       };
 
       img.onerror = () => {
-        console.error('Failed to load image');
         setIsUploading(false);
         setUploadProgress(0);
       };
 
       reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Upload failed:', error);
+    } catch {
       setIsUploading(false);
       setUploadProgress(0);
     }

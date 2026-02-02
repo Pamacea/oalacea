@@ -88,8 +88,8 @@ export function ActivityLog({ userId, entityType, className }: ActivityLogProps)
         setActivities(data.activities)
         setTotal(data.total)
       }
-    } catch (error) {
-      console.error("Failed to fetch activities:", error)
+    } catch {
+      // Error silently ignored
     } finally {
       setLoading(false)
     }
@@ -121,8 +121,8 @@ export function ActivityLog({ userId, entityType, className }: ActivityLogProps)
         a.click()
         window.URL.revokeObjectURL(url)
       }
-    } catch (error) {
-      console.error("Failed to export activities:", error)
+    } catch {
+      // Error silently ignored
     } finally {
       setExporting(false)
     }
@@ -136,8 +136,8 @@ export function ActivityLog({ userId, entityType, className }: ActivityLogProps)
       if (response.ok) {
         fetchActivities()
       }
-    } catch (error) {
-      console.error("Failed to cleanup logs:", error)
+    } catch {
+      // Error silently ignored
     }
   }
 
