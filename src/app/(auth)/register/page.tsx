@@ -1,7 +1,7 @@
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-imperium-black-deep p-6">
-      <div className="w-full max-w-md border-2 border-imperium-gold p-8 shadow-[8px_8px_0_rgba(184,166,70,0.3)] bg-imperium-black">
+    <div className="min-h-screen flex items-center justify-center bg-imperium-black-deep p-4 md:p-8">
+      <div className="w-full max-w-3xl border-2 border-imperium-gold p-6 md:p-12 shadow-[8px_8px_0_rgba(184,166,70,0.3)] bg-imperium-black">
         <div className="space-y-6">
           <h1 className="font-display text-3xl uppercase tracking-wider text-imperium-gold mb-2">
             Register

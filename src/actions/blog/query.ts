@@ -108,7 +108,7 @@ const getCachedPosts = unstable_cache(
     };
   },
   ['blog-posts'],
-  { revalidate: 60, tags: ['blog-posts'] }
+  { revalidate: 10, tags: ['blog-posts'] }
 );
 
 // Uncached version for admin - bypasses cache entirely
@@ -200,7 +200,7 @@ const getCachedPostBySlug = unstable_cache(
     });
   },
   ['blog-post'],
-  { revalidate: 60, tags: ['blog-posts'] }
+  { revalidate: 10, tags: ['blog-posts'] }
 );
 
 const getCachedPostById = unstable_cache(
@@ -281,6 +281,36 @@ export async function getAllCategoriesUncached({ type }: { type?: 'BLOG' | 'PROJ
     postCount: cat._count.posts,
     projectCount: cat._count.projects,
   }));
+}
+
+// Uncached version for client components - bypasses cache entirely
+export async function getPostBySlugUncached(slug: string): Promise<PostDetail | null> {
+  return prisma.post.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      excerpt: true,
+      content: true,
+      coverImage: true,
+      publishDate: true,
+      createdAt: true,
+      readingTime: true,
+      tags: true,
+      metaTitle: true,
+      metaDescription: true,
+      featured: true,
+      published: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+  });
 }
 
 const getCachedPostVersions = unstable_cache(

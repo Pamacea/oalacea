@@ -1,19 +1,20 @@
 'use client';
 
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { getPosts, getPostBySlug } from '@/actions/blog';
+import { getPostBySlug, getPostsUncached, getPostBySlugUncached } from '@/actions/blog';
 
 export function useBlogPosts(options?: { published?: boolean; limit?: number }) {
   return useQuery({
     queryKey: ['blog-posts', options],
-    queryFn: () => getPosts({ published: true, limit: 100, ...options }),
+    queryFn: () => getPostsUncached({ published: true, limit: 100, ...options }),
+    refetchOnWindowFocus: false,
   });
 }
 
 export function useBlogPost(slug: string) {
   return useQuery({
     queryKey: ['blog-post', slug],
-    queryFn: () => getPostBySlug(slug),
+    queryFn: () => getPostBySlugUncached(slug),
     enabled: !!slug,
   });
 }
