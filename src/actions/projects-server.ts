@@ -5,6 +5,19 @@ import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@/generated/prisma/client';
 
+// Safe wrapper for database calls with error handling
+async function safeDbCall<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    // Log error but don't crash the page
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[DB Error]', error);
+    }
+    return fallback;
+  }
+}
+
 export type ProjectListItem = {
   id: string;
   slug: string;
@@ -54,48 +67,50 @@ const getCachedProjects = unstable_cache(
     category?: string;
     world?: 'DEV' | 'ART';
   }) => {
-    const where: Prisma.ProjectWhereInput = {};
-    if (featured) where.featured = true;
-    if (category) {
-      where.category = { slug: category };
-    }
-    if (world) {
-      where.worldPosition = { world };
-    }
+    return safeDbCall(async () => {
+      const where: Prisma.ProjectWhereInput = {};
+      if (featured) where.featured = true;
+      if (category) {
+        where.category = { slug: category };
+      }
+      if (world) {
+        where.worldPosition = { world };
+      }
 
-    return prisma.project.findMany({
-      where,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        thumbnail: true,
-        year: true,
-        categoryId: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
+      return prisma.project.findMany({
+        where,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          thumbnail: true,
+          year: true,
+          categoryId: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          featured: true,
+          sortOrder: true,
+          techStack: true,
+          worldPosition: {
+            select: {
+              world: true,
+              x: true,
+              z: true,
+            },
           },
         },
-        featured: true,
-        sortOrder: true,
-        techStack: true,
-        worldPosition: {
-          select: {
-            world: true,
-            x: true,
-            z: true,
-          },
-        },
-      },
-      orderBy: [
-        { sortOrder: 'asc' },
-        { year: 'desc' },
-      ],
-    });
+        orderBy: [
+          { sortOrder: 'asc' },
+          { year: 'desc' },
+        ],
+      });
+    }, []);
   },
   ['projects'],
   { revalidate: 120, tags: ['projects'] }
@@ -103,30 +118,32 @@ const getCachedProjects = unstable_cache(
 
 const getCachedProjectBySlug = unstable_cache(
   async (slug: string) => {
-    return prisma.project.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        longDescription: true,
-        thumbnail: true,
-        year: true,
-        categoryId: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
+    return safeDbCall(async () => {
+      return prisma.project.findUnique({
+        where: { slug },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          longDescription: true,
+          thumbnail: true,
+          year: true,
+          categoryId: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
           },
+          featured: true,
+          techStack: true,
+          githubUrl: true,
+          liveUrl: true,
         },
-        featured: true,
-        techStack: true,
-        githubUrl: true,
-        liveUrl: true,
-      },
-    });
+      });
+    }, null);
   },
   ['project'],
   { revalidate: 120, tags: ['projects'] }

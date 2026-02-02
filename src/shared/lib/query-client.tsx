@@ -59,7 +59,7 @@ function makeQueryClient() {
 export function TanStackQueryProvider({ children }: { children: React.ReactNode }) {
   // NOTE: Do NOT call makeQueryClient() here directly as it creates a new client on every render
   // The queryClient should be stable across renders for cache to work properly
-  const queryClient = browserQueryClient ?? makeQueryClient();
+  const queryClient = makeQueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
