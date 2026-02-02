@@ -13,6 +13,14 @@ function makeQueryClient() {
         queries: {
           staleTime: 60 * 1000,
           refetchOnWindowFocus: false,
+          retry: (failureCount, error) => {
+            const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+            if (errorMessage.includes('timeout') || errorMessage.includes('500')) {
+              return false;
+            }
+            return failureCount < 2;
+          },
+          retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
         },
         mutations: {
           retry: 1,
@@ -29,6 +37,14 @@ function makeQueryClient() {
             staleTime: 0, // Data is stale immediately, refetch on invalidate
             refetchOnWindowFocus: false,
             gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
+            retry: (failureCount, error) => {
+              const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+              if (errorMessage.includes('timeout') || errorMessage.includes('500')) {
+                return false;
+              }
+              return failureCount < 2;
+            },
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
           },
           mutations: {
             retry: 1,

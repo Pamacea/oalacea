@@ -9,13 +9,19 @@ type GlobalPrisma = {
 
 const globalForPrisma = globalThis as unknown as GlobalPrisma;
 
+// Use different connection strategies for serverless vs local
+const connectionString =
+  process.env.NODE_ENV === 'production'
+    ? process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL
+    : process.env.DATABASE_URL;
+
 const pool =
   globalForPrisma.pool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL,
-    max: 10,
-    idleTimeoutMillis: 20000,
-    connectionTimeoutMillis: 10000,
+    connectionString,
+    max: process.env.NODE_ENV === 'production' ? 2 : 10,
+    idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 10000 : 20000,
+    connectionTimeoutMillis: 8000,
   });
 
 const adapter = new PrismaPg(pool, {
