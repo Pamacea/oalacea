@@ -36,7 +36,7 @@ const BROWSER_LANGUAGES: Record<SpeechLanguage, string> = {
 // Type declaration for Web Speech API
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
-  grammars: any;
+  grammars: unknown;
   interimResults: boolean;
   lang: string;
   maxAlternatives: number;
@@ -44,17 +44,17 @@ interface SpeechRecognition extends EventTarget {
   start(): void;
   stop(): void;
   abort(): void;
-  onaudiostart: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onaudioend: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
-  onnomatch: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
-  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
-  onsoundstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onsoundend: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onspeechstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onspeechend: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onaudiostart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onaudioend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => unknown) | null;
+  onnomatch: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => unknown) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => unknown) | null;
+  onsoundstart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onsoundend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onspeechstart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onspeechend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onstart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
 }
 
 interface SpeechRecognitionErrorEvent extends Event {
@@ -102,32 +102,42 @@ export function useWebSpeech({
   onError,
   onInterimResult,
 }: UseWebSpeechOptions = {}): UseWebSpeechReturn {
-  const [isSupported, setIsSupported] = useState(false);
+  const [isSupported] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const hasSpeechRecognition = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    const hasSpeechSynthesis = 'speechSynthesis' in window;
+    return hasSpeechRecognition && hasSpeechSynthesis;
+  });
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [status, setStatus] = useState<SpeechStatus>('idle');
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [language, setLanguage] = useState<SpeechLanguage>(initialLanguage);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const hasSpeechRecognition = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    const hasSpeechSynthesis = 'speechSynthesis' in window;
+    if (!hasSpeechRecognition || !hasSpeechSynthesis) {
+      return !hasSpeechRecognition
+        ? 'Speech recognition is not supported in this browser'
+        : 'Speech synthesis is not supported in this browser';
+    }
+    return null;
+  });
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const synthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
 
+  // Report error to parent on mount if there is one
   useEffect(() => {
-    const hasSpeechRecognition = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
-    const hasSpeechSynthesis = 'speechSynthesis' in window;
-
-    setIsSupported(hasSpeechRecognition && hasSpeechSynthesis);
-
-    if (!hasSpeechRecognition || !hasSpeechSynthesis) {
-      const errorMsg = !hasSpeechRecognition
-        ? 'Speech recognition is not supported in this browser'
-        : 'Speech synthesis is not supported in this browser';
-      setError(errorMsg);
-      onError?.(errorMsg);
+    if (error && onError) {
+      onError(error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  useEffect(() => {
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.abort();
@@ -136,7 +146,7 @@ export function useWebSpeech({
         window.speechSynthesis.cancel();
       }
     };
-  }, [onError]);
+  }, []);
 
   useEffect(() => {
     if (!isSupported) return;

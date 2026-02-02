@@ -1,7 +1,7 @@
 // Hook to detect and manage screen reader usage
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSettingsStore } from '@/store/settings-store';
 
 interface ScreenReaderState {
@@ -14,7 +14,6 @@ interface ScreenReaderState {
 
 export function useScreenReader(): ScreenReaderState {
   const [detectedScreenReader, setDetectedScreenReader] = useState(false);
-  const announcementRef = useRef<HTMLDivElement | null>(null);
 
   const screenReaderMode = useSettingsStore((s) => s.screenReaderMode);
   const setScreenReaderMode = useSettingsStore((s) => s.setScreenReaderMode);

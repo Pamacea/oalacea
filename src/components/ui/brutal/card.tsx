@@ -4,7 +4,7 @@
  */
 
 import * as React from "react"
-import { motion, AnimatePresence, HTMLMotionProps } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 export interface BrutalCardProps {
@@ -38,6 +38,20 @@ export function BrutalCard({
 }: BrutalCardProps) {
   const [isHovered, setIsHovered] = React.useState(false)
   const fragments = fragmentColors[variant]
+
+  // Pre-generate random values using useMemo to avoid impure render
+  const debrisProps = React.useMemo(() =>
+    Array.from({ length: intensity === "severe" ? 8 : 4 }, (_, i) => ({
+      key: i,
+      left: 20 + ((i * 17) % 60),
+      top: 20 + ((i * 23) % 60),
+      x: ((i * 31) % 100) / 100 * 50 - 25,
+      duration: 0.5 + ((i * 7) % 100) / 200,
+      delay: ((i * 11) % 100) / 500,
+      repeatDelay: 1 + ((i * 13) % 100) / 50,
+    })),
+  [intensity]
+  )
 
   return (
     <motion.div
@@ -90,27 +104,27 @@ export function BrutalCard({
             />
 
             {/* Random floating debris */}
-            {Array.from({ length: intensity === "severe" ? 8 : 4 }).map((_, i) => (
+            {debrisProps.map(({ key, left, top, x, duration, delay, repeatDelay }) => (
               <motion.div
-                key={i}
-                className={cn("absolute w-1 h-1", fragments[i % fragments.length])}
+                key={key}
+                className={cn("absolute w-1 h-1", fragments[key % fragments.length])}
                 style={{
-                  left: `${20 + Math.random() * 60}%`,
-                  top: `${20 + Math.random() * 60}%`,
+                  left: `${left}%`,
+                  top: `${top}%`,
                 }}
                 initial={{ opacity: 0 }}
                 animate={{
                   y: [0, 100, 200],
-                  x: [0, (Math.random() - 0.5) * 50],
+                  x: [0, x],
                   opacity: [0, 1, 1, 0],
                   rotate: [0, 360],
                 }}
                 exit={{ opacity: 0 }}
                 transition={{
-                  duration: 0.5 + Math.random() * 0.5,
-                  delay: Math.random() * 0.2,
+                  duration,
+                  delay,
                   repeat: Infinity,
-                  repeatDelay: 1 + Math.random() * 2,
+                  repeatDelay,
                 }}
               />
             ))}

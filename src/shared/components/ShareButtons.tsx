@@ -28,18 +28,31 @@ interface ShareButtonsProps {
     position?: [number, number, number]
   }
   // Dependencies to inject from app layer
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Button?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DropdownMenu?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DropdownMenuContent?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DropdownMenuItem?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DropdownMenuTrigger?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DropdownMenuSeparator?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DropdownMenuLabel?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Dialog?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogContent?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogDescription?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogHeader?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogTitle?: React.ComponentType<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogTrigger?: React.ComponentType<any>
 }
 

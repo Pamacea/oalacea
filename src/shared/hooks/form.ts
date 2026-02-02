@@ -14,7 +14,8 @@ export function useFormState<T>(
     setData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors(prev => {
-        const { [field]: omitted, ...rest } = prev
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [field]: _omitted, ...rest } = prev
         return rest as Partial<Record<keyof T, string>>
       })
     }

@@ -99,7 +99,7 @@ const DEFAULT_SETTINGS: Omit<SettingsState, 'setReducedMotion' | 'toggleReducedM
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...DEFAULT_SETTINGS,
 
       setReducedMotion: (enabled) => set({ reducedMotion: enabled }),

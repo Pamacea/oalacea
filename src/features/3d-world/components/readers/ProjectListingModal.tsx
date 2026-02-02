@@ -19,55 +19,28 @@ const CATEGORY_CONFIG: Record<string, { icon: any; color: string; label: string 
 
 export function ProjectListingModal() {
   const { close } = useModalStore();
-
-  // Debug global keydown listener to track all key events
-  useEffect(() => {
-    const debugKeydown = (e: KeyboardEvent) => {
-      console.log('[DEBUG GLOBAL] Key event:', {
-        key: e.key,
-        code: e.code,
-        type: e.type,
-        bubbles: e.bubbles,
-        cancelable: e.cancelable,
-        defaultPrevented: e.defaultPrevented,
-      });
-    };
-    window.addEventListener('keydown', debugKeydown, true);
-    return () => window.removeEventListener('keydown', debugKeydown, true);
-  }, []);
   const { data: projects, isLoading } = useProjects();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const { playClick, playHover } = useUISound();
 
-  // Debug: log when modal mounts
-  console.log('[ProjectListingModal] MOUNTED - isOpen=true, component mounted');
-
   const projectsList = projects || [];
   const hasPrev = selectedIndex > 0;
   const hasNext = selectedIndex < projectsList.length - 1;
 
-  // Close on Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      console.log('[ProjectListingModal] handleEscape called - key:', e.key, 'code:', e.code, 'selectedProject:', selectedProject);
       if (e.key === 'Escape') {
-        console.log('[ProjectListingModal] Escape detected, closing...');
         if (selectedProject) {
           setSelectedProject(null);
+          e.stopImmediatePropagation();
         } else {
-          console.log('[ProjectListingModal] Calling close() from handleEscape');
           close();
         }
       }
     };
-    console.log('[ProjectListingModal] Adding Escape listener (capture phase)');
-    // Use capture phase to ensure we catch Escape before other handlers
     window.addEventListener('keydown', handleEscape, true);
-    return () => {
-      console.log('[ProjectListingModal] Removing Escape listener');
-      window.removeEventListener('keydown', handleEscape, true);
-    };
+    return () => window.removeEventListener('keydown', handleEscape, true);
   }, [selectedProject, close]);
 
   const handleSelectProject = (slug: string, index: number) => {
@@ -77,11 +50,9 @@ export function ProjectListingModal() {
   };
 
   const handleClose = () => {
-    console.log('[ProjectListingModal] handleClose called - selectedProject:', selectedProject);
     if (selectedProject) {
       setSelectedProject(null);
     } else {
-      console.log('[ProjectListingModal] Calling close()');
       close();
     }
   };
@@ -116,10 +87,7 @@ export function ProjectListingModal() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
-        onClick={(e) => {
-          console.log('[ProjectListingModal] Backdrop clicked!', e);
-          handleClose();
-        }}
+        onClick={handleClose}
       >
         <ChaoticOverlay type="all" opacity={0.3} />
         <ScanlineBeam color="#d4af37" duration={3.5} />

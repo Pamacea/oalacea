@@ -1,8 +1,7 @@
 // TextOnlyMode - Text-only fallback mode for screen readers
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useSettingsStore } from '@/store/settings-store';
 
@@ -19,15 +18,6 @@ interface TextOnlyModeProps {
 
 export function TextOnlyMode({ children, textContent }: TextOnlyModeProps) {
   const screenReaderMode = useSettingsStore((s) => s.screenReaderMode);
-  const [announcement, setAnnouncement] = useState<string>('');
-
-  useEffect(() => {
-    if (screenReaderMode) {
-      setAnnouncement('Text-only mode enabled. 3D content is presented as structured text.');
-    } else {
-      setAnnouncement('3D visual mode enabled.');
-    }
-  }, [screenReaderMode]);
 
   const handleToggle = () => {
     useSettingsStore.getState().toggleScreenReaderMode();
@@ -50,6 +40,19 @@ export function TextOnlyMode({ children, textContent }: TextOnlyModeProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950 text-slate-100 p-8 overflow-y-auto">
+      {/* Screen reader announcement - uses key to force recreation when mode changes */}
+      <div
+        key={String(screenReaderMode)}
+        role="region"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {screenReaderMode
+          ? 'Text-only mode enabled. 3D content is presented as structured text.'
+          : '3D visual mode enabled.'}
+      </div>
+
       <div className="max-w-4xl mx-auto">
         <header className="mb-8 border-b border-slate-800 pb-6">
           <div className="flex items-center justify-between mb-4">
@@ -68,38 +71,34 @@ export function TextOnlyMode({ children, textContent }: TextOnlyModeProps) {
           </p>
         </header>
 
-        <div role="region" aria-live="polite" aria-atomic="true" className="sr-only">
-          {announcement}
-        </div>
-
         <nav aria-label="Main navigation" className="mb-8">
           <h2 className="text-xl font-semibold mb-4 text-amber-400">Navigation</h2>
           <ul className="space-y-2">
             <li>
-              <a
+              <Link
                 href="/"
                 className="text-blue-400 hover:text-blue-300 underline focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 Home / 3D World
-              </a>
+              </Link>
               <span className="text-slate-500 ml-2">- Return to the 3D interactive world</span>
             </li>
             <li>
-              <a
+              <Link
                 href="/blog"
                 className="text-blue-400 hover:text-blue-300 underline focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 Blog
-              </a>
+              </Link>
               <span className="text-slate-500 ml-2">- Read articles and thoughts</span>
             </li>
             <li>
-              <a
+              <Link
                 href="/admin"
                 className="text-blue-400 hover:text-blue-300 underline focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 Admin
-              </a>
+              </Link>
               <span className="text-slate-500 ml-2">- Content management (requires authentication)</span>
             </li>
           </ul>

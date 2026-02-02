@@ -29,6 +29,54 @@ export function WeaponEffects() {
   const animationFrameRef = useRef<number>(0);
   const lastFireRef = useRef(0);
 
+  const fireProjectile = () => {
+    const side = Math.random() > 0.5 ? 0 : window.innerWidth;
+    const y = 50 + Math.random() * (window.innerHeight * 0.5);
+    const targetX = Math.random() * window.innerWidth;
+    const targetY = 100 + Math.random() * (window.innerHeight * 0.6);
+
+    // Calculate velocity vector
+    const dx = targetX - side;
+    const dy = targetY - y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const speed = 12 + Math.random() * 8;
+
+    const vx = (dx / distance) * speed;
+    const vy = (dy / distance) * speed;
+
+    projectilesRef.current.push({
+      id: Date.now() + Math.random(),
+      x: side,
+      y,
+      vx,
+      vy,
+      color: Math.random() > 0.5 ? '#ff4500' : '#ffd700',
+      active: true,
+    });
+
+    // Limit projectiles
+    if (projectilesRef.current.length > 5) {
+      projectilesRef.current.shift();
+    }
+  };
+
+  const createExplosion = (x: number, y: number) => {
+    explosionsRef.current.push({
+      id: Date.now() + Math.random(),
+      x,
+      y,
+      size: 40 + Math.random() * 30,
+      active: true,
+      frame: 0,
+      maxFrames: 25 + Math.floor(Math.random() * 10),
+    });
+
+    // Limit explosions
+    if (explosionsRef.current.length > 3) {
+      explosionsRef.current.shift();
+    }
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -53,7 +101,6 @@ export function WeaponEffects() {
     };
 
     // Animation loop
-    let animationId: number;
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -87,7 +134,7 @@ export function WeaponEffects() {
 
         // Create explosion randomly in flight (simulating mid-air hits)
         if (Math.random() < 0.02) {
-          createExplosion(p.x, p.y, p.color);
+          createExplosion(p.x, p.y);
           p.active = false;
           projectiles.splice(i, 1);
           continue;
@@ -214,54 +261,6 @@ export function WeaponEffects() {
       }
     };
   }, []);
-
-  const fireProjectile = () => {
-    const side = Math.random() > 0.5 ? 0 : window.innerWidth;
-    const y = 50 + Math.random() * (window.innerHeight * 0.5);
-    const targetX = Math.random() * window.innerWidth;
-    const targetY = 100 + Math.random() * (window.innerHeight * 0.6);
-
-    // Calculate velocity vector
-    const dx = targetX - side;
-    const dy = targetY - y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const speed = 12 + Math.random() * 8;
-
-    const vx = (dx / distance) * speed;
-    const vy = (dy / distance) * speed;
-
-    projectilesRef.current.push({
-      id: Date.now() + Math.random(),
-      x: side,
-      y,
-      vx,
-      vy,
-      color: Math.random() > 0.5 ? '#ff4500' : '#ffd700',
-      active: true,
-    });
-
-    // Limit projectiles
-    if (projectilesRef.current.length > 5) {
-      projectilesRef.current.shift();
-    }
-  };
-
-  const createExplosion = (x: number, y: number, color: string) => {
-    explosionsRef.current.push({
-      id: Date.now() + Math.random(),
-      x,
-      y,
-      size: 40 + Math.random() * 30,
-      active: true,
-      frame: 0,
-      maxFrames: 25 + Math.floor(Math.random() * 10),
-    });
-
-    // Limit explosions
-    if (explosionsRef.current.length > 3) {
-      explosionsRef.current.shift();
-    }
-  };
 
   return (
     <canvas

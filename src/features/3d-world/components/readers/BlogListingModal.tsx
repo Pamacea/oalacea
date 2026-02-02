@@ -16,33 +16,23 @@ export function BlogListingModal() {
   const [selectedBlog, setSelectedBlog] = useState<string | null>(null);
   const { playClick, playHover } = useUISound();
 
-  // Debug: log when modal renders
-  console.log('[BlogListingModal] MOUNTED - Escape listener will be added');
-
   const posts = postsData?.posts || [];
   const hasPrev = useMemo(() => selectedIndex > 0, [selectedIndex]);
   const hasNext = useMemo(() => selectedIndex < posts.length - 1, [selectedIndex, posts.length]);
 
-  // Close on Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      console.log('[BlogListingModal] Keydown:', e.key, 'code:', e.code, 'selectedBlog:', selectedBlog);
       if (e.key === 'Escape') {
-        console.log('[BlogListingModal] Escape pressed - closing');
         if (selectedBlog) {
           setSelectedBlog(null);
+          e.stopImmediatePropagation();
         } else {
           close();
         }
       }
     };
-    console.log('[BlogListingModal] Adding Escape key listener (capture phase)');
-    // Use capture phase to ensure we catch Escape before other handlers
     window.addEventListener('keydown', handleEscape, true);
-    return () => {
-      console.log('[BlogListingModal] Removing Escape key listener');
-      window.removeEventListener('keydown', handleEscape, true);
-    };
+    return () => window.removeEventListener('keydown', handleEscape, true);
   }, [selectedBlog, close]);
 
   const handleSelectBlog = useCallback((slug: string, index: number) => {
@@ -52,11 +42,9 @@ export function BlogListingModal() {
   }, [playClick]);
 
   const handleClose = useCallback(() => {
-    console.log('[BlogListingModal] handleClose called - selectedBlog:', selectedBlog);
     if (selectedBlog) {
       setSelectedBlog(null);
     } else {
-      console.log('[BlogListingModal] Calling close()');
       close();
     }
   }, [selectedBlog, close]);
@@ -99,10 +87,7 @@ export function BlogListingModal() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
-        onClick={(e) => {
-          console.log('[BlogListingModal] Backdrop clicked!', e);
-          handleClose();
-        }}
+        onClick={handleClose}
       >
         <ChaoticOverlay type="all" opacity={0.3} />
         <ScanlineBeam color="#9a1115" duration={4} />

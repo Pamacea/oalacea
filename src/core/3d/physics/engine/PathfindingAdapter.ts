@@ -171,7 +171,7 @@ export class PathfindingAdapter {
    * Check if a cell is walkable accounting for character radius
    * Only checks center of cell - avoids double-margin issue that blocks narrow passages
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   private isCellWalkableWithRadius(cellX: number, cellZ: number, radius: number): boolean {
     const cellCenter = this.cellToWorld(cellX, cellZ);
 

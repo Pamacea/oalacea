@@ -12,13 +12,23 @@ interface ReducedMotionState {
 
 const STORAGE_KEY = 'oalacea-reduced-motion';
 
+const getInitialManualOverride = (): boolean | null => {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored === 'true') return true;
+  if (stored === 'false') return false;
+  return null;
+};
+
 export function useReducedMotion(): ReducedMotionState {
-  const [systemPrefersReduced, setSystemPrefersReduced] = useState(false);
-  const [manualOverride, setManualOverride] = useState<boolean | null>(null);
+  const [systemPrefersReduced, setSystemPrefersReduced] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+  const [manualOverride, setManualOverride] = useState<boolean | null>(getInitialManualOverride);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setSystemPrefersReduced(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
       setSystemPrefersReduced(e.matches);
@@ -26,13 +36,6 @@ export function useReducedMotion(): ReducedMotionState {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored !== null) {
-      setManualOverride(stored === 'true' ? true : stored === 'false' ? false : null);
-    }
   }, []);
 
   const isReducedMotionEnabled = manualOverride ?? systemPrefersReduced;

@@ -22,34 +22,19 @@ export function FloatingUI({ cameraMode = 'follow', onToggleCamera }: FloatingUI
   const { isOpen, type, close } = useModalStore()
   const isLoading = useLoadingStore((s) => s.isLoading)
 
-  // Debug: log modal state changes
-  useEffect(() => {
-    console.log('[FloatingUI] Modal state changed - isOpen:', isOpen, 'type:', type)
-  }, [isOpen, type])
-
   // Global Escape handler for all modals
   useEffect(() => {
-    console.log('[FloatingUI] Registering ESCAPE listener - close function type:', typeof close)
-
     const handleEscape = (e: KeyboardEvent) => {
-      // Check state dynamically to avoid closure stale values
-      const isModalOpen = useModalStore.getState().isOpen
-      console.log('[FloatingUI] ANY key event - key:', e.key, 'code:', e.code, 'isModalOpen:', isModalOpen, 'eventPhase:', e.eventPhase)
-
-      if (e.key === 'Escape' && isModalOpen) {
-        console.log('[FloatingUI] ✓✓✓✓ ESCAPE DETECTED AND CLOSING')
+      if (e.key === 'Escape' && isOpen) {
         e.preventDefault()
-        e.stopPropagation()
         close()
       }
     }
-    // Use capture phase to ensure we catch Escape before other handlers
     window.addEventListener('keydown', handleEscape, true)
     return () => {
-      console.log('[FloatingUI] Removing ESCAPE listener')
       window.removeEventListener('keydown', handleEscape, true)
     }
-  }, [])
+  }, [isOpen, close])
 
   const [glitchActive, setGlitchActive] = useState(false)
 

@@ -1,6 +1,4 @@
 'use client';
-
-import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Github, Mail, FileText, FolderKanban, ExternalLink, Shield, Cpu } from 'lucide-react';
 import { useModalStore } from '@/store/modal-store';
@@ -11,15 +9,6 @@ export function AboutListingModal() {
   const { close } = useModalStore();
   const { playHover, playClick } = useUISound();
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-    };
-    // Use capture phase to ensure we catch Escape before other handlers
-    window.addEventListener('keydown', handleEscape, true);
-    return () => window.removeEventListener('keydown', handleEscape, true);
-  }, [close]);
-
   return (
     <AnimatePresence>
       {/* Backdrop with chaotic overlay */}
@@ -29,10 +18,7 @@ export function AboutListingModal() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
-        onClick={(e) => {
-          console.log('[AboutListingModal] Backdrop clicked!', e);
-          close();
-        }}
+        onClick={close}
       >
         <ChaoticOverlay type="all" opacity={0.25} />
         <ScanlineBeam color="#9a1115" duration={5} />
@@ -162,7 +148,7 @@ export function AboutListingModal() {
                 </h4>
                 <div className="space-y-2">
                   <motion.a
-                    href="/blog"
+                    href="/blogs"
                     onMouseEnter={playHover}
                     onClick={playClick}
                     className="group flex items-center gap-4 px-4 py-4 border border-imperium-steel-dark bg-imperium-black/30 text-imperium-steel hover:bg-imperium-crimson/10 hover:border-imperium-crimson hover:text-imperium-bone transition-all"
@@ -172,7 +158,7 @@ export function AboutListingModal() {
                     <ExternalLink className="h-4 w-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                   </motion.a>
                   <motion.a
-                    href="/portfolio"
+                    href="/projets"
                     onMouseEnter={playHover}
                     onClick={playClick}
                     className="group flex items-center gap-4 px-4 py-4 border border-imperium-steel-dark bg-imperium-black/30 text-imperium-steel hover:bg-imperium-crimson/10 hover:border-imperium-crimson hover:text-imperium-bone transition-all"

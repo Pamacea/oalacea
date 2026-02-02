@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Plus, Trash2, Folder, Edit2, X, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -32,24 +31,22 @@ interface EditState {
 }
 
 export default function AdminCategoriesPage() {
-  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialog>({ open: false, id: '', name: '', count: 0 });
   const [editState, setEditState] = useState<EditState | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     setIsLoading(true);
     const cats = await getAllCategories({ type: 'BLOG' });
     setCategories(cats);
     setIsLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
 
   const generateSlug = (name: string) => {
     return name
@@ -74,8 +71,7 @@ export default function AdminCategoriesPage() {
       setNewCategoryName('');
       await loadCategories();
     } catch (error) {
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 2000);
+      console.error('Failed to add category:', error);
     }
   };
 
@@ -95,8 +91,7 @@ export default function AdminCategoriesPage() {
       setEditState(null);
       await loadCategories();
     } catch (error) {
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 2000);
+      console.error('Failed to add category:', error);
     }
   };
 

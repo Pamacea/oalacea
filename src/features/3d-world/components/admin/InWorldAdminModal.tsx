@@ -32,12 +32,6 @@ export function InWorldAdminModal() {
   const { data: session } = useSession();
   const isAdmin = session?.user?.isAdmin === true;
 
-  if (!isAdmin && isOpen) {
-    closeAdmin();
-    closeModalStore();
-    return null;
-  }
-
   const isEditingForm = view === 'edit-post' || view === 'edit-project';
   const isCreatingForm = view === 'create-post' || view === 'create-project';
   const isReadingPost = view === 'read-post';
@@ -49,21 +43,17 @@ export function InWorldAdminModal() {
     closeModalStore();
   };
 
-  // Son à l'ouverture
   useEffect(() => {
     if (isOpen) {
       playOpen();
     }
   }, [isOpen, playOpen]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    // Use capture phase to ensure we catch Escape before other handlers
-    window.addEventListener('keydown', handleEscape, true);
-    return () => window.removeEventListener('keydown', handleEscape, true);
-  }, [handleClose]);
+  if (!isAdmin && isOpen) {
+    closeAdmin();
+    closeModalStore();
+    return null;
+  }
 
   return (
     <AnimatePresence>

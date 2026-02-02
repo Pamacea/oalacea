@@ -267,35 +267,43 @@ export function FallingFragments({
 
   const { w, h } = sizeMap[size]
 
+  // Pre-generate random values using useMemo to avoid impure render
+  const fragments = React.useMemo(() =>
+    Array.from({ length: count }, (_, i) => ({
+      key: i,
+      colorClass: colors[i % colors.length],
+      duration: 2 + ((i * 7) % 100) / 25,
+      delay: ((i * 11) % 100) / 33,
+      xPos: ((i * 13) % 100),
+      rotate: 180 + ((i * 17) % 180),
+      x: (((i * 19) % 100) / 100) * 100 - 50,
+      repeatDelay: ((i * 23) % 100) / 50,
+    })),
+  [count, colors]
+  )
+
   return (
     <div className={cn("absolute inset-0 pointer-events-none overflow-hidden", className)}>
-      {Array.from({ length: count }).map((_, i) => {
-        const colorClass = colors[i % colors.length]
-        const duration = 2 + Math.random() * 4
-        const delay = Math.random() * 3
-        const xPos = Math.random() * 100
-
-        return (
-          <motion.div
-            key={i}
-            className={cn("absolute", w, h, colorClass)}
-            style={{ left: `${xPos}%` }}
-            animate={{
-              y: [-20, window.innerHeight + 20],
-              opacity: [0, 1, 1, 0],
-              rotate: [0, 180 + Math.random() * 180],
-              x: [0, (Math.random() - 0.5) * 100],
-            }}
-            transition={{
-              duration,
-              delay,
-              repeat: Infinity,
-              repeatDelay: Math.random() * 2,
-              ease: "linear",
-            }}
-          />
-        )
-      })}
+      {fragments.map(({ key, colorClass, duration, delay, xPos, rotate, x, repeatDelay }) => (
+        <motion.div
+          key={key}
+          className={cn("absolute", w, h, colorClass)}
+          style={{ left: `${xPos}%` }}
+          animate={{
+            y: [-20, window.innerHeight + 20],
+            opacity: [0, 1, 1, 0],
+            rotate: [0, rotate],
+            x: [0, x],
+          }}
+          transition={{
+            duration,
+            delay,
+            repeat: Infinity,
+            repeatDelay,
+            ease: "linear",
+          }}
+        />
+      ))}
     </div>
   )
 }
