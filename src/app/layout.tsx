@@ -59,8 +59,10 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // Add your verification tokens here when available
-    // google: "your-google-verification-token",
+    google: "oecAf0g9bpVtJ7OwIN8h6byljGDnWqzuNUYa615Bgqo",
+  },
+  other: {
+    "google-site-verification": "oecAf0g9bpVtJ7OwIN8h6byljGDnWqzuNUYa615Bgqo",
   },
 }
 
