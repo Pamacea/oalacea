@@ -2,9 +2,9 @@
 // Makes occluding objects transparent and highlights character
 'use client';
 
-import { useRef, useCallback, useMemo } from 'react';
+import { useRef, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Raycaster, Vector3, Object3D, Mesh, PerspectiveCamera as PerspectiveCameraType } from 'three';
+import { Raycaster, Vector3, Object3D, Mesh, PerspectiveCamera as PerspectiveCameraType, Material } from 'three';
 
 interface OccluderState {
   mesh: Mesh;
@@ -34,7 +34,6 @@ export function useOcclusionDetector({
   checkInterval = 3,
   transparency = 0.3,
 }: UseOcclusionDetectorOptions) {
-  const raycaster = useMemo(() => new Raycaster(), []);
   const frameCount = useRef(0);
   const occluderStates = useRef<Map<string, OccluderState>>(new Map());
   const occlusionState = useRef<OcclusionState>({
@@ -45,12 +44,12 @@ export function useOcclusionDetector({
   // Restore original material properties
   const restoreOccluders = useCallback(() => {
     occluderStates.current.forEach((state) => {
-      const material = state.mesh.material as any;
+      const material = state.mesh.material as Material | undefined;
       if (material) {
-        if (state.originalOpacity !== undefined) {
+        if ('opacity' in material && state.originalOpacity !== undefined) {
           material.opacity = state.originalOpacity;
         }
-        if (state.originalTransparent !== undefined) {
+        if ('transparent' in material && state.originalTransparent !== undefined) {
           material.transparent = state.originalTransparent;
         }
         material.needsUpdate = true;
@@ -66,12 +65,12 @@ export function useOcclusionDetector({
     occluderStates.current.forEach((state, key) => {
       if (!currentOccluders.has(state.mesh)) {
         // This object is no longer occluding, restore it
-        const material = state.mesh.material as any;
+        const material = state.mesh.material as Material | undefined;
         if (material) {
-          if (state.originalOpacity !== undefined) {
+          if ('opacity' in material && state.originalOpacity !== undefined) {
             material.opacity = state.originalOpacity;
           }
-          if (state.originalTransparent !== undefined) {
+          if ('transparent' in material && state.originalTransparent !== undefined) {
             material.transparent = state.originalTransparent;
           }
           material.needsUpdate = true;
@@ -84,8 +83,8 @@ export function useOcclusionDetector({
     occludingMeshes.forEach((mesh) => {
       const key = mesh.uuid;
       if (!occluderStates.current.has(key)) {
-        const material = mesh.material as any;
-        if (material) {
+        const material = mesh.material as Material | undefined;
+        if (material && 'transparent' in material && 'opacity' in material) {
           // Store original state
           occluderStates.current.set(key, {
             mesh,
@@ -132,10 +131,10 @@ export function useOcclusionDetector({
     const cameraPos = new Vector3();
     camera.getWorldPosition(cameraPos);
 
-    // Set ray from camera to character
+    // Set ray from camera to character - create new raycaster to avoid immutability issue
     const direction = new Vector3().subVectors(characterPos, cameraPos).normalize();
-    raycaster.set(cameraPos, direction);
-    raycaster.far = cameraPos.distanceTo(characterPos);
+    const distanceToCharacter = cameraPos.distanceTo(characterPos);
+    const raycasterForCast = new Raycaster(cameraPos, direction, 0, distanceToCharacter);
 
     // Get all meshes from occludable objects or scene
     let meshes: Mesh[] = [];
@@ -170,7 +169,7 @@ export function useOcclusionDetector({
     });
 
     // Cast ray
-    const intersects = raycaster.intersectObjects(meshes, false);
+    const intersects = raycasterForCast.intersectObjects(meshes, false);
 
     if (intersects.length > 0) {
       const occludingMeshes = intersects

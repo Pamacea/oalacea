@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Plus, Pencil, Trash2, Eye, Star, Globe, Skull } from 'lucide-react';
 import { getProjects, deleteProjectWithRevalidate } from '@/actions/projects';
 import { GlitchText } from '@/components/ui/imperium';
@@ -97,7 +98,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
                       <div className="flex items-center gap-4">
                         {project.thumbnail ? (
                           <div className="h-12 w-16 overflow-hidden border-2 border-imperium-steel-dark bg-imperium-black shrink-0 group-hover:border-imperium-gold transition-colors">
-                            <img src={project.thumbnail} alt="" className="h-full w-full object-cover" />
+                            <Image src={project.thumbnail} alt="" width={64} height={48} className="h-full w-full object-cover" unoptimized />
                           </div>
                         ) : (
                           <div className="h-12 w-16 border-2 border-imperium-steel-dark bg-imperium-black flex items-center justify-center shrink-0">

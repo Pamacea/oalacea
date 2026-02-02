@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { AdminTerminal } from './AdminTerminal';
 import { useInWorldAdminStore } from '@/features/admin/store';
-import { useAdminToast } from '@/features/admin/components/AdminOnlyToast';
 
 interface AdminTerminalWrapperProps {
   world: 'DEV' | 'ART';
@@ -12,29 +10,15 @@ interface AdminTerminalWrapperProps {
 }
 
 export function AdminTerminalWrapper({ world, position }: AdminTerminalWrapperProps) {
-  const { isOpen, openAdmin } = useInWorldAdminStore();
-  const [isActive, setIsActive] = useState(false);
+  const { isOpen } = useInWorldAdminStore();
   const { data: session } = useSession();
   const isAdmin = session?.user?.isAdmin === true;
-  const { showToast } = useAdminToast() ?? { showToast: () => {} };
-
-  const handleInteract = () => {
-    if (!isAdmin) {
-      showToast();
-      return;
-    }
-
-    setIsActive(true);
-    openAdmin();
-    setTimeout(() => setIsActive(false), 1000);
-  };
 
   return (
     <AdminTerminal
       position={position}
       world={world}
-      isActive={isActive || isOpen}
-      onInteract={handleInteract}
+      isActive={isOpen}
       isAdmin={isAdmin}
     />
   );

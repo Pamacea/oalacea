@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   History,
   RotateCcw,
-  FileText,
   Calendar,
   User,
   ChevronDown,
@@ -109,7 +108,6 @@ const renderContentDiff = (oldContent: string, newContent: string) => {
 };
 
 export function VersionHistory({
-  postId,
   versions,
   onRestore,
   currentVersion,

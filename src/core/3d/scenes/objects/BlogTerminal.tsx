@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useMemo, useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
+import { MeshStandardMaterial } from 'three';
 import { Text } from '@react-three/drei';
 
 interface BlogPostBasic {
@@ -77,7 +78,7 @@ export function BlogTerminal({ posts, position = [0, 0, 0], onPostSelect, active
 
     if (screenRef.current) {
       const pulse = (Math.sin(time * 2) + 1) * 0.5;
-      (screenRef.current.material as any).emissiveIntensity = 0.2 + pulse * 0.15;
+      (screenRef.current.material as MeshStandardMaterial).emissiveIntensity = 0.2 + pulse * 0.15;
     }
 
     if (scanlineRef.current) {

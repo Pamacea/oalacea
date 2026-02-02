@@ -74,7 +74,7 @@ export function OnboardingManager({ currentWorld = 'dev', cameraRef }: Onboardin
 
 // Hook to trigger onboarding actions from anywhere
 export function useOnboardingActions() {
-  const { setCurrentStep, completeStep, resetTutorial } = useOnboardingStore();
+  const { setCurrentStep, resetTutorial } = useOnboardingStore();
   const { discoverFeature, addExperience, completeAction } = useProgressionStore();
 
   const startTutorial = () => setCurrentStep('welcome');

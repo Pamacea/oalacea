@@ -1,6 +1,7 @@
 import { getPosts } from "@/actions/blog"
 import type { PostListItem } from "@/actions/blog"
 import Link from "next/link"
+import Image from "next/image"
 import { Calendar, Clock } from "lucide-react"
 import { GlitchText } from "@/components/ui/imperium"
 import { BrutalCard } from "@/components/navigation/BrutalBackground"
@@ -41,15 +42,15 @@ export default async function BlogsPage() {
       </header>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {posts.map((post, index) => (
-          <PostCard key={post.id} post={post} index={index} />
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} />
         ))}
       </div>
     </div>
   )
 }
 
-function PostCard({ post, index }: { post: PostListItem; index: number }) {
+function PostCard({ post }: { post: PostListItem }) {
   return (
     <BrutalCard hovered className="group cursor-pointer">
       <Link href={`/blogs/${post.slug}`} className="block">
@@ -61,9 +62,11 @@ function PostCard({ post, index }: { post: PostListItem; index: number }) {
                 background: 'repeating-linear-gradient(0deg, transparent, transparent_1px, rgba(154,17,21,0.2)_1px, rgba(154,17,21,0.2)_2px)',
               }} />
             </div>
-            <img
+            <Image
               src={post.coverImage}
               alt={post.title}
+              width={400}
+              height={225}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           </div>

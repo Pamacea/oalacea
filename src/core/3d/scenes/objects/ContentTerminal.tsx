@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useMemo, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Group, Mesh } from 'three';
+import { Group, Mesh, MeshStandardMaterial } from 'three';
 import { Text } from '@react-three/drei';
 import { useModalStore } from '@/store/modal-store';
 
@@ -13,8 +13,8 @@ interface ContentTerminalProps {
   position?: [number, number, number];
   world?: WorldType;
   defaultMode?: ContentType;
-  blogPosts?: any[];
-  projects?: any[];
+  blogPosts?: Array<{ id: string | number; slug?: string; title: string; publishDate?: string | Date; year?: number | string }>;
+  projects?: Array<{ id: string | number; slug?: string; title: string; year?: number | string }>;
 }
 
 const DEV_COLORS = {
@@ -80,9 +80,9 @@ export function ContentTerminal({
     setMode((m) => (m === 'blog' ? 'project' : 'blog'));
     setCurrentPage(0);
     setHoveredIndex(null);
-  }, []);
+  }, [setHoveredIndex]);
 
-  const handleItemSelect = useCallback((item: any) => {
+  const handleItemSelect = useCallback(() => {
     if (mode === 'blog') {
       openBlogListing();
     } else if (mode === 'project') {
@@ -96,7 +96,8 @@ export function ContentTerminal({
     // Screen glow pulse
     if (screenRef.current) {
       const pulse = (Math.sin(time * 2) + 1) * 0.5;
-      (screenRef.current.material as any).emissiveIntensity = 0.2 + pulse * 0.15;
+      const mat = screenRef.current.material as MeshStandardMaterial;
+      mat.emissiveIntensity = 0.2 + pulse * 0.15;
     }
 
     // Scanline animation
@@ -104,11 +105,6 @@ export function ContentTerminal({
       scanlineRef.current.position.y = 3.6 - ((time * 0.3) % 7.2);
     }
   });
-
-  // Reset page when mode changes
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [mode]);
 
   if (currentItems.length === 0) {
     return null;
@@ -244,7 +240,7 @@ export function ContentTerminal({
                 anchorX="left"
                 anchorY="top"
                 maxWidth={2.4}
-                onClick={() => handleItemSelect(item)}
+                onClick={() => handleItemSelect()}
                 onPointerOver={() => setHoveredIndex(index)}
                 onPointerOut={() => setHoveredIndex(null)}
               >
@@ -259,8 +255,8 @@ export function ContentTerminal({
                 anchorX="right"
                 anchorY="top"
               >
-                {mode === 'blog' && item.publishDate
-                  ? new Date(item.publishDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+                {mode === 'blog' && 'publishDate' in item && item.publishDate
+                  ? new Date(item.publishDate as string | Date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
                   : item.year || ''}
               </Text>
             </group>

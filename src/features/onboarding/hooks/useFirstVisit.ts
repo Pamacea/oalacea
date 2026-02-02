@@ -14,18 +14,18 @@ export interface FirstVisitState {
 }
 
 export function useFirstVisit(): FirstVisitState {
-  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(true);
-  const [isFirstSession, setIsFirstSession] = useState<boolean>(true);
+  const [isFirstVisit, setIsFirstVisit] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return !localStorage.getItem(FIRST_VISIT_KEY);
+  });
+  const [isFirstSession, setIsFirstSession] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return !sessionStorage.getItem(SESSION_VISIT_KEY);
+  });
 
   useEffect(() => {
-    // Check localStorage for persistent first visit
-    const hasVisitedBefore = localStorage.getItem(FIRST_VISIT_KEY);
-    const hasVisitedThisSession = sessionStorage.getItem(SESSION_VISIT_KEY);
-
-    setIsFirstVisit(!hasVisitedBefore);
-    setIsFirstSession(!hasVisitedThisSession);
-
     // Mark session as visited
+    const hasVisitedThisSession = sessionStorage.getItem(SESSION_VISIT_KEY);
     if (!hasVisitedThisSession) {
       sessionStorage.setItem(SESSION_VISIT_KEY, 'true');
     }

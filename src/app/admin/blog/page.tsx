@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Plus, Pencil, Trash2, Eye, Folder, Skull } from 'lucide-react';
 import { getPosts, deletePostWithRevalidate } from '@/actions/blog';
 import { GlitchText } from '@/components/ui/imperium';
@@ -88,7 +89,7 @@ export default async function AdminBlogPage() {
                       <div className="flex items-center gap-4">
                         {post.coverImage && (
                           <div className="h-12 w-16 overflow-hidden border-2 border-imperium-steel-dark bg-imperium-black shrink-0 group-hover:border-imperium-crimson transition-colors">
-                            <img src={post.coverImage} alt="" className="h-full w-full object-cover" />
+                            <Image src={post.coverImage} alt="" width={64} height={48} className="h-full w-full object-cover" unoptimized />
                           </div>
                         )}
                         <div>

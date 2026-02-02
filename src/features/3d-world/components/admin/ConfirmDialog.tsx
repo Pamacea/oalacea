@@ -3,7 +3,6 @@
 import { CheckCircle, Skull, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GlitchText } from '@/components/ui/imperium';
-import { ImperiumButton } from '@/components/ui/imperium/button';
 import { useUISound } from '@/hooks/use-ui-sound';
 import { useEffect } from 'react';
 

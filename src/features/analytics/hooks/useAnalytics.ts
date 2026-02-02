@@ -1,7 +1,7 @@
 // React hook for analytics
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { analytics, type AnalyticsEvent, type SessionData } from '@/lib/analytics';
 
 interface UseAnalyticsOptions {
@@ -100,7 +100,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}) {
 export function useScrollTracking(articleId: string, enabled = true) {
   const { trackEvent } = useAnalytics();
   const thresholdsRef = useRef(new Set<number>());
-  const maxDepthRef = useRef(0);
+  const [maxDepth, setMaxDepth] = useState(0);
 
   useEffect(() => {
     if (!enabled || typeof window === 'undefined') return;
@@ -111,8 +111,8 @@ export function useScrollTracking(articleId: string, enabled = true) {
       const scrollPercent = Math.min((scrollTop / docHeight) * 100, 100);
       const depth = Math.floor(scrollPercent / 10) * 10; // 0, 10, 20, ... 100
 
-      if (depth > maxDepthRef.current) {
-        maxDepthRef.current = depth;
+      if (depth > maxDepth) {
+        setMaxDepth(depth);
       }
 
       // Track at 25%, 50%, 75%, 100%
@@ -124,7 +124,7 @@ export function useScrollTracking(articleId: string, enabled = true) {
             properties: {
               slug: articleId,
               scrollDepth: threshold,
-              maxDepth: maxDepthRef.current,
+              maxDepth: depth,
             },
           });
         }
@@ -133,14 +133,14 @@ export function useScrollTracking(articleId: string, enabled = true) {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [articleId, enabled, trackEvent]);
+  }, [articleId, enabled, trackEvent, maxDepth]);
 
-  return maxDepthRef.current;
+  return maxDepth;
 }
 
 // Hook for tracking time spent on page
 export function useTimeTracking(enabled = true) {
-  const startTimeRef = useRef<number>(Date.now());
+  const [startTime, setStartTime] = useState<number>(() => Date.now());
   const isActiveRef = useRef(true);
 
   useEffect(() => {
@@ -151,12 +151,12 @@ export function useTimeTracking(enabled = true) {
         isActiveRef.current = false;
       } else {
         isActiveRef.current = true;
-        startTimeRef.current = Date.now();
+        setStartTime(Date.now());
       }
     };
 
     const handleBeforeUnload = () => {
-      const timeSpent = Date.now() - startTimeRef.current;
+      const timeSpent = Date.now() - startTime;
       if (timeSpent > 1000) { // Only track if spent more than 1 second
         navigator.sendBeacon('/api/analytics/time', JSON.stringify({
           duration: timeSpent,
@@ -172,11 +172,11 @@ export function useTimeTracking(enabled = true) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [enabled]);
+  }, [enabled, startTime]);
 
   const getTimeSpent = useCallback(() => {
-    return Date.now() - startTimeRef.current;
-  }, []);
+    return Date.now() - startTime;
+  }, [startTime]);
 
   return { getTimeSpent };
 }

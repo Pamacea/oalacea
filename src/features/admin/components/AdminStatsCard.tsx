@@ -20,13 +20,6 @@ export function AdminStatsCard({ title, count, href, icon: Icon, color = "crimso
     iron: "bg-imperium-iron border-imperium-iron-dark",
   };
 
-  const hoverColorMap = {
-    crimson: "hover:border-imperium-crimson",
-    gold: "hover:border-imperium-gold",
-    warp: "hover:border-imperium-warp-bright",
-    iron: "hover:border-imperium-iron-light",
-  };
-
   return (
     <Link
       href={href}

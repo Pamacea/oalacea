@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Calendar, Clock, Eye, Tag, Scroll, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Tag, Scroll, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getPostBySlug } from '@/actions/blog';
+import Image from 'next/image';
+import { getPostBySlug, type PostDetail } from '@/actions/blog';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { GlitchText } from '@/components/ui/imperium';
 import { useUISound } from '@/hooks/use-ui-sound';
@@ -156,7 +157,7 @@ function MarkdownRenderer({ content }: { content: string }) {
 
 export function BlogPostReader({ postSlug }: { postSlug: string }) {
   const { setView } = useInWorldAdminStore();
-  const [post, setPost] = useState<any>(null);
+  const [post, setPost] = useState<PostDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { playHover, playClick } = useUISound();
 
@@ -232,7 +233,7 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
       {/* Cover Image */}
       {post.coverImage && (
         <div className="aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black relative">
-          <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+          <Image src={post.coverImage} alt={post.title} width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <div className="absolute inset-0 border border-imperium-crimson/20 pointer-events-none" />
         </div>
       )}

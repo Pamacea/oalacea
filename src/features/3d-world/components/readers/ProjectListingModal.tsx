@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, FolderKanban, Code2, Smartphone, Box, Sparkles, Hammer } from 'lucide-react';
+import Image from 'next/image';
+import { X, Code2, Smartphone, Box, Sparkles, Hammer, FolderKanban } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useProjects } from '@/features/portfolio/hooks';
 import { useModalStore } from '@/store/modal-store';
 import { ProjectReadingModal } from './ProjectReadingModal';
 import { GlitchText, ChaoticOverlay, ScanlineBeam } from '@/components/ui/imperium';
 import { useUISound } from '@/hooks/use-ui-sound';
 
-const CATEGORY_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
+const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string; label: string }> = {
   WEB: { icon: Code2, color: 'text-imperium-crimson', label: 'Web' },
   MOBILE: { icon: Smartphone, color: 'text-imperium-gold', label: 'Mobile' },
   THREE_D: { icon: Box, color: 'text-imperium-teal', label: '3D' },
@@ -129,7 +131,7 @@ export function ProjectListingModal() {
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="border-2 border-imperium-gold bg-imperium-gold/10 p-3">
-                  <FolderKanban className="h-6 w-6 text-imperium-gold" />
+                  <Hammer className="h-6 w-6 text-imperium-gold" />
                 </div>
                 <div>
                   <h2 className="font-display text-2xl uppercase tracking-widest text-imperium-bone">
@@ -207,10 +209,13 @@ export function ProjectListingModal() {
 
                       {project.thumbnail && (
                         <div className="aspect-video overflow-hidden border-b border-imperium-steel-dark/50">
-                          <img
+                          <Image
                             src={project.thumbnail}
                             alt={project.title}
+                            width={400}
+                            height={225}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            unoptimized
                           />
                         </div>
                       )}

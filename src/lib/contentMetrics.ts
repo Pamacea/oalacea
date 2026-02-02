@@ -2,7 +2,7 @@
 // Server-side utilities for tracking and aggregating content metrics
 
 import { prisma } from './prisma';
-import type { ContentMetrics, PageView, AnalyticsEvent } from '@/generated/prisma/client';
+import type { ContentMetrics } from '@/generated/prisma/client';
 
 export type EntityType = 'post' | 'project';
 export type TimePeriod = 'day' | 'week' | 'month' | 'year' | 'all';
@@ -193,7 +193,6 @@ export async function getViewsOverTime(
   period: TimePeriod = 'month'
 ): Promise<TimeSeriesData[]> {
   const startDate = getDateForPeriod(period);
-  const groupBy = getGroupByForPeriod(period);
 
   const metrics = await prisma.contentMetrics.findMany({
     where: {
@@ -363,7 +362,7 @@ export async function updateContentMetrics(options: {
 }
 
 // Record referrer
-export async function recordReferrer(referrer: string, sessionId: string): Promise<void> {
+export async function recordReferrer(referrer: string): Promise<void> {
   await prisma.referrerStats.upsert({
     where: { referrer },
     create: {
@@ -401,21 +400,6 @@ function getDateForPeriod(period: TimePeriod): Date {
   }
 
   return now;
-}
-
-function getGroupByForPeriod(period: TimePeriod): string {
-  switch (period) {
-    case 'day':
-      return 'hour';
-    case 'week':
-      return 'day';
-    case 'month':
-      return 'day';
-    case 'year':
-      return 'month';
-    default:
-      return 'day';
-  }
 }
 
 function formatDateByPeriod(date: Date, period: TimePeriod): string {

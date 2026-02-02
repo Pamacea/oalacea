@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, ChevronLeft, ChevronRight, Calendar, Clock, Tag, Eye, Scroll } from 'lucide-react';
+import { useEffect, useRef, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, Clock, Eye, Scroll, Tag } from 'lucide-react';
+import Image from 'next/image';
 import { useBlogPost } from '@/features/blog/hooks';
 import { sanitizeInlineHtml } from '@/lib/sanitize';
-import { GlitchText, ChaoticOverlay, ScanlineBeam } from '@/components/ui/imperium';
-import { useUISound } from '@/hooks/use-ui-sound';
+import { GlitchText, ChaoticOverlay } from '@/components/ui/imperium';
 
 interface BlogReadingModalProps {
   slug: string;
@@ -51,18 +51,20 @@ function MarkdownContent({ content }: { content: string }) {
           inList = false;
         }
         if (inCodeBlock) {
+          // Store code content before creating JSX
+          const codeToRender = codeContent;
           elements.push(
             <pre key={`code-${i}`} className="code-block">
               <button
                 className="copy-button"
                 onClick={(e) => {
                   const btn = e.currentTarget as HTMLButtonElement;
-                  navigator.clipboard.writeText(codeContent);
+                  navigator.clipboard.writeText(codeToRender);
                   btn.textContent = 'COPIED!';
                   setTimeout(() => btn.textContent = 'COPY', 2000);
                 }}
               >COPY</button>
-              <code>{codeContent}</code>
+              <code>{codeToRender}</code>
             </pre>
           );
           codeContent = '';
@@ -173,9 +175,9 @@ function MarkdownContent({ content }: { content: string }) {
 
 export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentIndex = 0, total = 0 }: BlogReadingModalProps) {
   const { data: post, isLoading } = useBlogPost(slug);
-  const scrollProgress = useRef(0);
+  const scrollProgressRef = useRef(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { playHover, playClick } = useUISound();
 
   useEffect(() => {
     const container = contentRef.current;
@@ -184,7 +186,9 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
     const handleScroll = () => {
       const scrollTop = container.scrollTop;
       const scrollHeight = container.scrollHeight - container.clientHeight;
-      scrollProgress.current = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+      const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+      scrollProgressRef.current = progress;
+      setScrollProgress(progress);
     };
 
     container.addEventListener('scroll', handleScroll);
@@ -261,7 +265,6 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
             <div className="flex items-center gap-3">
               <motion.button
                 onClick={onClose}
-                onMouseEnter={playHover}
                 className="p-2 text-imperium-steel hover:text-imperium-crimson border border-imperium-steel-dark hover:border-imperium-crimson transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -279,7 +282,6 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
               {onPrevious && (
                 <motion.button
                   onClick={onPrevious}
-                  onMouseEnter={playHover}
                   className="p-2 text-imperium-steel hover:text-imperium-crimson border border-imperium-steel-dark hover:border-imperium-crimson transition-colors"
                   title="Article précédent"
                 >
@@ -294,7 +296,6 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
               {onNext && (
                 <motion.button
                   onClick={onNext}
-                  onMouseEnter={playHover}
                   className="p-2 text-imperium-steel hover:text-imperium-crimson border border-imperium-steel-dark hover:border-imperium-crimson transition-colors"
                   title="Article suivant"
                 >
@@ -309,7 +310,7 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
         <div className="h-1 bg-imperium-black shrink-0 relative overflow-hidden">
           <motion.div
             className="h-full bg-imperium-crimson absolute top-0 left-0"
-            animate={{ width: `${scrollProgress.current * 100}%` }}
+            animate={{ width: `${scrollProgress * 100}%` }}
             transition={{ duration: 0.15 }}
           />
         </div>
@@ -328,7 +329,7 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
           <article className="max-w-3xl mx-auto relative z-10">
             {post.coverImage && (
               <div className="aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black mb-6 relative">
-                <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+                <Image src={post.coverImage} alt={post.title} width={800} height={450} className="w-full h-full object-cover" unoptimized />
                 <div className="absolute inset-0 border border-imperium-crimson/20 pointer-events-none" />
               </div>
             )}
@@ -359,12 +360,12 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
               )}
             </div>
 
-            {post.tags && post.tags.length > 0 && (
+            {post.tags && Array.isArray(post.tags) && post.tags.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap mb-6 pb-6 border-b border-imperium-steel-dark">
                 <Tag className="h-3.5 w-3.5 text-imperium-steel-dark" />
-                {post.tags.map((tag: string) => (
-                  <span key={tag} className="font-terminal text-xs text-imperium-steel hover:text-imperium-crimson transition-colors">
-                    #{tag}
+                {post.tags.map((tag: unknown) => (
+                  <span key={String(tag)} className="font-terminal text-xs text-imperium-steel hover:text-imperium-crimson transition-colors">
+                    #{String(tag)}
                   </span>
                 ))}
               </div>
@@ -386,7 +387,6 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
         <div className="flex items-center justify-between px-6 py-4 border-t-2 border-imperium-steel-dark bg-imperium-black-deep/50 shrink-0">
           <motion.button
             onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
-            onMouseEnter={playHover}
             className="flex items-center gap-2 font-terminal text-sm text-imperium-steel hover:text-imperium-crimson transition-colors"
           >
             <Eye className="h-4 w-4" />

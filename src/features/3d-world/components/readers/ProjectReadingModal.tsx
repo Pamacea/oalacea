@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, ChevronLeft, ChevronRight, ExternalLink, Github, Code2, Smartphone, Box, Sparkles, FolderKanban, Hammer } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { ArrowLeft, ChevronLeft, ChevronRight, ExternalLink, Github, Code2, Smartphone, Box, Sparkles, Hammer, LucideIcon } from 'lucide-react';
 import { useProject } from '@/features/portfolio/hooks';
 import { GlitchText, ChaoticOverlay, ScanlineBeam } from '@/components/ui/imperium';
-import { useUISound } from '@/hooks/use-ui-sound';
 
 interface ProjectReadingModalProps {
   slug: string;
@@ -16,18 +16,34 @@ interface ProjectReadingModalProps {
   total?: number;
 }
 
-const CATEGORY_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
+interface ProjectWithImages {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  longDescription?: string;
+  thumbnail?: string;
+  githubUrl?: string;
+  liveUrl?: string;
+  techStack?: string[];
+  year?: number;
+  featured?: boolean;
+  category?: string | { slug: string };
+  images?: string[];
+  features?: string[];
+}
+
+const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string; label: string }> = {
   WEB: { icon: Code2, color: 'text-imperium-crimson', label: 'Web' },
   MOBILE: { icon: Smartphone, color: 'text-imperium-gold', label: 'Mobile' },
   THREE_D: { icon: Box, color: 'text-imperium-teal', label: '3D' },
   AI: { icon: Sparkles, color: 'text-purple-400', label: 'AI' },
-  OTHER: { icon: FolderKanban, color: 'text-imperium-steel', label: 'Autre' },
+  OTHER: { icon: Hammer, color: 'text-imperium-steel', label: 'Autre' },
 };
 
 export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, currentIndex = 0, total = 0 }: ProjectReadingModalProps) {
   const { data: project, isLoading } = useProject(slug);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { playHover, playClick } = useUISound();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -69,8 +85,9 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
     );
   }
 
-  const images = (project as any).images || [project.thumbnail].filter(Boolean);
+  const images = ((project as ProjectWithImages).images || [project.thumbnail]).filter((img): img is string => Boolean(img));
   const hasMultipleImages = images.length > 1;
+  const features = (project as ProjectWithImages).features;
   const techStack = project.techStack || [];
   const hasGithub = project.githubUrl && project.githubUrl.length > 0;
   const hasLiveUrl = project.liveUrl && project.liveUrl.length > 0;
@@ -107,7 +124,6 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
             <div className="flex items-center gap-3">
               <motion.button
                 onClick={onClose}
-                onMouseEnter={playHover}
                 className="p-2 text-imperium-steel hover:text-imperium-gold border border-imperium-steel-dark hover:border-imperium-gold transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -125,7 +141,6 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
               {onPrevious && (
                 <motion.button
                   onClick={onPrevious}
-                  onMouseEnter={playHover}
                   className="p-2 text-imperium-steel hover:text-imperium-gold border border-imperium-steel-dark hover:border-imperium-gold transition-colors"
                   title="Projet précédent"
                 >
@@ -140,7 +155,6 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
               {onNext && (
                 <motion.button
                   onClick={onNext}
-                  onMouseEnter={playHover}
                   className="p-2 text-imperium-steel hover:text-imperium-gold border border-imperium-steel-dark hover:border-imperium-gold transition-colors"
                   title="Projet suivant"
                 >
@@ -197,15 +211,18 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
             {images.length > 0 && (
               <div className="mb-6">
                 <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-                  <img
-                    src={images[currentImageIndex]}
+                  <Image
+                    src={images[currentImageIndex] ?? '/placeholder.jpg'}
                     alt={`${project.title} - Image ${currentImageIndex + 1}`}
+                    width={800}
+                    height={450}
                     className="w-full h-full object-cover"
+                    unoptimized
                   />
                   {hasMultipleImages && (
                     <>
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                        {images.map((_: string, i: number) => (
+                        {images.map((_img: string, i: number) => (
                           <button
                             key={i}
                             onClick={() => setCurrentImageIndex(i)}
@@ -244,7 +261,6 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
                 {hasGithub && (
                   <motion.button
                     onClick={() => window.open(project.githubUrl!, '_blank')}
-                    onMouseEnter={playHover}
                     className="inline-flex items-center gap-2 px-4 py-3 font-terminal text-sm border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-crimson hover:text-imperium-crimson transition-all"
                   >
                     <Github className="h-4 w-4" />
@@ -254,7 +270,6 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
                 {hasLiveUrl && (
                   <motion.button
                     onClick={() => window.open(project.liveUrl!, '_blank')}
-                    onMouseEnter={playHover}
                     className="inline-flex items-center gap-2 px-4 py-3 font-terminal text-sm border-2 border-imperium-gold bg-imperium-gold/10 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -301,14 +316,14 @@ export function ProjectReadingModal({ slug, onClose, onNext, onPrevious, current
             )}
 
             {/* Features List */}
-            {(project as any).features && (project as any).features.length > 0 && (
+            {features && features.length > 0 && (
               <div className="mb-6">
                 <h3 className="font-display text-sm uppercase tracking-wider text-imperium-steel mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-imperium-steel" />
                   Capabilities
                 </h3>
                 <ul className="space-y-2">
-                  {(project as any).features?.map((feature: string, i: number) => (
+                  {features.map((feature: string, i: number) => (
                     <li key={i} className="flex items-start gap-3 font-terminal text-imperium-steel">
                       <span className="text-imperium-gold mt-0.5">▸</span>
                       <span>{feature}</span>

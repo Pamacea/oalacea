@@ -153,7 +153,7 @@ export async function createComment(data: CommentInput & { ipAddress?: string; u
     };
   }
 
-  const { postId, projectId, consent, ...commentData } = validationResult.data;
+  const { postId, projectId, ...commentData } = validationResult.data;
 
   if (!postId && !projectId) {
     return {
@@ -205,9 +205,7 @@ export async function updateCommentStatus(
     data: { status },
   });
 
-  const revalidatePath = comment.postId
-    ? `/blog/${comment.postId}`
-    : `/projects/${comment.projectId}`;
+  revalidatePath(comment.postId ? `/blog/${comment.postId}` : `/projects/${comment.projectId}`);
 
   return comment;
 }

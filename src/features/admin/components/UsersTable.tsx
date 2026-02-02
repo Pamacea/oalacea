@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, Shield, Check, X, Mail } from "lucide-react"
+import { Search, Check, X, Mail } from "lucide-react"
 import { usePermissions } from "@/features/auth/hooks"
 import { cn } from "@/lib/utils"
 

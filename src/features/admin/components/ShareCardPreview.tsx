@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,41 +21,30 @@ interface ShareCardPreviewProps {
 export function ShareCardPreview({
   type,
   slug,
-  title = 'Sample Title',
-  description = 'Sample description for preview purposes',
-  imageUrl,
   theme = 'imperium',
   onChangeTheme,
-}: ShareCardPreviewProps) {
-  const [cardUrl, setCardUrl] = useState<string>('');
+}: Omit<ShareCardPreviewProps, 'title' | 'description' | 'imageUrl'>) {
+  const [refreshKey, setRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  useEffect(() => {
-    if (slug) {
-      const baseUrl = '/api/share-card';
-      const params = new URLSearchParams({
-        type,
-        ...(slug && { slug }),
-        theme,
-      });
-      setCardUrl(`${baseUrl}?${params.toString()}`);
-      setImageError(false);
-    }
-  }, [type, slug, theme]);
+  const cardUrl = useMemo(() => {
+    if (!slug) return '';
+
+    const baseUrl = '/api/share-card';
+    const params = new URLSearchParams({
+      type,
+      slug,
+      theme,
+      v: refreshKey.toString(),
+    });
+    return `${baseUrl}?${params.toString()}`;
+  }, [type, slug, theme, refreshKey]);
 
   const handleRefresh = () => {
     setIsLoading(true);
-    setCardUrl('');
     setTimeout(() => {
-      const baseUrl = '/api/share-card';
-      const params = new URLSearchParams({
-        type,
-        ...(slug && { slug }),
-        theme,
-        v: Date.now().toString(),
-      });
-      setCardUrl(`${baseUrl}?${params.toString()}`);
+      setRefreshKey(Date.now());
       setIsLoading(false);
       setImageError(false);
     }, 100);
@@ -118,15 +108,18 @@ export function ShareCardPreview({
       <CardContent>
         <div className="relative aspect-[1200/630] w-full overflow-hidden rounded-none border-2 border-imperium-steel-dark bg-imperium-black">
           {cardUrl && !isLoading ? (
-            <img
+            <Image
               src={cardUrl}
               alt="Share card preview"
+              width={1200}
+              height={630}
               className="h-full w-full object-contain"
               onError={() => {
                 setImageError(true);
                 setIsLoading(false);
               }}
               onLoad={() => setIsLoading(false)}
+              unoptimized
             />
           ) : imageError ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-imperium-steel-dark">

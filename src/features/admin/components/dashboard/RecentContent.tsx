@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { GlitchText, ChaoticOverlay } from '@/components/ui/imperium';
+import { GlitchText } from '@/components/ui/imperium';
 import { motion } from 'framer-motion';
 import type { DashboardPostItem, DashboardProjectItem } from '@/types/component';
 
@@ -112,7 +112,7 @@ export function RecentContent({ posts, projects }: RecentContentProps) {
                   </div>
                   <p className="font-terminal text-xs text-imperium-steel-dark mt-2">
                     {'['}
-                    {project.year} // {typeof project.category === 'string' ? project.category : project.category?.name || 'UNKNOWN'}
+                    {project.year}{/* // */}{typeof project.category === 'string' ? project.category : project.category?.name || 'UNKNOWN'}
                     {']'}
                   </p>
                 </Link>

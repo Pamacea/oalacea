@@ -16,6 +16,8 @@ const COLORS = {
   rust: '#8b4513',
 };
 
+const NEON_COLORS = [COLORS.neonCyan, COLORS.neonPink, COLORS.neonYellow];
+
 interface UndergroundPortalProps {
   position: [number, number, number];
   targetWorld: WorldType;
@@ -32,8 +34,7 @@ export function UndergroundPortal({
   const rightLightRef = useRef<THREE.PointLight>(null);
   const signRef = useRef<THREE.Mesh>(null);
 
-  const neonColors = [COLORS.neonCyan, COLORS.neonPink, COLORS.neonYellow];
-  const glitchColors = useMemo(() => neonColors.map(c => new THREE.Color(c)), []);
+  const glitchColors = useMemo(() => NEON_COLORS.map(c => new THREE.Color(c)), []);
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;

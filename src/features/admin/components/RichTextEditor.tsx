@@ -40,7 +40,7 @@ import { useState } from 'react';
 
 // Register all languages from lowlight
 Object.keys(common).forEach((lang) => {
-  lowlight.register(lang as any, common[lang as any] as any);
+  lowlight.register(lang, common[lang]);
 });
 
 interface RichTextEditorProps {

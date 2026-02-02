@@ -132,7 +132,7 @@ export function rayAABBIntersection(
   let tMin = 0;
   let tMax = maxDistance;
   let normalMin = new Vector3();
-  let normalMax = new Vector3();
+  let currentNormal = new Vector3();
 
   // Check each axis (X, Y, Z)
   for (let i = 0; i < 3; i++) {
@@ -143,24 +143,21 @@ export function rayAABBIntersection(
     let t2 = (boxMax[axis] - rayOrigin[axis]) * invDir;
 
     // Swap if ray direction is negative
-    let n1 = new Vector3();
-    let n2 = new Vector3();
-    n1[axis] = -1;
-    n2[axis] = 1;
+    currentNormal = new Vector3();
+    currentNormal[axis] = -1;
 
     if (invDir < 0) {
       [t1, t2] = [t2, t1];
-      [n1, n2] = [n2, n1];
+      currentNormal[axis] = 1;
     }
 
     // Update tMin, tMax
     if (t1 > tMin) {
       tMin = t1;
-      normalMin = n1;
+      normalMin = currentNormal.clone();
     }
     if (t2 < tMax) {
       tMax = t2;
-      normalMax = n2;
     }
 
     // No intersection if intervals don't overlap

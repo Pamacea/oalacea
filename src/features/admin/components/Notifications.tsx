@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Bell, BellRing, Check, Trash2, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -34,26 +34,27 @@ export function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
-
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const response = await fetch("/api/notifications?limit=20")
-      if (response.ok) {
-        const data = await response.json()
-        setNotifications(data.notifications)
-        setUnreadCount(data.unreadCount)
-      }
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error)
-    }
-  }, [])
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    fetchNotifications()
+    const loadNotifications = async () => {
+      try {
+        const response = await fetch("/api/notifications?limit=20")
+        if (response.ok) {
+          const data = await response.json()
+          setNotifications(data.notifications)
+          setUnreadCount(data.unreadCount)
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error)
+      }
+    }
 
-    const interval = setInterval(fetchNotifications, 30000)
+    loadNotifications()
+
+    const interval = setInterval(loadNotifications, 30000)
     return () => clearInterval(interval)
-  }, [fetchNotifications])
+  }, [refreshKey])
 
   async function markAsRead(id?: string) {
     try {
@@ -64,7 +65,7 @@ export function Notifications() {
       })
 
       if (response.ok) {
-        fetchNotifications()
+        setRefreshKey((k) => k + 1)
       }
     } catch (error) {
       console.error("Failed to mark as read:", error)
@@ -80,7 +81,7 @@ export function Notifications() {
       })
 
       if (response.ok) {
-        fetchNotifications()
+        setRefreshKey((k) => k + 1)
       }
     } catch (error) {
       console.error("Failed to mark all as read:", error)
@@ -95,7 +96,7 @@ export function Notifications() {
 
       if (response.ok) {
         setNotifications((prev) => prev.filter((n) => n.id !== id))
-        fetchNotifications()
+        setRefreshKey((k) => k + 1)
       }
     } catch (error) {
       console.error("Failed to delete notification:", error)

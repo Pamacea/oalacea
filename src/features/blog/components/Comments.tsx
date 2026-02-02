@@ -8,7 +8,6 @@ import {
   MessageSquare as MessageSquareIcon,
   Reply as ReplyIcon,
   Send as SendIcon,
-  User as UserIcon,
   AlertCircle as AlertCircleIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -28,7 +27,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Checkbox } from '@/components/ui/checkbox'
-import { createComment, getComments } from '@/actions/comments'
+import { createComment } from '@/actions/comments'
 import { commentSchema, type CommentInput } from '@/lib/validations'
 import { cn } from '@/shared/utils'
 import type { Comment } from '@/generated/prisma/client'
@@ -50,7 +49,6 @@ export function Comments({
   initialComments = [],
   count = 0,
 }: CommentsProps) {
-  const [comments, setComments] = useState<CommentWithReplies[]>(initialComments)
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -248,7 +246,7 @@ export function Comments({
       </Card>
 
       <div className="space-y-4">
-        {comments.length === 0 ? (
+        {initialComments.length === 0 ? (
           <Card variant="iron">
             <CardContent className="py-8 text-center">
               <MessageSquareIcon className="mx-auto mb-2 size-8 text-imperium-steel-dark opacity-50" />
@@ -258,7 +256,7 @@ export function Comments({
             </CardContent>
           </Card>
         ) : (
-          comments.map((comment) => (
+          initialComments.map((comment) => (
             <CommentItem
               key={comment.id}
               comment={comment}

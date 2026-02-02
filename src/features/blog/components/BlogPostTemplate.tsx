@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Tag, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { GlitchText } from '@/components/ui/imperium';
 import { sanitizeInlineHtml } from '@/lib/sanitize';
 
@@ -72,18 +73,19 @@ function MarkdownContent({ content }: { content: string }) {
           inList = false;
         }
         if (inCodeBlock) {
+          const currentCodeContent = codeContent;
           elements.push(
             <pre key={`code-${i}`} className="code-block">
               <button
                 className="copy-button"
                 onClick={(e) => {
                   const btn = e.currentTarget as HTMLButtonElement;
-                  navigator.clipboard.writeText(codeContent);
+                  navigator.clipboard.writeText(currentCodeContent);
                   btn.textContent = 'COPIED!';
                   setTimeout(() => btn.textContent = 'COPY', 2000);
                 }}
               >COPY</button>
-              <code>{codeContent}</code>
+              <code>{currentCodeContent}</code>
             </pre>
           );
           codeContent = '';
@@ -201,7 +203,7 @@ export function BlogPostTemplate({
   total = 0,
   variant = 'page',
 }: BlogPostTemplateProps) {
-  const scrollProgress = useRef(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -211,7 +213,7 @@ export function BlogPostTemplate({
     const handleScroll = () => {
       const scrollTop = container.scrollTop;
       const scrollHeight = container.scrollHeight - container.clientHeight;
-      scrollProgress.current = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+      setScrollProgress(scrollHeight > 0 ? scrollTop / scrollHeight : 0);
     };
 
     container.addEventListener('scroll', handleScroll);
@@ -330,7 +332,7 @@ export function BlogPostTemplate({
       <div className="h-1 bg-imperium-black shrink-0 relative overflow-hidden">
         <motion.div
           className="h-full bg-imperium-crimson absolute top-0 left-0 shadow-[0_0_10px_rgba(154,17,21,1)]"
-          animate={{ width: `${scrollProgress.current * 100}%` }}
+          animate={{ width: `${scrollProgress * 100}%` }}
           transition={{ duration: 0.15 }}
         />
       </div>
@@ -362,7 +364,7 @@ export function BlogPostTemplate({
           {post.coverImage && (
             <div className="aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black mb-6 relative">
               <div className="absolute inset-0 bg-gradient-to-t from-imperium-black via-transparent to-transparent" />
-              <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover relative z-10" />
+              <Image src={post.coverImage} alt={post.title} width={800} height={450} className="w-full h-full object-cover relative z-10" unoptimized />
               <div className="absolute inset-0 border border-imperium-crimson/20 pointer-events-none" />
             </div>
           )}

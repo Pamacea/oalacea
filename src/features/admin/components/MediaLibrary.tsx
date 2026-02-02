@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, X, Trash2, Image as ImageIcon, Calendar, FileText } from 'lucide-react';
+import Image from 'next/image';
+import { Search, Trash2, Image as ImageIcon, Calendar, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -143,10 +144,13 @@ export function MediaLibrary({
                     )}
                     onClick={() => setSelectedItem(item)}
                   >
-                    <img
+                    <Image
                       src={item.url}
                       alt={item.alt || item.name}
+                      width={200}
+                      height={200}
                       className="w-full h-full object-cover"
+                      unoptimized
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -193,10 +197,13 @@ export function MediaLibrary({
             <div className="border-t-2 border-imperium-steel-dark p-4 bg-imperium-black">
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-none overflow-hidden border-2 border-imperium-steel-dark flex-shrink-0">
-                  <img
+                  <Image
                     src={selectedItem.url}
                     alt={selectedItem.alt || selectedItem.name}
+                    width={64}
+                    height={64}
                     className="w-full h-full object-cover"
+                    unoptimized
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -240,7 +247,7 @@ export function MediaLibrary({
               Delete image?
             </AlertDialogTitle>
             <AlertDialogDescription className="font-terminal text-imperium-steel">
-              Are you sure you want to delete "{deleteItem?.name}"?
+              Are you sure you want to delete &quot;{deleteItem?.name}&quot;?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -262,11 +269,16 @@ export function MediaLibrary({
             <DialogTitle className="font-terminal text-imperium-bone">{previewItem?.name}</DialogTitle>
           </DialogHeader>
           <div className="flex justify-center bg-imperium-black-deep rounded-none p-4 border-2 border-imperium-steel-dark">
-            <img
-              src={previewItem?.url}
-              alt={previewItem?.alt || previewItem?.name}
-              className="max-w-full max-h-[60vh] object-contain"
-            />
+            {previewItem?.url && (
+              <Image
+                src={previewItem.url}
+                alt={previewItem.alt || previewItem.name || 'Preview'}
+                width={800}
+                height={600}
+                className="max-w-full max-h-[60vh] object-contain"
+                unoptimized
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>

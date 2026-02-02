@@ -34,10 +34,14 @@ export function CinematicCamera({
   duration = 8,
   onComplete,
   allowSkip = true,
-  targetCameraRef,
 }: CinematicCameraProps) {
   const cameraRef = useRef<PerspectiveCameraType | null>(null);
-  const [isActive, setIsActive] = useState(true);
+  const startTimeRef = useRef<number>(0);
+  const [isActive, setIsActive] = useState(() => {
+    const { seenDevWorldIntro, seenArtWorldIntro } = useOnboardingStore.getState();
+    const shouldPlay = world === 'dev' ? !seenDevWorldIntro : !seenArtWorldIntro;
+    return shouldPlay;
+  });
   const [isSkipped, setIsSkipped] = useState(false);
 
   const { seenDevWorldIntro, seenArtWorldIntro, setWorldIntroSeen } = useOnboardingStore();
@@ -45,11 +49,14 @@ export function CinematicCamera({
   // Check if intro should play
   const shouldPlay = world === 'dev' ? !seenDevWorldIntro : !seenArtWorldIntro;
 
+  // Initialize start time when cinematic begins
   useEffect(() => {
     if (!shouldPlay || isSkipped) {
-      setIsActive(false);
       return;
     }
+
+    // Initialize start time
+    startTimeRef.current = Date.now();
 
     // Mark as seen
     setWorldIntroSeen(world);
@@ -75,7 +82,7 @@ export function CinematicCamera({
       window.removeEventListener('keydown', handleKeyDown);
       clearTimeout(timer);
     };
-  }, [shouldPlay, isSkipped, allowSkip, duration, world, setWorldIntroSeen, onComplete]);
+  }, [allowSkip, duration, isSkipped, onComplete, shouldPlay, world, setWorldIntroSeen]);
 
   // Calculate position along path using Catmull-Rom spline
   const getPointOnPath = (t: number) => {
@@ -104,12 +111,10 @@ export function CinematicCamera({
     return { position, lookAt };
   };
 
-  const startTime = useRef(Date.now());
-
   useFrame(() => {
     if (!isActive || !cameraRef.current || isSkipped) return;
 
-    const elapsed = (Date.now() - startTime.current) / 1000;
+    const elapsed = (Date.now() - startTimeRef.current) / 1000;
     const t = elapsed / duration;
 
     if (t >= 1) {

@@ -1,5 +1,4 @@
 // World configurations export
-import type { WorldType } from '@/core/3d/scenes/types';
 import { DEV_WORLD } from './dev';
 import { ART_WORLD } from './art';
 

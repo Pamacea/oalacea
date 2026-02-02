@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     const goals = await getGoalConversions(period);
     return NextResponse.json(goals);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch goals' }, { status: 500 });
   }
 }

@@ -3,9 +3,7 @@
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 import { Vector3, Group } from 'three';
-import type { ObstacleConfig } from '@/core/3d/physics/config/ObstacleConfig';
 import type { HitboxShape } from '@/core/3d/physics/engine/hitboxes/HitboxShape';
 
 // ============================================
@@ -35,39 +33,6 @@ export interface DebugOverlayProps {
 // ============================================
 // COMPONENTS
 // ============================================
-
-/**
- * Wireframe circle hitbox visualization
- */
-function CircleHitboxDebug({
-  position,
-  radius,
-  color = 0xff0000,
-}: {
-  position: Vector3;
-  radius: number;
-  color?: number;
-}) {
-  const points = useMemo(() => {
-    const segments = 32;
-    const pts: number[] = [];
-    for (let i = 0; i <= segments; i++) {
-      const angle = (i / segments) * Math.PI * 2;
-      pts.push(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
-    }
-    return new Float32Array(pts);
-  }, [radius]);
-
-  const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(points, 3));
-    return geo;
-  }, [points]);
-
-  return (
-    <primitive object={new THREE.Line(geometry, new THREE.LineBasicMaterial({ color, linewidth: 2 }))} position={[position.x, position.y, position.z]} />
-  );
-}
 
 /**
  * Wireframe box hitbox visualization
@@ -147,8 +112,7 @@ function PathDebug({
   path: Vector3[];
   color?: number;
 }) {
-  if (!path || path.length < 2) return null;
-
+  // useMemo must be called before any early return to follow rules of hooks
   const pathPoints = useMemo(() => {
     const pts: number[] = [];
     for (const p of path) {
@@ -156,6 +120,8 @@ function PathDebug({
     }
     return new Float32Array(pts);
   }, [path]);
+
+  if (!path || path.length < 2) return null;
 
   return (
     <>

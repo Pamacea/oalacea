@@ -8,9 +8,6 @@ import {
   Line,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -52,24 +49,18 @@ interface AnalyticsDashboardProps {
   period?: TimePeriod;
 }
 
-const COLORS = ['#9a1115', '#b8a646', '#2a3a5a', '#3a3a3a', '#8b8b8b']; // imperium colors
-
 export function AnalyticsDashboard({ initialData, period: initialPeriod = 'month' }: AnalyticsDashboardProps) {
   const [data, setData] = useState<AnalyticsData>(initialData);
   const [period, setPeriod] = useState<TimePeriod>(initialPeriod);
-  const [isLoading, setIsLoading] = useState(false);
   const [realtimeIndicator, setRealtimeIndicator] = useState(false);
 
   const fetchData = async (newPeriod: TimePeriod) => {
-    setIsLoading(true);
     try {
       const response = await fetch(`/api/analytics/dashboard?period=${newPeriod}`);
       const result = await response.json();
       setData(result);
     } catch {
       // Error handling
-    } finally {
-      setIsLoading(false);
     }
   };
 

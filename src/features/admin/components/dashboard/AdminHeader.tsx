@@ -32,9 +32,9 @@ export function AdminHeader() {
             <GlitchText intensity="severe">[ COMMAND CENTER ]</GlitchText>
           </motion.h1>
           <p className="font-terminal text-imperium-steel text-sm mt-2 flex items-center gap-2">
-            <span className="text-imperium-crimson">{'>'}</span>
+            <span className="text-imperium-crimson">{">"}</span>
             <span className="text-imperium-gold">IMPERIUM</span>
-            <span className="text-imperium-steel-dark">// ADMINISTRATION CONSOLE</span>
+            <span className="text-imperium-steel-dark">{/* // ADMINISTRATION CONSOLE */}</span>
           </p>
         </div>
 

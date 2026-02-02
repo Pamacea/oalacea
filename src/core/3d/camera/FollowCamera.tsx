@@ -26,7 +26,6 @@ export function FollowCamera({ targetRef, mode, cameraRef: externalCameraRef, on
   const cameraTarget = useRef({ x: -15, y: 20, z: 15 });
   const keys = useRef({ forward: false, backward: false, left: false, right: false });
   const lastReportedPosition = useRef({ x: -15, z: 15 });
-  const smoothFactor = reducedMotion ? REDUCED_MOTION_SMOOTH_FACTOR : DEFAULT_SMOOTH_FACTOR;
 
   // Sync external ref
   useEffect(() => {

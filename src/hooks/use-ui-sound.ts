@@ -9,7 +9,7 @@ import { useAudioStore } from '@/features/3d-world/store/3d-audio-store';
  * Uses Web Audio API to generate sounds without external files
  */
 
-const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as any).webkitAudioContext)() : null;
+const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)() : null;
 
 type SoundType = 'hover' | 'click' | 'open' | 'close' | 'error' | 'success' | 'typing';
 

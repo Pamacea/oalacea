@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Group, Mesh, DoubleSide, Vector3 } from 'three';
+import { Group, Mesh, DoubleSide } from 'three';
 import { Text } from '@react-three/drei';
 import { useModalStore } from '@/store/modal-store';
 

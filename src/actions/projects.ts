@@ -3,10 +3,8 @@
 
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import type { Project, WorldPosition, Prisma } from '@/generated/prisma/client';
+import type { Prisma } from '@/generated/prisma/client';
 import { NotFoundError } from '@/core/errors';
-
-type ProjectWithWorldPosition = Project & { worldPosition: WorldPosition | null };
 
 // =========================================
 // GET ACTIONS (cached with unstable_cache)

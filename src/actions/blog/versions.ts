@@ -73,7 +73,7 @@ export async function updatePostWithVersion(
   await createPostVersion(existingPost.id, data.changeNote);
 
   // Update the post
-  const { changeNote, ...updateData } = data;
+  const { ...updateData } = data;
 
   const post = await prisma.post.update({
     where: { slug },

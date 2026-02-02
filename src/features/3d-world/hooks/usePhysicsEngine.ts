@@ -2,7 +2,7 @@
 // Now supports unified ObstacleConfig with explicit hitbox types
 'use client';
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import { Vector3 } from 'three';
 import {
   SpatialHashGrid,
@@ -16,12 +16,6 @@ import type { ObstacleConfig, HitboxConfig } from '@/core/3d/physics/config/Obst
 import type { CollisionZone } from '@/core/3d/scenes/collisions';
 import { CollisionLayer } from '@/core/3d/physics/config/CollisionLayers';
 import { getControllerConfig } from '@/core/3d/physics/config/PhysicsConfig';
-
-interface PhysicsEngineConfig {
-  cellSize?: number;
-  worldBounds?: { min: number; max: number };
-  enableDebug?: boolean;
-}
 
 interface PhysicsEngineInstance {
   spatialGrid: SpatialHashGrid;
@@ -63,10 +57,10 @@ const CHARACTER_MARGIN = 0.15;
  * Now supports both new ObstacleConfig and legacy CollisionZone formats.
  */
 export function usePhysicsEngine(
-  collisionZones: (ObstacleConfig | CollisionZone)[],
-  config?: PhysicsEngineConfig
+  collisionZones: (ObstacleConfig | CollisionZone)[]
 ): PhysicsEngineInstance | null {
   const engineRef = useRef<PhysicsEngineInstance | null>(null);
+  const [engine, setEngine] = useState<PhysicsEngineInstance | null>(null);
 
   // Stable dependency for useEffect - only changes if zone data actually changes
   const zonesKey = useMemo(() => {
@@ -126,15 +120,22 @@ export function usePhysicsEngine(
     });
     console.log('[Physics] Added all obstacles. Total:', instance.getStats().obstacleCount);
 
+    // Use ref for immediate access and defer state update
     engineRef.current = instance;
+
+    // Use setTimeout to defer setState to avoid cascading renders
+    const timeoutId = setTimeout(() => {
+      setEngine(instance);
+    }, 0);
 
     return () => {
       console.log('[Physics] Cleanup - clearing engine');
+      clearTimeout(timeoutId);
       engineRef.current = null;
     };
   }, [zonesKey, collisionZones]);
 
-  return engineRef.current;
+  return engine;
 }
 
 /**
@@ -294,12 +295,12 @@ export function useCharacterController(
   useEffect(() => {
     if (!engine) return;
 
-    const config = profileName ? getControllerConfig(profileName) : undefined;
+    const controllerConfig = profileName ? getControllerConfig(profileName) : undefined;
 
     controllerRef.current = new CharacterController(
       engine.collisionDetector,
       startPosition || new Vector3(0, 0.5, 0),
-      config
+      controllerConfig
     );
 
     return () => {

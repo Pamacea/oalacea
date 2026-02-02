@@ -31,23 +31,21 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
     frameTime: 16.67,
     isLowPerformance: false,
   });
+  const [lastFrameTime, setLastFrameTime] = useState<number>(() => performance.now());
 
   const frameTimes = useRef<number[]>([]);
-  const lastFrameTime = useRef<number>(performance.now());
   const fpsSamples = useRef<number[]>([]);
   const lowPerformanceFrames = useRef<number>(0);
   const highPerformanceFrames = useRef<number>(0);
 
-  const qualitySettings = useSettingsStore((s) => s.qualitySettings);
   const currentQuality = useSettingsStore((s) => s.quality);
   const autoQuality = useSettingsStore((s) => s.autoQuality);
   const setQuality = useSettingsStore((s) => s.setQuality);
-  const updateQualitySettings = useSettingsStore((s) => s.updateQualitySettings);
 
   const measureFPS = useCallback(() => {
     const now = performance.now();
-    const delta = now - lastFrameTime.current;
-    lastFrameTime.current = now;
+    const delta = now - lastFrameTime;
+    setLastFrameTime(now);
 
     frameTimes.current.push(delta);
     if (frameTimes.current.length > sampleSize) {
@@ -104,7 +102,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
     }
 
     return fps;
-  }, [lowFpsThreshold, highFpsThreshold, sampleSize, autoQuality, autoAdjust, currentQuality, setQuality]);
+  }, [lowFpsThreshold, highFpsThreshold, sampleSize, autoQuality, autoAdjust, currentQuality, setQuality, lastFrameTime]);
 
   useFrame(() => {
     measureFPS();
@@ -145,13 +143,13 @@ export function useDetailedPerformanceMonitor(): PerformanceData {
   });
 
   const fpsHistory = useRef<number[]>([]);
-  const lastTime = useRef<number>(performance.now());
+  const [lastTime, setLastTime] = useState<number>(() => performance.now());
   const frameCount = useRef<number>(0);
 
   useFrame(() => {
     const now = performance.now();
-    const delta = now - lastTime.current;
-    lastTime.current = now;
+    const delta = now - lastTime;
+    setLastTime(now);
 
     const fps = 1000 / delta;
     frameCount.current += 1;

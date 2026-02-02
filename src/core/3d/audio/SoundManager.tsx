@@ -1,8 +1,7 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useAudioStore } from '@/features/3d-world/store';
-import type { WorldType } from '@/core/3d/scenes/types';
 
 export type SoundType = 'interaction' | 'hover' | 'worldSwitch' | 'click' | 'success' | 'error';
 
@@ -87,8 +86,8 @@ class SoundManagerClass {
   }
 
   async crossfadeWorld(
-    fromWorld: WorldType,
-    toWorld: WorldType,
+    fromWorld: string,
+    toWorld: string,
     duration: number
   ): Promise<void> {
     const store = useAudioStore.getState();
@@ -105,7 +104,7 @@ class SoundManagerClass {
 const soundManager = new SoundManagerClass();
 
 export function useSoundManager() {
-  const { isEnabled, masterVolume, sfxVolume, isPaused } = useAudioStore();
+  const { isEnabled, isPaused } = useAudioStore();
 
   useEffect(() => {
     if (isEnabled) {
@@ -129,7 +128,7 @@ export function useSoundManager() {
   const playError = useCallback(() => play('error'), [play]);
 
   const crossfadeWorld = useCallback(
-    async (fromWorld: WorldType, toWorld: WorldType, duration = 2000) => {
+    async (fromWorld: string, toWorld: string, duration = 2000) => {
       if (isEnabled) {
         await soundManager.crossfadeWorld(fromWorld, toWorld, duration);
       }

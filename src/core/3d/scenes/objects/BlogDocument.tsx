@@ -3,7 +3,14 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
+import * as THREE from 'three';
 import { Text } from '@react-three/drei';
+
+// Seed-based random for deterministic values during render
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 interface BlogCategory {
   id?: string;
@@ -30,7 +37,6 @@ interface BlogDocumentProps {
   position: [number, number, number];
   world: 'DEV' | 'ART';
   isActive?: boolean;
-  onInteract?: () => void;
 }
 
 const DEV_COLORS = {
@@ -70,7 +76,7 @@ function getCategoryColor(category: { slug?: string | null } | null, baseColor: 
   return CATEGORY_COLOR_MAP[normalized] ?? CATEGORY_COLOR_MAP.default;
 }
 
-export function BlogDocument({ post, position, world, isActive = false, onInteract }: BlogDocumentProps) {
+export function BlogDocument({ post, position, world, isActive = false }: BlogDocumentProps) {
   const groupRef = useRef<Group>(null);
   const hologramRef = useRef<Mesh>(null);
   const ringRef = useRef<Mesh>(null);
@@ -81,11 +87,12 @@ export function BlogDocument({ post, position, world, isActive = false, onIntera
 
   // Particles
   const particles = useMemo(() => {
+    // Use deterministic seed-based random instead of Math.random
     return Array.from({ length: 8 }, (_, i) => ({
       angle: (i / 8) * Math.PI * 2,
-      radius: 1.5 + Math.random() * 0.5,
-      speed: 0.5 + Math.random() * 0.5,
-      yOffset: (Math.random() - 0.5) * 2,
+      radius: 1.5 + seededRandom(i * 3) * 0.5,
+      speed: 0.5 + seededRandom(i * 5 + 50) * 0.5,
+      yOffset: (seededRandom(i * 7 + 100) - 0.5) * 2,
     }));
   }, []);
 
@@ -121,7 +128,7 @@ export function BlogDocument({ post, position, world, isActive = false, onIntera
       const intensity = 0.5 + Math.sin(time * 4) * 0.3;
       groupRef.current.children.forEach((child) => {
         if (child.type === 'PointLight') {
-          (child as any).intensity = intensity * 2;
+          (child as THREE.PointLight).intensity = intensity * 2;
         }
       });
     }

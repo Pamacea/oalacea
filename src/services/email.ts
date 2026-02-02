@@ -1,10 +1,4 @@
-export interface EmailOptions {
-  to: string
-  subject: string
-  html: string
-}
-
-export async function sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
+export async function sendEmail(): Promise<void> {
   if (!process.env.SMTP_HOST) {
     console.warn("Email service not configured. Skipping email send.")
     return

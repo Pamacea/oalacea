@@ -3,7 +3,7 @@ import { randomBytes } from "crypto"
 import { NextResponse } from "next/server"
 import { auth } from "@/core/auth"
 
-export async function POST(request: Request) {
+export async function POST() {
   const session = await auth()
 
   if (!session?.user) {

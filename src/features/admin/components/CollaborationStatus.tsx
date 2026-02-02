@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useCallback, useEffect, useState, useTransition } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -62,53 +62,29 @@ export function CollaborationStatus({
   const [mentions, setMentions] = useState<string[]>([])
   const [versionHistory, setVersionHistory] = useState<VersionChange[]>([])
 
-  const contentLockData = useContentLock({
-    entityType,
-    entityId,
-    pollInterval: 15000,
-    onLockAcquired: () => {
-      fetchComments()
-    },
-    onLockConflict: (currentLock) => {
-      // Content is locked by another user - show notification in UI
-    },
-  })
-
-  const { lock, isLockedByMe, isLockedByOthers, isLoading, acquireLock, releaseLock, refreshLock, forceReleaseLock } = contentLockData
-  const isLocked = isLockedByMe || isLockedByOthers
-  const lockedBy = lock?.user?.name || ""
-
-  const canEdit = can("posts:write")
-  const canModerate = permissions.role === "ADMIN"
-
-  useEffect(() => {
-    fetchComments()
-    fetchVersionHistory()
-  }, [entityId])
-
-  async function fetchComments() {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/comments?entityType=${entityType}&entityId=${entityId}`)
       if (response.ok) {
         const data = await response.json()
-        const commentsWithAuthors = (data.comments || []).map((c: any) => ({
-          id: c.id,
-          content: c.content,
-          authorId: c.authorId,
-          authorName: c.author?.name || c.author?.email || "Unknown",
-          authorEmail: c.author?.email || "",
-          authorImage: c.author?.image,
-          createdAt: c.createdAt,
-          mentions: c.mentions || [],
+        const commentsWithAuthors = (data.comments || []).map((c: unknown) => ({
+          id: (c as { id: string }).id,
+          content: (c as { content: string }).content,
+          authorId: (c as { authorId: string }).authorId,
+          authorName: (c as { author?: { name?: string; email?: string } })?.author?.name || (c as { author?: { email?: string } })?.author?.email || "Unknown",
+          authorEmail: (c as { author?: { email?: string } })?.author?.email || "",
+          authorImage: (c as { author?: { image?: string | null } })?.author?.image,
+          createdAt: (c as { createdAt: Date }).createdAt,
+          mentions: (c as { mentions?: string[] })?.mentions || [],
         }))
         setComments(commentsWithAuthors)
       }
     } catch (error) {
       console.error("Failed to fetch comments:", error)
     }
-  }
+  }, [entityType, entityId])
 
-  async function fetchVersionHistory() {
+  const fetchVersionHistory = useCallback(async () => {
     try {
       const response = await fetch(`/api/${entityType}/${entityId}/versions`)
       if (response.ok) {
@@ -118,7 +94,31 @@ export function CollaborationStatus({
     } catch (error) {
       console.error("Failed to fetch version history:", error)
     }
-  }
+  }, [entityType, entityId])
+
+  const contentLockData = useContentLock({
+    entityType,
+    entityId,
+    pollInterval: 15000,
+    onLockAcquired: () => {
+      fetchComments()
+    },
+    onLockConflict: () => {
+      // Content is locked by another user - show notification in UI
+    },
+  })
+
+  const { isLockedByMe, isLockedByOthers, isLoading, acquireLock, releaseLock, refreshLock, forceReleaseLock } = contentLockData
+  const isLocked = isLockedByMe || isLockedByOthers
+  const lockedBy = contentLockData.lock?.user?.name || ""
+
+  const canEdit = can("posts:write")
+
+  useEffect(() => {
+    fetchComments()
+    fetchVersionHistory()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityId])
 
   async function handleLockToggle() {
     if (isLockedByMe) {
@@ -222,7 +222,7 @@ export function CollaborationStatus({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => (isLockedByMe ? releaseLock() : forceReleaseLock(lock?.id || ""))}
+                  onClick={() => (isLockedByMe ? releaseLock() : forceReleaseLock(contentLockData.lock?.id || ""))}
                   disabled={isLoading}
                 >
                   {isLockedByMe ? "Release" : "Force Unlock"}
@@ -237,7 +237,7 @@ export function CollaborationStatus({
           </div>
         )}
 
-        {!lock && canEdit && (
+        {!isLocked && canEdit && (
           <Button
             variant="outline"
             className="w-full justify-start"
@@ -378,7 +378,7 @@ export interface LockIndicatorProps {
 }
 
 export function LockIndicator({ entityType, entityId, className }: LockIndicatorProps) {
-  const { lock, isLockedByMe, isLockedByOthers } = useContentLock({
+  const { isLockedByMe, isLockedByOthers } = useContentLock({
     entityType,
     entityId
   })
@@ -386,15 +386,6 @@ export function LockIndicator({ entityType, entityId, className }: LockIndicator
   const isLocked = isLockedByMe || isLockedByOthers
 
   if (!isLocked) return null
-
-  function getInitials(name: string) {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
 
   return (
     <div
@@ -426,25 +417,29 @@ export interface MentionAutocompleteProps {
 export function MentionAutocomplete({ search, onSelect }: MentionAutocompleteProps) {
   const [users, setUsers] = useState<Array<{ id: string; name: string | null; email: string }>>([])
 
-  useEffect(() => {
-    if (search.startsWith("@") && search.length > 1) {
-      fetchUsers(search.slice(1))
-    } else {
-      setUsers([])
-    }
-  }, [search])
-
-  async function fetchUsers(query: string) {
-    try {
-      const response = await fetch(`/api/users?search=${query}`)
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data.slice(0, 5))
-      }
-    } catch (error) {
-      console.error("Failed to fetch users:", error)
-    }
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
   }
+
+  useEffect(() => {
+    const fetchUsersEffect = async () => {
+      if (search.startsWith("@") && search.length > 1) {
+        const response = await fetch(`/api/users?search=${search.slice(1)}`)
+        if (response.ok) {
+          const data = await response.json()
+          setUsers(data.slice(0, 5))
+        }
+      } else {
+        setUsers([])
+      }
+    }
+    fetchUsersEffect()
+  }, [search])
 
   if (users.length === 0) return null
 
@@ -466,13 +461,4 @@ export function MentionAutocomplete({ search, onSelect }: MentionAutocompletePro
       ))}
     </div>
   )
-
-  function getInitials(name: string) {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
 }

@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { tutorialSteps, getNextStep, getPrevStep, getStepProgress } from './tutorialSteps';
 import { TutorialStepCard } from './TutorialStep';
-import { cn } from '@/lib/utils';
 
 interface TutorialOverlayProps {
   onComplete?: () => void;
@@ -20,7 +19,6 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
     currentStep,
     setCurrentStep,
     completeStep,
-    isStepCompleted,
     setSeenTutorial,
     dismissTutorial,
     tutorialDismissed,
@@ -95,6 +93,13 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
     return () => window.removeEventListener('resize', updateSpotlight);
   }, [currentStepId]);
 
+  const handleComplete = useCallback(() => {
+    setSeenTutorial(true);
+    dismissTutorial();
+    setCurrentStep(null);
+    onComplete?.();
+  }, [setSeenTutorial, dismissTutorial, setCurrentStep, onComplete]);
+
   const handleNext = useCallback(() => {
     if (!currentStepId) return;
 
@@ -106,7 +111,7 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
     } else {
       handleComplete();
     }
-  }, [currentStepId, completeStep, setCurrentStep]);
+  }, [currentStepId, completeStep, setCurrentStep, handleComplete]);
 
   const handlePrevious = useCallback(() => {
     if (!currentStepId) return;
@@ -119,14 +124,7 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
 
   const handleSkip = useCallback(() => {
     handleComplete();
-  }, []);
-
-  const handleComplete = useCallback(() => {
-    setSeenTutorial(true);
-    dismissTutorial();
-    setCurrentStep(null);
-    onComplete?.();
-  }, [setSeenTutorial, dismissTutorial, setCurrentStep, onComplete]);
+  }, [handleComplete]);
 
   if (!currentStepId) return null;
 

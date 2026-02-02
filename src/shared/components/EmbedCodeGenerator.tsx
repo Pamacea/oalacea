@@ -24,25 +24,25 @@ interface EmbedCodeGeneratorProps {
   defaultWorld?: "dev" | "art"
   defaultPosition?: string
   // Dependencies to inject from app layer
-  Button?: React.ComponentType<any>
-  Dialog?: React.ComponentType<any>
-  DialogContent?: React.ComponentType<any>
-  DialogDescription?: React.ComponentType<any>
-  DialogHeader?: React.ComponentType<any>
-  DialogTitle?: React.ComponentType<any>
-  DialogTrigger?: React.ComponentType<any>
-  Card?: React.ComponentType<any>
-  CardContent?: React.ComponentType<any>
-  CardHeader?: React.ComponentType<any>
-  CardTitle?: React.ComponentType<any>
-  Select?: React.ComponentType<any>
-  SelectContent?: React.ComponentType<any>
-  SelectItem?: React.ComponentType<any>
-  SelectTrigger?: React.ComponentType<any>
-  SelectValue?: React.ComponentType<any>
-  Switch?: React.ComponentType<any>
-  Label?: React.ComponentType<any>
-  Input?: React.ComponentType<any>
+  Button?: React.ComponentType<React.ComponentProps<'button'> & { variant?: string; size?: string; className?: string; children?: React.ReactNode }>
+  Dialog?: React.ComponentType<{ children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }>
+  DialogContent?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  DialogDescription?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  DialogHeader?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  DialogTitle?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  DialogTrigger?: React.ComponentType<{ children: React.ReactNode; asChild?: boolean }>
+  Card?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  CardContent?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  CardHeader?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  CardTitle?: React.ComponentType<{ children: React.ReactNode; className?: string }>
+  Select?: React.ComponentType<{ children: React.ReactNode; value?: string; onValueChange?: (value: string) => void }>
+  SelectContent?: React.ComponentType<{ children: React.ReactNode }>
+  SelectItem?: React.ComponentType<{ children: React.ReactNode; value: string }>
+  SelectTrigger?: React.ComponentType<{ children: React.ReactNode; id?: string; className?: string }>
+  SelectValue?: React.ComponentType<{ placeholder?: string }>
+  Switch?: React.ComponentType<{ id?: string; checked?: boolean; onCheckedChange?: (checked: boolean) => void }>
+  Label?: React.ComponentType<{ htmlFor?: string; children: React.ReactNode; className?: string }>
+  Input?: React.ComponentType<React.ComponentProps<'input'> & { id?: string; className?: string }>
 }
 
 export function EmbedCodeGenerator({
@@ -131,12 +131,13 @@ export function EmbedCodeGenerator({
     )
   }
 
-  const DialogComponent = Dialog as any
-  const DialogTriggerComponent = DialogTrigger as any
-  const DialogContentComponent = DialogContent as any
-  const DialogHeaderComponent = DialogHeader as any
-  const DialogTitleComponent = DialogTitle as any
-  const DialogDescriptionComponent = DialogDescription as any
+  // Type assertions for component props - these components are provided from app layer
+  const DialogComponent = Dialog as React.ComponentType<{ children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }>
+  const DialogTriggerComponent = DialogTrigger as React.ComponentType<{ children: React.ReactNode; asChild?: boolean }>
+  const DialogContentComponent = DialogContent as React.ComponentType<{ children: React.ReactNode; className?: string }>
+  const DialogHeaderComponent = DialogHeader as React.ComponentType<{ children: React.ReactNode; className?: string }>
+  const DialogTitleComponent = DialogTitle as React.ComponentType<{ children: React.ReactNode; className?: string }>
+  const DialogDescriptionComponent = DialogDescription as React.ComponentType<{ children: React.ReactNode; className?: string }>
 
   return (
     <DialogComponent>

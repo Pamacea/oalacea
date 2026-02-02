@@ -3,7 +3,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 const ONBOARDING_STORAGE_KEY = 'oalacea_onboarding';
-const TUTORIAL_STORAGE_KEY = 'oalacea_tutorial_completed';
 
 type TutorialStep = 'welcome' | 'movement' | 'camera' | 'interaction' | 'worlds' | 'navigation';
 

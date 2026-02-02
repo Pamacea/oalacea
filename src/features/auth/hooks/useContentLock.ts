@@ -69,8 +69,8 @@ export function useContentLock({
           onLockConflict?.(currentLock)
         }
       }
-    } catch (error) {
-      console.error("Failed to fetch lock status:", error)
+    } catch {
+      console.error("Failed to fetch lock status")
     }
   }, [enabled, entityType, entityId, session?.user?.id, isLockedByMe, isLockedByOthers, onLockAcquired, onLockLost, onLockConflict])
 
@@ -100,7 +100,7 @@ export function useContentLock({
         onLockConflict?.(data.lock)
         return data
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: "Failed to acquire lock" }
     } finally {
       setIsLoading(false)
@@ -127,7 +127,7 @@ export function useContentLock({
       }
 
       return data
-    } catch (error) {
+    } catch {
       return { success: false }
     }
   }, [session, entityType, entityId, onLockLost])
@@ -153,7 +153,7 @@ export function useContentLock({
       }
 
       return data
-    } catch (error) {
+    } catch {
       return { success: false, error: "Failed to refresh lock" }
     } finally {
       setIsLoading(false)
@@ -177,7 +177,7 @@ export function useContentLock({
       }
 
       return data
-    } catch (error) {
+    } catch {
       return { success: false, error: "Failed to force release lock" }
     }
   }, [session, fetchLock])

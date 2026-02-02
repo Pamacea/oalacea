@@ -175,7 +175,6 @@ export class CharacterController {
       Math.ceil(moveDistance / this.config.minStepSize)
     );
 
-    const stepDelta = deltaTime / numSteps;
     const stepDistance = moveDistance / numSteps;
 
     let currentPos = this.state.position.clone();

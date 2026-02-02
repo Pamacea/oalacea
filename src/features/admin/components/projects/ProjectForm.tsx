@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Save, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { createProject, updateProject, getProjectCategories } from '@/actions/projects';
@@ -126,7 +127,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
     setUploadProgress(0);
 
     try {
-      const img = new Image();
+      const img = document.createElement('img');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -174,7 +175,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
       };
 
       reader.readAsDataURL(file);
-    } catch (error) {
+    } catch {
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -264,7 +265,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
 
       {formData.thumbnail && (
         <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-          <img src={formData.thumbnail} alt="Thumbnail preview" className="w-full h-full object-cover" />
+          <Image src={formData.thumbnail} alt="Thumbnail preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <button
             type="button"
             onClick={() => setFormData((prev) => ({ ...prev, thumbnail: '' }))}

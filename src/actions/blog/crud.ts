@@ -3,7 +3,6 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import type { Prisma } from '@/generated/prisma/client';
 import { NotFoundError } from '@/core/errors';
 
 export async function createPost(data: {

@@ -60,7 +60,7 @@ export function getCollidableLayers(layer: CollisionLayer): CollisionLayer[] {
   const mask = LAYER_MATRIX[layer];
   const layers: CollisionLayer[] = [];
 
-  for (const [key, value] of Object.entries(CollisionLayer)) {
+  for (const value of Object.values(CollisionLayer)) {
     if (typeof value === 'number' && (mask & value) !== 0) {
       layers.push(value);
     }

@@ -3,13 +3,19 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
+import * as THREE from 'three';
 import { Text } from '@react-three/drei';
+
+// Seed-based random for deterministic values during render
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 interface AdminTerminalProps {
   position: [number, number, number];
   world: 'DEV' | 'ART';
   isActive?: boolean;
-  onInteract?: () => void;
   isAdmin?: boolean; // Passed from wrapper instead of using useSession
 }
 
@@ -34,7 +40,7 @@ const ART_COLORS = {
   concrete: 0x3a3a4a,
 };
 
-export function AdminTerminal({ position, world, isActive = false, onInteract, isAdmin = false }: AdminTerminalProps) {
+export function AdminTerminal({ position, world, isActive = false, isAdmin = false }: AdminTerminalProps) {
   const groupRef = useRef<Group>(null);
   const screenRef = useRef<Mesh>(null);
 
@@ -43,11 +49,12 @@ export function AdminTerminal({ position, world, isActive = false, onInteract, i
 
   // Floating particles for terminal effect
   const particles = useMemo(() => {
+    // Use deterministic seed-based random instead of Math.random
     return Array.from({ length: 12 }, (_, i) => ({
       angle: (i / 12) * Math.PI * 2,
-      radius: 0.8 + Math.random() * 0.4,
-      speed: 0.3 + Math.random() * 0.4,
-      yOffset: (Math.random() - 0.5) * 1.5,
+      radius: 0.8 + seededRandom(i * 3) * 0.4,
+      speed: 0.3 + seededRandom(i * 5 + 50) * 0.4,
+      yOffset: (seededRandom(i * 7 + 100) - 0.5) * 1.5,
     }));
   }, []);
 
@@ -57,7 +64,8 @@ export function AdminTerminal({ position, world, isActive = false, onInteract, i
     // Screen glow pulse
     if (screenRef.current) {
       const pulse = (Math.sin(time * 2) + 1) * 0.5;
-      (screenRef.current.material as any).emissiveIntensity = 0.3 + pulse * 0.3;
+      const mat = screenRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.3 + pulse * 0.3;
     }
 
     // Animate access indicator if admin

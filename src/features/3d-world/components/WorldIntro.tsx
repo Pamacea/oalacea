@@ -34,12 +34,11 @@ export function WorldIntro({ world, isActive, onComplete }: WorldIntroProps) {
   const config = WORLD_CONFIG[world];
 
   useEffect(() => {
-    if (isActive) {
-      const timer = setTimeout(() => setShowSkip(true), 2000);
-      return () => clearTimeout(timer);
-    } else {
-      setShowSkip(false);
-    }
+    if (!isActive) return;
+    const timer = setTimeout(() => {
+      setShowSkip(true);
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [isActive]);
 
   const handleSkip = () => {

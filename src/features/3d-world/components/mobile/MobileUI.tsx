@@ -8,17 +8,13 @@ import { Button } from '@/components/ui/button';
 import { useWorldStore } from '@/features/3d-world/store';
 import { useOverlayStore } from '@/features/3d-world/store';
 
-interface MobileUIProps {
-  currentWorld: 'dev' | 'art';
-}
-
 const DRAG_THRESHOLD = 50;
 const SNAP_HEIGHTS = {
   collapsed: 60,
   expanded: 280,
 };
 
-export function MobileUI({ currentWorld }: MobileUIProps) {
+export function MobileUI(): React.ReactElement {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLandscape, setIsLandscape] = useState(false);
   const [showRotationHint, setShowRotationHint] = useState(true);

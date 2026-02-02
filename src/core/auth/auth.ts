@@ -71,7 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (!user.email) return false
 
       if (account?.provider === "credentials") {

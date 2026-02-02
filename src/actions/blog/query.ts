@@ -3,7 +3,7 @@
 
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import type { Category, Post, PostVersion, Prisma } from '@/generated/prisma/client';
+import type { Category, PostVersion, Prisma } from '@/generated/prisma/client';
 
 export type PostListItem = {
   id: string;

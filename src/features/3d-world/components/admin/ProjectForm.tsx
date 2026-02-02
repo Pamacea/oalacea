@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, FolderKanban, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Hammer, Shield } from 'lucide-react';
+import { ArrowLeft, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Hammer } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { getProjectById } from '@/actions/projects';
 import { useCreateProject, useUpdateProject, type CreateProjectInput } from './queries/use-project-mutations';
 import { useInWorldAdminStore } from '@/features/admin/store';
@@ -32,7 +33,7 @@ type FormData = {
   categoryId: string;
 };
 
-export function ProjectForm({ projectId, world }: { projectId?: string; world: 'dev' | 'art' }) {
+export function ProjectForm({ projectId }: { projectId?: string }) {
   const { setView } = useInWorldAdminStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { playHover, playClick } = useUISound();
@@ -100,7 +101,8 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
         categoryId: categories[0].id,
       }));
     }
-  }, [categories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories.length, categories[0]?.id]);
 
   const generateSlug = (title: string) => {
     return title
@@ -133,7 +135,7 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
     setUploadProgress(0);
 
     try {
-      const img = new Image();
+      const img = document.createElement('img');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -285,7 +287,7 @@ export function ProjectForm({ projectId, world }: { projectId?: string; world: '
       {/* Thumbnail Preview */}
       {formData.thumbnail && (
         <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-          <img src={formData.thumbnail} alt="Thumbnail preview" className="w-full h-full object-cover" />
+          <Image src={formData.thumbnail} alt="Thumbnail preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <motion.button
             type="button"
             onMouseEnter={playHover}

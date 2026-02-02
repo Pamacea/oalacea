@@ -1,7 +1,6 @@
 // TestScene - Scène de test avec cube pour Phase 1
 'use client';
 
-import { meshBounds } from '@react-three/drei';
 import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';

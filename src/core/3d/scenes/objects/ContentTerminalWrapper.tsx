@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { ContentTerminal } from './ContentTerminal';
 import { getPosts } from '@/actions/blog';
-import { getProjects } from '@/actions/projects';
+import { getProjects, type ProjectListItem } from '@/actions/projects';
+import type { PostListItem } from '@/actions/blog/query';
 
 export function BlogContentTerminal({ position, world }: { position: [number, number, number]; world: 'DEV' | 'ART' }) {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<PostListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,19 +23,26 @@ export function BlogContentTerminal({ position, world }: { position: [number, nu
   if (isLoading) return null;
   if (posts.length === 0) return null;
 
+  const mappedPosts = posts.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    publishDate: p.publishDate ?? undefined,
+  }));
+
   return (
     <ContentTerminal
       position={position}
       world={world}
       defaultMode="blog"
-      blogPosts={posts}
+      blogPosts={mappedPosts}
       projects={[]}
     />
   );
 }
 
 export function ProjectContentTerminal({ position, world }: { position: [number, number, number]; world: 'DEV' | 'ART' }) {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -62,8 +70,8 @@ export function ProjectContentTerminal({ position, world }: { position: [number,
 }
 
 export function CombinedContentTerminal({ position, world }: { position: [number, number, number]; world: 'DEV' | 'ART' }) {
-  const [posts, setPosts] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [posts, setPosts] = useState<PostListItem[]>([]);
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -84,12 +92,19 @@ export function CombinedContentTerminal({ position, world }: { position: [number
   if (isLoading) return null;
   if (posts.length === 0 && projects.length === 0) return null;
 
+  const mappedPosts = posts.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    publishDate: p.publishDate ?? undefined,
+  }));
+
   return (
     <ContentTerminal
       position={position}
       world={world}
       defaultMode="blog"
-      blogPosts={posts}
+      blogPosts={mappedPosts}
       projects={projects}
     />
   );

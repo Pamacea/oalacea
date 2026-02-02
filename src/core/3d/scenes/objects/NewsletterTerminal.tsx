@@ -3,14 +3,19 @@
 import { useRef, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
+import * as THREE from 'three';
 import { Text } from '@react-three/drei';
-import { MailIcon } from 'lucide-react';
+
+// Seed-based random for deterministic values during render
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 interface NewsletterTerminalProps {
   position: [number, number, number];
   world: 'DEV' | 'ART';
   isActive?: boolean;
-  onInteract?: () => void;
 }
 
 const DEV_COLORS = {
@@ -39,21 +44,21 @@ export function NewsletterTerminal({
   position,
   world,
   isActive = false,
-  onInteract,
 }: NewsletterTerminalProps) {
   const groupRef = useRef<Group>(null);
   const screenRef = useRef<Mesh>(null);
-  const [subscribed, setSubscribed] = useState(false);
+  const [subscribed] = useState(false);
 
   const colors = world === 'DEV' ? DEV_COLORS : ART_COLORS;
   const pi = Math.PI;
 
   // Email notification particles
   const particles = useMemo(() => {
+    // Use deterministic seed-based random instead of Math.random
     return Array.from({ length: 8 }, (_, i) => ({
       angle: (i / 8) * Math.PI * 2,
-      radius: 0.6 + Math.random() * 0.3,
-      speed: 0.2 + Math.random() * 0.3,
+      radius: 0.6 + seededRandom(i * 3) * 0.3,
+      speed: 0.2 + seededRandom(i * 5 + 50) * 0.3,
     }));
   }, []);
 
@@ -63,7 +68,8 @@ export function NewsletterTerminal({
     // Screen glow pulse
     if (screenRef.current) {
       const pulse = (Math.sin(time * 1.5) + 1) * 0.5;
-      (screenRef.current.material as any).emissiveIntensity = 0.2 + pulse * 0.2;
+      const mat = screenRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.2 + pulse * 0.2;
     }
 
     // Rotate notification particles
@@ -80,26 +86,6 @@ export function NewsletterTerminal({
       });
     }
   });
-
-  const handleSubscribe = async () => {
-    setSubscribed(true);
-    onInteract?.();
-
-    try {
-      await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'visitor@oalacea.com',
-          consent: true,
-        }),
-      });
-    } catch (error) {
-      console.error('Newsletter subscription failed:', error);
-    }
-
-    setTimeout(() => setSubscribed(false), 3000);
-  };
 
   if (world === 'DEV') {
     return (

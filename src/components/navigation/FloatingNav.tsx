@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, FolderKanban, User, Mail, X } from 'lucide-react';
-import { GlitchText } from '@/components/ui/imperium';
+import { Home, FileText, FolderKanban, User, Mail } from 'lucide-react';
 import { useLoadingStore } from '@/features/3d-world/store/loading-store';
 
 const NAV_ITEMS = [
@@ -18,7 +17,6 @@ const NAV_ITEMS = [
 
 export function FloatingNav() {
   const pathname = usePathname();
-  const [expanded, setExpanded] = useState(false);
   const [glitchActive, setGlitchActive] = useState(false);
   const isLoading = useLoadingStore((s) => s.isLoading);
 

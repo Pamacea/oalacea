@@ -1,9 +1,15 @@
 // Dev world components - Imperium Warhammer 40k style
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+
+// Seed-based random for deterministic values during render
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 const COLORS = {
   black: '#1a1a1a',
@@ -79,24 +85,25 @@ export function DevTerminal({ position, rotation }: {
 export function DustParticles({ count = 300 }: { count?: number }) {
   const instancesRef = useRef<THREE.InstancedMesh>(null);
 
-  const particlesData = useMemo(() => {
-    return Array.from({ length: count }, () => ({
+  const particlesData = useRef(
+    // Use deterministic seed-based random instead of Math.random
+    Array.from({ length: count }, (_, i) => ({
       position: new THREE.Vector3(
-        (Math.random() - 0.5) * 80,
-        Math.random() * 3 + 0.5,
-        (Math.random() - 0.5) * 80
+        (seededRandom(i * 3) - 0.5) * 80,
+        seededRandom(i * 5 + 100) * 3 + 0.5,
+        (seededRandom(i * 7 + 200) - 0.5) * 80
       ),
       velocity: new THREE.Vector3(
-        (Math.random() - 0.5) * 0.5,
-        (Math.random() - 0.5) * 0.2,
-        (Math.random() - 0.5) * 0.5
+        (seededRandom(i * 11 + 300) - 0.5) * 0.5,
+        (seededRandom(i * 13 + 400) - 0.5) * 0.2,
+        (seededRandom(i * 17 + 500) - 0.5) * 0.5
       ),
-      baseY: Math.random() * 3 + 0.5,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.3 + Math.random() * 0.5,
-      scale: Math.random() * 0.15 + 0.05,
-    }));
-  }, [count]);
+      baseY: seededRandom(i * 19 + 600) * 3 + 0.5,
+      phase: seededRandom(i * 23 + 700) * Math.PI * 2,
+      speed: 0.3 + seededRandom(i * 29 + 800) * 0.5,
+      scale: seededRandom(i * 31 + 900) * 0.15 + 0.05,
+    }))
+  );
 
   useFrame((state, delta) => {
     if (!instancesRef.current) return;
@@ -104,7 +111,8 @@ export function DustParticles({ count = 300 }: { count?: number }) {
     const time = state.clock.elapsedTime;
 
     for (let i = 0; i < count; i++) {
-      const data = particlesData[i];
+      const data = particlesData.current[i];
+      // Mutating data in useFrame is safe - it runs after render
       data.position.x += data.velocity.x * delta;
       data.position.z += data.velocity.z * delta;
 

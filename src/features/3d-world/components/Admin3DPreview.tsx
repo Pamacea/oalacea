@@ -2,7 +2,6 @@
 
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Grid } from '@react-three/drei';
-import { Suspense } from 'react';
 
 interface Admin3DPreviewProps {
   world: 'DEV' | 'ART';
@@ -76,14 +75,6 @@ function PreviewScene({ world }: { world: 'DEV' | 'ART' }) {
   );
 }
 
-function LoadingFallback() {
-  return (
-    <div className="flex h-full w-full items-center justify-center">
-      <div className="text-slate-500">Chargement de la prévisualisation...</div>
-    </div>
-  );
-}
-
 export function Admin3DPreview({ world }: Admin3DPreviewProps) {
   const colors = world === 'DEV'
     ? { bg: 'bg-slate-950', border: 'border-violet-500/30', text: 'text-violet-400' }
@@ -104,9 +95,7 @@ export function Admin3DPreview({ world }: Admin3DPreviewProps) {
           gl={{ antialias: true, alpha: true }}
           className="h-full w-full"
         >
-          <Suspense fallback={null}>
-            <PreviewScene world={world} />
-          </Suspense>
+          <PreviewScene world={world} />
         </Canvas>
       </div>
       <div className="border-t border-white/10 bg-white/5 px-3 py-2">

@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { mainNav } from "@/config/navigation"
-import { cn } from "@/lib/utils"
 
 export function Header() {
   return (

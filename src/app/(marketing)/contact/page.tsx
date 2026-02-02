@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Mail, Github, Twitter, Linkedin, Send } from 'lucide-react';
-import Link from 'next/link';
 import { GlitchText } from '@/components/ui/imperium';
 import { BrutalCard } from '@/components/navigation/BrutalBackground';
 import { useState } from 'react';

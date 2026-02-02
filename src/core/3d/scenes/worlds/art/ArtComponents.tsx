@@ -1,9 +1,15 @@
 // Art world components
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+
+// Seed-based random for deterministic values during render
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 const colors = {
   wall: '#2a2a3a',
@@ -15,6 +21,9 @@ const colors = {
   neonPink: '#ff9ff3',
   gold: '#d4af37',
 };
+
+// Neon colors array - defined outside component to avoid recreation on every render
+const NEON_COLORS = [colors.neonRed, colors.neonTeal, colors.neonYellow, colors.neonPink];
 
 export function ConcreteWall({ position, rotation, scale }: {
   position: [number, number, number];
@@ -36,10 +45,9 @@ export function ConcreteWall({ position, rotation, scale }: {
   );
 }
 
-export function NeonSign({ position, color, label }: {
+export function NeonSign({ position, color }: {
   position: [number, number, number];
   color: string;
-  label: string;
 }) {
   return (
     <group position={position}>
@@ -126,28 +134,28 @@ export function GalleryFrame({ position, rotation }: {
 
 export function NeonParticles({ count = 250 }: { count?: number }) {
   const instancesRef = useRef<THREE.InstancedMesh>(null);
-  const neonColors = [colors.neonRed, colors.neonTeal, colors.neonYellow, colors.neonPink];
-  const colorObjects = useMemo(() => neonColors.map(c => new THREE.Color(c)), []);
+  const colorObjects = useRef(NEON_COLORS.map(c => new THREE.Color(c)));
 
-  const particlesData = useMemo(() => {
-    return Array.from({ length: count }, () => ({
+  const particlesData = useRef(
+    // Use deterministic seed-based random instead of Math.random
+    Array.from({ length: count }, (_, i) => ({
       position: new THREE.Vector3(
-        (Math.random() - 0.5) * 80,
-        Math.random() * 3 + 0.5,
-        (Math.random() - 0.5) * 80
+        (seededRandom(i * 3) - 0.5) * 80,
+        seededRandom(i * 5 + 100) * 3 + 0.5,
+        (seededRandom(i * 7 + 200) - 0.5) * 80
       ),
       velocity: new THREE.Vector3(
-        (Math.random() - 0.5) * 0.6,
-        (Math.random() - 0.5) * 0.3,
-        (Math.random() - 0.5) * 0.6
+        (seededRandom(i * 11 + 300) - 0.5) * 0.6,
+        (seededRandom(i * 13 + 400) - 0.5) * 0.3,
+        (seededRandom(i * 17 + 500) - 0.5) * 0.6
       ),
-      baseY: Math.random() * 3 + 0.5,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.5 + Math.random() * 0.7,
-      scale: Math.random() * 0.12 + 0.04,
-      colorIndex: Math.floor(Math.random() * neonColors.length),
-    }));
-  }, [count]);
+      baseY: seededRandom(i * 19 + 600) * 3 + 0.5,
+      phase: seededRandom(i * 23 + 700) * Math.PI * 2,
+      speed: 0.5 + seededRandom(i * 29 + 800) * 0.7,
+      scale: seededRandom(i * 31 + 900) * 0.12 + 0.04,
+      colorIndex: Math.floor(seededRandom(i * 37 + 1000) * NEON_COLORS.length),
+    }))
+  );
 
   useFrame((state, delta) => {
     if (!instancesRef.current) return;
@@ -155,7 +163,8 @@ export function NeonParticles({ count = 250 }: { count?: number }) {
     const time = state.clock.elapsedTime;
 
     for (let i = 0; i < count; i++) {
-      const data = particlesData[i];
+      const data = particlesData.current[i];
+      // Mutating data in useFrame is safe - it runs after render
       data.position.x += data.velocity.x * delta;
       data.position.z += data.velocity.z * delta;
 
@@ -171,7 +180,7 @@ export function NeonParticles({ count = 250 }: { count?: number }) {
       dummy.scale.setScalar(pulseScale);
       dummy.updateMatrix();
       instancesRef.current.setMatrixAt(i, dummy.matrix);
-      instancesRef.current.setColorAt(i, colorObjects[data.colorIndex]);
+      instancesRef.current.setColorAt(i, colorObjects.current[data.colorIndex]);
     }
 
     instancesRef.current.instanceMatrix.needsUpdate = true;

@@ -25,7 +25,7 @@ export function CategoriesTab() {
     name: '',
     postCount: 0,
   });
-  const { playHover, playClick } = useUISound();
+  const { playHover } = useUISound();
 
   const createMutation = useCreateCategory('BLOG');
   const deleteMutation = useDeleteCategory();

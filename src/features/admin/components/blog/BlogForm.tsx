@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { createPost, updatePost } from '@/actions/blog';
@@ -113,7 +114,7 @@ export function BlogForm({ postId }: BlogFormProps) {
     setUploadProgress(0);
 
     try {
-      const img = new Image();
+      const img = document.createElement('img');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -161,7 +162,7 @@ export function BlogForm({ postId }: BlogFormProps) {
       };
 
       reader.readAsDataURL(file);
-    } catch (error) {
+    } catch {
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -244,7 +245,7 @@ export function BlogForm({ postId }: BlogFormProps) {
 
       {formData.coverImage && (
         <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-          <img src={formData.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+          <Image src={formData.coverImage} alt="Cover preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <button
             type="button"
             onClick={() => setFormData((prev) => ({ ...prev, coverImage: '' }))}

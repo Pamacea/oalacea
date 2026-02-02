@@ -126,7 +126,7 @@ export async function svgToPng(svg: string): Promise<Buffer> {
     throw new Error('svgToPng can only be used on the server side');
   }
 
-  // @ts-ignore - canvas is an optional dependency
+  // @ts-expect-error - canvas is an optional dependency
   const { createCanvas } = await import('canvas');
   const canvas = createCanvas(1200, 630);
   const ctx = canvas.getContext('2d');

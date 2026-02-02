@@ -15,7 +15,6 @@ import { signOut } from 'next-auth/react';
 import { useState } from 'react';
 import type { Session } from 'next-auth';
 import { cn } from '@/lib/utils';
-import { GlitchText } from '@/components/ui/imperium';
 import { motion } from 'framer-motion';
 
 interface NavItem {

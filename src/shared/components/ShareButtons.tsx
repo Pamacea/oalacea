@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import Image from "next/image"
 import {
   Share2 as Share2Icon,
   Link as LinkIcon,
@@ -112,7 +113,7 @@ export function ShareButtons({
       setCopied(true)
       toast.success("Link copied to clipboard")
       setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy link")
     }
   }
@@ -271,9 +272,11 @@ export function ShareButtons({
                       </div>
                     ) : qrCode ? (
                       <div className="rounded-sm border-2 border-imperium-gold p-4">
-                        <img
+                        <Image
                           src={qrCode}
                           alt="QR Code"
+                          width={256}
+                          height={256}
                           className="size-64"
                         />
                       </div>

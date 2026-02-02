@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ExternalLink, Github, Star } from 'lucide-react'
 import { CATEGORY_LABELS } from '@/features/portfolio/constants'
 
@@ -33,9 +34,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
       {/* Thumbnail */}
       {project.thumbnail && (
         <div className="aspect-video overflow-hidden border-b-2 border-imperium-steel-dark">
-          <img
+          <Image
             src={project.thumbnail}
             alt={project.title}
+            width={400}
+            height={225}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>

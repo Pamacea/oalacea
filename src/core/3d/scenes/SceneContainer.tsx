@@ -24,8 +24,6 @@ function SceneContent({ children, currentWorld }: SceneContainerProps) {
     [worldConfig.colors.fog]
   );
 
-  const backgroundColor = useMemo(() => worldConfig.colors.background, [worldConfig.colors.background]);
-
   return (
     <>
       <PerspectiveCamera

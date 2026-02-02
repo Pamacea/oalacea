@@ -1,4 +1,4 @@
-import type { Material, MeshBasicMaterial, MeshStandardMaterial } from 'three';
+import type { Material } from 'three';
 
 /**
  * Type guard for materials with emissive intensity

@@ -60,7 +60,7 @@ interface CodeBlockProps {
   language?: string;
 }
 
-export function CodeBlock({ code, language = 'text' }: CodeBlockProps) {
+export function CodeBlock({ code }: CodeBlockProps) {
   return (
     <pre className="bg-imperium-black border-2 border-imperium-crimson/30 rounded-none p-4 overflow-x-auto my-4 font-terminal text-imperium-gold">
       <code className="text-sm">{code}</code>

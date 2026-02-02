@@ -31,8 +31,7 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
   const characterPositionRef = useRef(new Vector3(...INITIAL_POSITION));
   const characterGroupRef = useRef<Group | null>(null);
   const cameraRef = useRef<PerspectiveCameraType | null>(null);
-  const [internalCameraMode, _setInternalCameraMode] = useState<'follow' | 'free'>('follow');
-  const cameraMode = externalCameraMode ?? internalCameraMode;
+  const cameraMode = externalCameraMode ?? 'follow';
   const [targetPosition, setTargetPosition] = useState<Vector3 | null>(null);
   const [isSprinting, setIsSprinting] = useState(false);
   const [isOccluded, setIsOccluded] = useState(false);

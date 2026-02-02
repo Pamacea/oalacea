@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Group, Mesh } from 'three';
+import { Group, Mesh, MeshStandardMaterial, PointLight } from 'three';
 import { Text } from '@react-three/drei';
 import { useModalStore } from '@/store/modal-store';
 
@@ -53,14 +53,14 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
 
     if (screenRef.current && (isActive || hovered)) {
       const pulse = (Math.sin(time * 3) + 1) * 0.5;
-      const mat = screenRef.current.material as any;
+      const mat = screenRef.current.material as MeshStandardMaterial;
       mat.emissiveIntensity = 0.3 + pulse * 0.4;
     }
 
     if (spotlightRef.current && (isActive || hovered)) {
       spotlightRef.current.children.forEach((child, i) => {
         if (child.type === 'PointLight') {
-          (child as any).intensity = 2 + Math.sin(time * 2 + i) * 0.5;
+          (child as PointLight).intensity = 2 + Math.sin(time * 2 + i) * 0.5;
         }
       });
     }

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Scroll, Shield } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { getPostBySlug } from '@/actions/blog';
 import { getAllCategories } from '@/actions/blog';
 import { useCreatePost, useUpdatePost } from '@/features/blog/queries';
@@ -27,7 +28,7 @@ type FormData = {
   featured: boolean;
 };
 
-export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' | 'art' }) {
+export function BlogPostForm({ postId }: { postId?: string }) {
   const { setView } = useInWorldAdminStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { playHover, playClick } = useUISound();
@@ -122,7 +123,7 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
     setUploadProgress(0);
 
     try {
-      const img = new Image();
+      const img = document.createElement('img');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -261,7 +262,7 @@ export function BlogPostForm({ postId, world }: { postId?: string; world: 'dev' 
       {/* Cover Image Preview */}
       {formData.coverImage && (
         <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-          <img src={formData.coverImage} alt="Cover preview" className="w-full h-full object-cover" />
+          <Image src={formData.coverImage} alt="Cover preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <motion.button
             type="button"
             onMouseEnter={playHover}

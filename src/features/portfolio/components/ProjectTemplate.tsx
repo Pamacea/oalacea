@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Github, Code2, Smartphone, Box, Sparkles, FolderKanban, Hammer, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { GlitchText } from '@/components/ui/imperium';
 
 interface ProjectTemplateProps {
@@ -34,7 +35,7 @@ interface ProjectTemplateProps {
   variant?: 'modal' | 'page';
 }
 
-const CATEGORY_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
+const CATEGORY_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; label: string }> = {
   WEB: { icon: Code2, color: 'text-imperium-crimson', label: 'Web' },
   MOBILE: { icon: Smartphone, color: 'text-imperium-gold', label: 'Mobile' },
   THREE_D: { icon: Box, color: 'text-imperium-teal', label: '3D' },
@@ -158,7 +159,7 @@ export function ProjectTemplate({
           <div
             className="w-full h-full"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox=&quot;0 0 256 256&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cfilter id=&quot;noise&quot;%3E%3CfeTurbulence type=&quot;fractalNoise&quot; baseFrequency=&quot;2.5&quot; numOctaves=&quot;4&quot;/%3E%3C/filter%3E%3Crect width=&quot;100%25&quot; height=&quot;100%25&quot; filter=&quot;url(%23noise)&quot;/%3E%3C/svg%3E")`,
             }}
           />
         </div>
@@ -196,10 +197,13 @@ export function ProjectTemplate({
           {images.length > 0 && (
             <div className="mb-6">
               <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-                <img
+                <Image
                   src={images[currentImageIndex]}
                   alt={`${project.title} - Image ${currentImageIndex + 1}`}
+                  width={800}
+                  height={450}
                   className="w-full h-full object-cover"
+                  unoptimized
                 />
                 {hasMultipleImages && (
                   <>

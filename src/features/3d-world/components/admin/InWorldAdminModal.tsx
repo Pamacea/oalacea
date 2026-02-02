@@ -6,7 +6,6 @@ import { X, LayoutDashboard, FileText, FolderKanban, Folder, Shield, Skull } fro
 import { useSession } from 'next-auth/react';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { useModalStore } from '@/store/modal-store';
-import { useWorldStore } from '@/features/3d-world/store';
 import { GlitchText, ChaoticOverlay, ScanlineBeam } from '@/components/ui/imperium';
 import { useUISound } from '@/hooks/use-ui-sound';
 import { DashboardTab } from './DashboardTab';
@@ -27,7 +26,6 @@ const tabs = [
 export function InWorldAdminModal() {
   const { isOpen, view, selectedId, closeAdmin, setView } = useInWorldAdminStore();
   const { close: closeModalStore } = useModalStore();
-  const world = useWorldStore((s) => s.currentWorld);
   const { playHover, playClick, playOpen, playClose } = useUISound();
   const { data: session } = useSession();
   const isAdmin = session?.user?.isAdmin === true;
@@ -195,10 +193,10 @@ export function InWorldAdminModal() {
                 {view === 'posts' && <PostsTab />}
                 {view === 'projects' && <ProjectsTab />}
                 {view === 'categories' && <CategoriesTab />}
-                {view === 'edit-post' && <BlogPostForm postId={selectedId ?? undefined} world={world} />}
-                {view === 'create-post' && <BlogPostForm world={world} />}
-                {view === 'edit-project' && <ProjectForm projectId={selectedId ?? undefined} world={world} />}
-                {view === 'create-project' && <ProjectForm world={world} />}
+                {view === 'edit-post' && <BlogPostForm postId={selectedId ?? undefined} />}
+                {view === 'create-post' && <BlogPostForm />}
+                {view === 'edit-project' && <ProjectForm projectId={selectedId ?? undefined} />}
+                {view === 'create-project' && <ProjectForm />}
                 {view === 'read-post' && selectedId && <BlogPostReader postSlug={selectedId} />}
               </div>
             </div>

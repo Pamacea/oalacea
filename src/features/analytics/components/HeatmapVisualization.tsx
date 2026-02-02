@@ -8,7 +8,7 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Download, Info } from 'lucide-react';
 import { getInteractionTracker, type HeatmapPoint } from '@/core/3d/analytics';
@@ -102,7 +102,6 @@ function HeatmapPoints({ points }: { points: HeatmapDataPoint[] }) {
     if (!instancedMesh.current) return;
 
     const matrix = new THREE.Matrix4();
-    const color = new THREE.Color();
 
     points.forEach((point, i) => {
       matrix.setPosition(point.position[0], point.position[1], point.position[2]);
@@ -278,7 +277,7 @@ export function HeatmapVisualization({ className }: HeatmapVisualizationProps) {
   const rawPoints = useMemo(() => {
     const points = tracker.getHeatmap(worldType);
     return filterPointsByTimePeriod(points, timePeriod);
-  }, [worldType, timePeriod]);
+  }, [worldType, timePeriod, tracker]);
 
   const heatmapData = useMemo(() => convertToHeatmapData(rawPoints), [rawPoints]);
 

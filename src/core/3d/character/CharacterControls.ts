@@ -7,7 +7,7 @@ import { Vector3, Group } from 'three';
 import * as THREE from 'three';
 import type { WorldType } from '../scenes/types';
 import type { CollisionZone, ObstacleConfig } from '../scenes/collisions';
-import { usePhysicsEngine, useCharacterController as usePhysicsController } from '@/features/3d-world/hooks';
+import { usePhysicsEngine } from '@/features/3d-world/hooks';
 import { useCharacterStore } from '@/features/3d-world/store';
 import { useWorldStore } from '@/features/3d-world/store';
 
@@ -23,7 +23,6 @@ export interface CharacterControlsProps {
 }
 
 export function useCharacterControls({
-  worldType,
   collisionZones,
   positionRef,
   onTargetSet,
@@ -41,13 +40,30 @@ export function useCharacterControls({
   const rotationRef = useRef(0);
   const localPositionRef = useRef(new Vector3(...INITIAL_POSITION));
 
+  // Use state for position and rotation to return values without accessing refs during render
+  // These are only updated when needed to avoid excessive re-renders
   const [isMoving, setIsMoving] = useState(false);
   const [isSprinting, setIsSprinting] = useState(false);
   const [displayPath, setDisplayPath] = useState<Vector3[]>([]);
+  const [renderPosition, setRenderPosition] = useState(new Vector3(...INITIAL_POSITION));
+  const [renderRotation, setRenderRotation] = useState(0);
+
+  // Sync state from refs periodically (throttled)
+  const lastRenderUpdateRef = useRef(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if (now - lastRenderUpdateRef.current > 100) { // Update every 100ms max
+        setRenderPosition(localPositionRef.current.clone());
+        setRenderRotation(rotationRef.current);
+        lastRenderUpdateRef.current = now;
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
 
   // Initialize new physics engine
   const physicsEngine = usePhysicsEngine(collisionZones);
-  const characterController = usePhysicsController(physicsEngine, localPositionRef.current);
 
   const setPosition = useCharacterStore((s) => s.setPosition);
   const setPlayerPosition = useWorldStore((s) => s.setPlayerPosition);
@@ -62,7 +78,9 @@ export function useCharacterControls({
     if (positionRef) {
       localPositionRef.current.copy(positionRef.current);
     }
+    setRenderPosition(initialPos.clone());
     setPosition([initialPos.x, initialPos.y, initialPos.z]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -137,7 +155,7 @@ export function useCharacterControls({
       window.removeEventListener('mousedown', handleClick);
       window.removeEventListener('contextmenu', handleContextMenu);
     };
-  }, [camera, collisionZones, positionRef, onTargetSet, physicsEngine]);
+  }, [camera, collisionZones, positionRef, onTargetSet, physicsEngine, onPathfindingStats]);
 
   /**
    * Move towards a target with collision checking at each step
@@ -347,8 +365,8 @@ export function useCharacterControls({
 
   return {
     groupRef,
-    localPosition: localPositionRef.current,
-    rotation: rotationRef.current,
+    localPosition: renderPosition,
+    rotation: renderRotation,
     isMoving,
     isSprinting,
     displayPath,

@@ -195,28 +195,29 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 }));
 
 // Hook to sync audio store with world store
+import { useEffect, useRef } from 'react';
+
 export function useAudioWorldSync() {
   const currentWorld = useWorldStore((state) => state.currentWorld);
   const isTransitioning = useWorldStore((state) => state.isTransitioning);
-  const previousWorldRef = { current: currentWorld as WorldType };
 
-  const loadWorldTracks = useAudioStore((state) => state.loadWorldTracks);
   const crossfadeWorlds = useAudioStore((state) => state.crossfadeWorlds);
   const isEnabled = useAudioStore((state) => state.isEnabled);
 
   // Sync audio world with world store
-  if (typeof window !== 'undefined') {
-    const { useEffect } = require('react');
-    useEffect(() => {
-      if (!isEnabled) return;
+  // Note: This hook must be called unconditionally per rules of hooks
+  // The isEnabled check inside the effect handles the conditional behavior
+  const previousWorldRef = useRef(currentWorld);
 
-      const previousWorld = previousWorldRef.current;
-      if (previousWorld !== currentWorld && !isTransitioning) {
-        crossfadeWorlds(previousWorld, currentWorld, 2000);
-        previousWorldRef.current = currentWorld;
-      }
-    }, [currentWorld, isTransitioning, crossfadeWorlds, isEnabled]);
-  }
+  useEffect(() => {
+    if (!isEnabled) return;
+
+    const previousWorld = previousWorldRef.current;
+    if (previousWorld !== currentWorld && !isTransitioning) {
+      crossfadeWorlds(previousWorld, currentWorld, 2000);
+      previousWorldRef.current = currentWorld;
+    }
+  }, [currentWorld, crossfadeWorlds, isEnabled, isTransitioning]);
 }
 
 export const selectVolumes = (state: AudioState) => ({

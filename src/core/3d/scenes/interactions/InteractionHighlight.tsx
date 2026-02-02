@@ -1,8 +1,15 @@
 'use client';
 
-import { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo, useState } from 'react';
+import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, Vector3 } from 'three';
+
+// Seed-based random for deterministic values during render
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 export interface InteractionHighlightProps {
   position: [number, number, number];
@@ -26,12 +33,13 @@ export function InteractionHighlight({
   const particlesRef = useRef<Group>(null);
 
   const particles = useMemo(() => {
+    // Use deterministic seed-based random instead of Math.random
     return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
       angle: (i / PARTICLE_COUNT) * Math.PI * 2,
       baseRadius: radius * 0.8,
-      speed: 0.5 + Math.random() * 0.5,
-      yOffset: (Math.random() - 0.5) * 0.5,
-      phase: Math.random() * Math.PI * 2,
+      speed: 0.5 + seededRandom(i * 3) * 0.5,
+      yOffset: (seededRandom(i * 5 + 100) - 0.5) * 0.5,
+      phase: seededRandom(i * 7 + 200) * Math.PI * 2,
     }));
   }, [radius]);
 
@@ -63,7 +71,7 @@ export function InteractionHighlight({
       groupRef.current.children.forEach((child) => {
         if (child.type === 'PointLight') {
           const intensity = 1 + Math.sin(time * 4) * 0.3;
-          (child as any).intensity = intensity * 1.5;
+          (child as THREE.PointLight).intensity = intensity * 1.5;
         }
       });
     }
@@ -136,15 +144,16 @@ export function BurstParticle({ position, color = '#00ff88', onComplete }: Burst
   const [alive, setAlive] = useState(true);
 
   const particles = useMemo(() => {
-    return Array.from({ length: 16 }, () => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 3;
+    // Use deterministic seed-based random instead of Math.random
+    return Array.from({ length: 16 }, (_, i) => {
+      const angle = seededRandom(i * 11) * Math.PI * 2;
+      const speed = 2 + seededRandom(i * 13) * 3;
       return {
         angle,
         speed,
         velocity: new Vector3(
           Math.cos(angle) * speed,
-          (Math.random() - 0.5) * speed,
+          (seededRandom(i * 17) - 0.5) * speed,
           Math.sin(angle) * speed
         ),
       };
@@ -204,8 +213,10 @@ export function HoverGlow({ position, color = '#00ff88', intensity = 0.5 }: Hove
   useFrame((state) => {
     if (meshRef.current) {
       const pulse = (Math.sin(state.clock.elapsedTime * 2) + 1) * 0.5;
-      const mat = meshRef.current.material as any;
-      mat.opacity = 0.2 + pulse * intensity * 0.3;
+      const mat = meshRef.current.material as THREE.Material & { opacity?: number };
+      if ('opacity' in mat) {
+        mat.opacity = 0.2 + pulse * intensity * 0.3;
+      }
     }
   });
 

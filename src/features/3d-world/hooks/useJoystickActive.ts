@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 const listeners: Set<(active: boolean) => void> = new Set();
 
@@ -11,12 +11,12 @@ export const setJoystickActive = (active: boolean) => {
 export function useJoystickActive() {
   const [isActive, setIsActive] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     listeners.add(setIsActive);
     return () => {
       listeners.delete(setIsActive);
     };
-  });
+  }, []);
 
   return isActive;
 }

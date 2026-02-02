@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, FolderKanban, Calendar, Scroll, Hammer } from 'lucide-react';
+import { Calendar, Scroll, Hammer } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePosts } from '@/features/blog/queries';
 import { useProjects } from '@/features/portfolio/queries/useProjects';

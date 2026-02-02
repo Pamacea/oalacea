@@ -1,6 +1,5 @@
 import { compare } from "bcryptjs"
 import { prisma } from "@/lib/prisma"
-import { signIn as authSignIn } from "@/core/auth"
 import { loginSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 

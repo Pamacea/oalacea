@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -174,10 +175,13 @@ export function ImageUpload({
       ) : (
         <div className="space-y-3">
           <div className="relative aspect-video rounded-none overflow-hidden bg-imperium-black border-2 border-imperium-steel-dark">
-            <img
+            <Image
               src={preview}
               alt="Preview"
+              width={800}
+              height={450}
               className="w-full h-full object-contain"
+              unoptimized
             />
           </div>
           <div>

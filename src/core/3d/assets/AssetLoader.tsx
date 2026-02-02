@@ -1,7 +1,7 @@
 // AssetLoader - Lazy loading for 3D assets with React Suspense
 'use client';
 
-import { Suspense, forwardRef, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { TextureLoader } from 'three';
 import * as THREE from 'three';
@@ -18,11 +18,23 @@ export interface GLTF {
     generator?: string;
     version?: string;
     minVersion?: string;
-    extensions?: any;
-    extras?: any;
+    extensions?: Record<string, unknown>;
+    extras?: unknown;
   };
-  parser: any;
-  userData: Record<string, any>;
+  parser: {
+    json: {
+      asset: {
+        copyright?: string;
+        generator?: string;
+        version?: string;
+        minVersion?: string;
+      };
+      extensions?: Record<string, unknown>;
+      extras?: unknown;
+    };
+    extensionsRequired?: string[];
+  };
+  userData: Record<string, unknown>;
 }
 
 type AssetType = 'gltf' | 'glb' | 'texture' | 'audio';
@@ -83,7 +95,7 @@ function AssetLoaderContent({
         switch (type) {
           case 'gltf':
           case 'glb': {
-            // @ts-ignore - three-stdlib dynamic import
+            // @ts-expect-error - three-stdlib dynamic import
             const { GLTFLoader } = await import('three-stdlib/loaders/GLTFLoader');
             asset = await new Promise<GLTF>((resolve, reject) => {
               new GLTFLoader(loader).load(
@@ -199,7 +211,7 @@ export function AssetLoader({
 }
 
 export function useGLTF(url: string) {
-  // @ts-ignore - three-stdlib dynamic import
+  // @ts-expect-error - three-stdlib GLTFLoader not in TypeScript types
   const gltf = useLoader((await import('three-stdlib/loaders/GLTFLoader')).GLTFLoader, url);
   return gltf as GLTF;
 }

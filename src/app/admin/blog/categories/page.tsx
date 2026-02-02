@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Trash2, Folder, Edit2, X, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -37,16 +37,19 @@ export default function AdminCategoriesPage() {
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialog>({ open: false, id: '', name: '', count: 0 });
   const [editState, setEditState] = useState<EditState | null>(null);
 
-  const loadCategories = useCallback(async () => {
-    setIsLoading(true);
+  const refreshCategories = async () => {
     const cats = await getAllCategories({ type: 'BLOG' });
     setCategories(cats);
-    setIsLoading(false);
-  }, []);
+  };
 
   useEffect(() => {
+    const loadCategories = async () => {
+      setIsLoading(true);
+      await refreshCategories();
+      setIsLoading(false);
+    };
     loadCategories();
-  }, [loadCategories]);
+  }, []);
 
   const generateSlug = (name: string) => {
     return name
@@ -69,7 +72,7 @@ export default function AdminCategoriesPage() {
     try {
       await createCategory({ name: newCategoryName, slug, type: 'BLOG' });
       setNewCategoryName('');
-      await loadCategories();
+      await refreshCategories();
     } catch (error) {
       console.error('Failed to add category:', error);
     }
@@ -89,7 +92,7 @@ export default function AdminCategoriesPage() {
     try {
       await updateCategory(editState.id, { name: editState.name });
       setEditState(null);
-      await loadCategories();
+      await refreshCategories();
     } catch (error) {
       console.error('Failed to add category:', error);
     }
@@ -99,8 +102,8 @@ export default function AdminCategoriesPage() {
     try {
       await deleteCategory(deleteDialog.id);
       setDeleteDialog({ ...deleteDialog, open: false });
-      await loadCategories();
-    } catch (error) {
+      await refreshCategories();
+    } catch {
       alert('Failed to delete category');
     }
   };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, Calendar, Clock, Scroll, Skull } from 'lucide-react';
+import { X, Calendar, Clock, Scroll, Skull } from 'lucide-react';
 import { useBlogPosts } from '@/features/blog/hooks';
 import { useModalStore } from '@/store/modal-store';
 import { BlogReadingModal } from './BlogReadingModal';
@@ -14,9 +14,9 @@ export function BlogListingModal() {
   const { data: postsData, isLoading } = useBlogPosts({ published: true, limit: 100 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedBlog, setSelectedBlog] = useState<string | null>(null);
-  const { playClick, playHover } = useUISound();
+  const { playClick } = useUISound();
 
-  const posts = postsData?.posts || [];
+  const posts = useMemo(() => postsData?.posts || [], [postsData?.posts]);
   const hasPrev = useMemo(() => selectedIndex > 0, [selectedIndex]);
   const hasNext = useMemo(() => selectedIndex < posts.length - 1, [selectedIndex, posts.length]);
 
@@ -39,7 +39,7 @@ export function BlogListingModal() {
     setSelectedIndex(index);
     setSelectedBlog(slug);
     playClick();
-  }, [playClick]);
+  }, [playClick, setSelectedIndex, setSelectedBlog]);
 
   const handleClose = useCallback(() => {
     if (selectedBlog) {
@@ -147,7 +147,6 @@ export function BlogListingModal() {
 
               <motion.button
                 onClick={() => handleClose()}
-                onMouseEnter={() => playHover()}
                 className="group p-2 text-imperium-steel hover:text-imperium-crimson transition-colors"
               >
                 <motion.div
@@ -196,7 +195,6 @@ export function BlogListingModal() {
                     initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.03, type: 'spring', damping: 20 }}
-                    onMouseEnter={() => playHover()}
                     onClick={() => {
                       handleSelectBlog(post.slug, index);
                     }}

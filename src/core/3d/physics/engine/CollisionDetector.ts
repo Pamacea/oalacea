@@ -189,7 +189,6 @@ export class CollisionDetector {
     // Search in expanding circles
     for (let r = step; r <= maxSearchRadius; r += step) {
       // Use finer angles for smaller radii, coarser for larger
-      const angles = r <= 2 ? fineAngles : primaryAngles;
       const angleStep = r <= 2 ? Math.PI / 8 : Math.PI / 4;
 
       for (let angle = 0; angle < Math.PI * 2; angle += angleStep) {

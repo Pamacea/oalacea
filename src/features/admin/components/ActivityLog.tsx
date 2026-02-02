@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -48,7 +48,7 @@ const actionColors: Record<string, string> = {
   EXPORT: "bg-imperium-warp/10 text-imperium-warp border-imperium-warp/30",
 }
 
-export function ActivityLog({ userId, entityType, entityId, className }: ActivityLogProps) {
+export function ActivityLog({ userId, entityType, className }: ActivityLogProps) {
   const permissions = usePermissions()
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,13 +66,7 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
   const canReadActivity = permissions.can("activity:read")
   const canDelete = permissions.can("users:delete") // Admins can delete via user management
 
-  useEffect(() => {
-    if (canReadActivity) {
-      fetchActivities()
-    }
-  }, [page, filters, canReadActivity])
-
-  async function fetchActivities() {
+  const fetchActivities = useCallback(async () => {
     if (!canReadActivity) return
 
     setLoading(true)
@@ -99,7 +93,13 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
     } finally {
       setLoading(false)
     }
-  }
+  }, [canReadActivity, page, filters])
+
+  useEffect(() => {
+    if (canReadActivity) {
+      fetchActivities()
+    }
+  }, [canReadActivity, fetchActivities])
 
   async function handleExport() {
     setExporting(true)
@@ -145,7 +145,7 @@ export function ActivityLog({ userId, entityType, entityId, className }: Activit
     return (
       <Card variant="steel">
         <CardContent className="p-6">
-          <p className="font-terminal text-imperium-steel-dark">{'>'} You don't have permission to view activity logs.</p>
+          <p className="font-terminal text-imperium-steel-dark">{'>'} You don&apos;t have permission to view activity logs.</p>
         </CardContent>
       </Card>
     )

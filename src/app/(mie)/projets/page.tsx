@@ -2,6 +2,7 @@ import { getProjects } from "@/actions/projects"
 import type { ProjectListItem } from "@/actions/projects"
 import { CATEGORY_LABELS } from "@/features/portfolio/constants"
 import Link from "next/link"
+import Image from "next/image"
 import { GlitchText } from "@/components/ui/imperium"
 import { BrutalCard } from "@/components/navigation/BrutalBackground"
 
@@ -39,8 +40,8 @@ export default async function ProjetsPage() {
       </header>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project, index) => (
-          <ProjectCard key={project.id} project={project} index={index} />
+        {projects.map((project) => (
+          <ProjectCard key={project.id} project={project} />
         ))}
       </div>
     </div>
@@ -49,10 +50,8 @@ export default async function ProjetsPage() {
 
 function ProjectCard({
   project,
-  index,
 }: {
   project: ProjectListItem
-  index: number
 }) {
   return (
     <BrutalCard hovered className="group cursor-pointer">
@@ -65,9 +64,11 @@ function ProjectCard({
                 background: 'repeating-linear-gradient(0deg, transparent, transparent_1px, rgba(212,175,55,0.2)_1px, rgba(212,175,55,0.2)_2px)',
               }} />
             </div>
-            <img
+            <Image
               src={project.thumbnail}
               alt={project.title}
+              width={400}
+              height={225}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           </div>

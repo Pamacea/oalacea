@@ -22,7 +22,6 @@ export function FeatureDiscovery({ autoDiscover }: FeatureDiscoveryProps) {
   const {
     discoverFeature,
     discoveredFeatures,
-    completedActions,
   } = useProgressionStore();
 
   const { firstVisit } = useOnboardingStore();
@@ -251,7 +250,6 @@ interface NewBadgeProps {
 }
 
 export function NewBadge({ featureId, className }: NewBadgeProps) {
-  const isDiscovered = useProgressionStore((s) => s.discoveredFeatures.some(f => f.id === featureId));
   const isRecentlyDiscovered = useProgressionStore((s) => {
     const feature = s.discoveredFeatures.find(f => f.id === featureId);
     if (!feature) return false;

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const data = await getDashboardData(period);
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch analytics data' }, { status: 500 });
   }
 }

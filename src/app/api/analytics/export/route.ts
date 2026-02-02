@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
         'Content-Disposition': `attachment; filename="analytics-${period}-${new Date().toISOString().split('T')[0]}.csv"`,
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to export analytics' }, { status: 500 });
   }
 }

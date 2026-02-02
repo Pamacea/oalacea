@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ImageIcon } from 'lucide-react';
+import Image from 'next/image';
+import { X } from 'lucide-react';
 
 interface ImageModalProps {
   isOpen: boolean;
@@ -77,10 +78,13 @@ export function ImageModal({ isOpen, onClose, onInsert, initialUrl = '' }: Image
           {url && (
             <div className="rounded-sm border border-zinc-700 bg-zinc-900 p-3">
               <p className="text-xs text-zinc-500 mb-2">Preview:</p>
-              <img
+              <Image
                 src={url}
                 alt={alt || 'Preview'}
+                width={300}
+                height={192}
                 className="max-w-full max-h-48 object-contain rounded"
+                unoptimized
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect width="100" height="100" fill="%23333"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23666" font-size="12"%3EFailed to load%3C/text%3E%3C/svg%3E';
                 }}

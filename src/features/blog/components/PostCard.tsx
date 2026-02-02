@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Calendar, Clock, Eye } from 'lucide-react'
 import type { Post } from '@/generated/prisma/client'
 
@@ -14,9 +15,11 @@ export function PostCard({ post }: PostCardProps) {
       {/* Cover Image */}
       {post.coverImage && (
         <div className="aspect-video overflow-hidden border-b-2 border-imperium-steel-dark">
-          <img
+          <Image
             src={post.coverImage}
             alt={post.title}
+            width={400}
+            height={225}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>

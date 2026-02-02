@@ -25,10 +25,10 @@ export function ArtWorld({ position = [0, 0, 0] }: ArtWorldProps) {
       <ConcreteWall position={[0, 0, -30]} rotation={0} scale={[15, 1, 1]} />
 
       {/* Panneaux néon */}
-      <NeonSign position={[0, 8, -25]} color="#ff6b6b" label="ART" />
-      <NeonSign position={[-15, 6, 10]} color="#4ecdc4" label="CREATE" />
-      <NeonSign position={[15, 6, 10]} color="#feca57" label="EXPRESS" />
-      <NeonSign position={[0, 10, 20]} color="#ff9ff3" label="UNDERGROUND" />
+      <NeonSign position={[0, 8, -25]} color="#ff6b6b" />
+      <NeonSign position={[-15, 6, 10]} color="#4ecdc4" />
+      <NeonSign position={[15, 6, 10]} color="#feca57" />
+      <NeonSign position={[0, 10, 20]} color="#ff9ff3" />
 
       {/* Piédestaux d'exposition */}
       <ArtPedestal position={[-10, 0, -8]} rotation={-0.3} />

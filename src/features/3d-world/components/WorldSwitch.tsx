@@ -21,7 +21,6 @@ export function WorldSwitch() {
             key={world.id}
             onClick={() => switchWorld(world.id)}
             disabled={isTransitioning}
-            aria-pressed={isActive}
             aria-label={`Switch to ${world.label} world`}
             role="radio"
             aria-checked={isActive}

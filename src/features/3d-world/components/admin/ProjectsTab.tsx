@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Plus, Pencil, Trash2, Star, Globe, Hammer } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProjects } from '@/features/portfolio/queries/useProjects';
@@ -112,10 +113,13 @@ export function ProjectsTab() {
                   {/* Thumbnail */}
                   {project.thumbnail && (
                     <div className="h-16 w-16 shrink-0 border-2 border-imperium-steel-dark overflow-hidden">
-                      <img
+                      <Image
                         src={project.thumbnail}
                         alt={project.title}
+                        width={64}
+                        height={64}
                         className="h-full w-full object-cover"
+                        unoptimized
                       />
                     </div>
                   )}
