@@ -8,7 +8,7 @@ import { Calendar, Clock } from 'lucide-react'
 import { GlitchText } from '@/components/ui/imperium'
 import { BrutalCard } from '@/components/navigation/BrutalBackground'
 
-export function BlogsPageClient({ initialData }: { initialData?: GetPostsResult }) {
+export function BlogsPageClient({ initialData }: { initialData?: GetPostsResult } = {}) {
   const { data: postsData, isLoading } = useBlogPosts({ limit: 100, initialData })
   const posts = postsData?.posts ?? []
 

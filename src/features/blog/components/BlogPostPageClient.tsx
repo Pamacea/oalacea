@@ -3,14 +3,17 @@
 import { notFound } from 'next/navigation'
 import { useBlogPost } from '../hooks'
 import { BlogPostTemplate } from './BlogPostTemplate'
+import { useParams } from 'next/navigation'
 import type { PostDetail } from '@/actions/blog/query'
 
 interface BlogPostPageClientProps {
-  slug: string
   initialPost?: PostDetail | null
 }
 
-export function BlogPostPageClient({ slug, initialPost }: BlogPostPageClientProps) {
+export function BlogPostPageClient({ initialPost }: BlogPostPageClientProps = {}) {
+  const params = useParams()
+  const slug = typeof params.slug === 'string' ? params.slug : params.slug?.[0] || ''
+
   const { data: post, isLoading } = useBlogPost(slug, initialPost)
 
   if (isLoading) {

@@ -18,49 +18,60 @@ const getCachedPosts = unstable_cache(
     page: number;
     limit: number;
   }) => {
-    const skip = (page - 1) * limit;
-    const where: Prisma.PostWhereInput = {};
-    if (published) where.published = true;
-    if (featured) where.featured = true;
-    if (categoryId) where.categoryId = categoryId;
+    try {
+      const skip = (page - 1) * limit;
+      const where: Prisma.PostWhereInput = {};
+      if (published) where.published = true;
+      if (featured) where.featured = true;
+      if (categoryId) where.categoryId = categoryId;
 
-    const [posts, total] = await Promise.all([
-      prisma.post.findMany({
-        where,
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          excerpt: true,
-          coverImage: true,
-          publishDate: true,
-          createdAt: true,
-          readingTime: true,
-          featured: true,
-          published: true,
-          category: {
-            select: {
-              name: true,
-              slug: true,
+      const [posts, total] = await Promise.all([
+        prisma.post.findMany({
+          where,
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            excerpt: true,
+            coverImage: true,
+            publishDate: true,
+            createdAt: true,
+            readingTime: true,
+            featured: true,
+            published: true,
+            category: {
+              select: {
+                name: true,
+                slug: true,
+              },
             },
           },
-        },
-        orderBy: { publishDate: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.post.count({ where }),
-    ]);
+          orderBy: { publishDate: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.post.count({ where }),
+      ]);
 
-    return {
-      posts,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      return {
+        posts,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      // Log error for debugging in production
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[Blog Server] Error fetching posts:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          options: { published, featured, categoryId, page, limit },
+        });
+      }
+      throw error;
+    }
   },
   ['blog-posts'],
   { revalidate: 10, tags: ['blog-posts'] }
@@ -68,32 +79,42 @@ const getCachedPosts = unstable_cache(
 
 const getCachedPostBySlug = unstable_cache(
   async (slug: string) => {
-    return prisma.post.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        excerpt: true,
-        content: true,
-        coverImage: true,
-        publishDate: true,
-        createdAt: true,
-        readingTime: true,
-        tags: true,
-        metaTitle: true,
-        metaDescription: true,
-        featured: true,
-        published: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
+    try {
+      return await prisma.post.findUnique({
+        where: { slug },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          excerpt: true,
+          content: true,
+          coverImage: true,
+          publishDate: true,
+          createdAt: true,
+          readingTime: true,
+          tags: true,
+          metaTitle: true,
+          metaDescription: true,
+          featured: true,
+          published: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[Blog Server] Error fetching post by slug:', {
+          slug,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+      throw error;
+    }
   },
   ['blog-post'],
   { revalidate: 10, tags: ['blog-posts'] }
@@ -101,24 +122,34 @@ const getCachedPostBySlug = unstable_cache(
 
 const getCachedAllCategories = unstable_cache(
   async ({ type }: { type?: 'BLOG' | 'PROJECT' } = {}) => {
-    const where: { type?: 'BLOG' | 'PROJECT' } = {};
-    if (type) where.type = type;
+    try {
+      const where: { type?: 'BLOG' | 'PROJECT' } = {};
+      if (type) where.type = type;
 
-    const categories = await prisma.category.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      include: {
-        _count: {
-          select: { posts: true, projects: true },
+      const categories = await prisma.category.findMany({
+        where,
+        orderBy: { name: 'asc' },
+        include: {
+          _count: {
+            select: { posts: true, projects: true },
+          },
         },
-      },
-    });
+      });
 
-    return categories.map((cat) => ({
-      ...cat,
-      postCount: cat._count.posts,
-      projectCount: cat._count.projects,
-    }));
+      return categories.map((cat) => ({
+        ...cat,
+        postCount: cat._count.posts,
+        projectCount: cat._count.projects,
+      }));
+    } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[Blog Server] Error fetching categories:', {
+          type,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+      throw error;
+    }
   },
   ['categories'],
   { revalidate: 300, tags: ['categories'] }
