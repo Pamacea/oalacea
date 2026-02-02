@@ -74,7 +74,7 @@ export function InWorldAdminModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-imperium-black-deep/90 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] bg-imperium-black-deep/90 backdrop-blur-sm"
             onClick={handleClose}
           >
             <ChaoticOverlay type="all" opacity={0.3} />
@@ -87,7 +87,7 @@ export function InWorldAdminModal() {
             animate={{ scale: 1, opacity: 1, rotateX: 0, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, rotateX: -10, y: 30 }}
             transition={{ type: 'spring', damping: 18, stiffness: 180 }}
-            className="fixed left-1/2 top-1/2 z-[51] w-[90vw] max-w-6xl h-[88vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden border-2 border-imperium-crimson bg-imperium-black-raise shadow-[0_0_80px_rgba(154,17,21,0.5),_10px_10px_0_rgba(154,17,21,0.3)] rounded-none flex flex-col"
+            className="fixed left-1/2 top-1/2 z-[10000] w-[90vw] max-w-6xl h-[88vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden border-2 border-imperium-crimson bg-imperium-black-raise shadow-[0_0_80px_rgba(154,17,21,0.5),_10px_10px_0_rgba(154,17,21,0.3)] rounded-none flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Decorative skull */}
