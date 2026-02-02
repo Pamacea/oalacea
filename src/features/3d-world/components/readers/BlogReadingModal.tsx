@@ -198,8 +198,9 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
       if (e.key === 'ArrowRight' && onNext) onNext();
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    // Use capture phase to ensure we catch keys before other handlers
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [onClose, onNext, onPrevious]);
 
   if (isLoading) {

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, LayoutDashboard, FileText, FolderKanban, Folder, Shield, Skull } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { useModalStore } from '@/store/modal-store';
 import { useWorldStore } from '@/features/3d-world/store';
@@ -28,6 +29,14 @@ export function InWorldAdminModal() {
   const { close: closeModalStore } = useModalStore();
   const world = useWorldStore((s) => s.currentWorld);
   const { playHover, playClick, playOpen, playClose } = useUISound();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.isAdmin === true;
+
+  if (!isAdmin && isOpen) {
+    closeAdmin();
+    closeModalStore();
+    return null;
+  }
 
   const isEditingForm = view === 'edit-post' || view === 'edit-project';
   const isCreatingForm = view === 'create-post' || view === 'create-project';
@@ -51,8 +60,9 @@ export function InWorldAdminModal() {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') handleClose();
     };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    // Use capture phase to ensure we catch Escape before other handlers
+    window.addEventListener('keydown', handleEscape, true);
+    return () => window.removeEventListener('keydown', handleEscape, true);
   }, [handleClose]);
 
   return (

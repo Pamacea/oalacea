@@ -5,7 +5,8 @@ import { ConcreteWall, NeonSign, ArtPedestal, SprayCan, GalleryFrame, NeonPartic
 import { UndergroundPortal } from '../portals';
 import { ArtProjectDisplays } from '../objects/ArtDisplay';
 import { BlogDocuments, AdminTerminalWrapper, BlogContentTerminal, ProjectContentTerminal } from '../objects';
-import { ArtCuratorGuide } from '@/core/3d/npc';
+// NPC module removed - commenting out ArtCuratorGuide
+// import { ArtCuratorGuide } from '@/core/3d/npc';
 
 interface ArtWorldProps {
   position?: [number, number, number];
@@ -75,8 +76,8 @@ export function ArtWorld({ position = [0, 0, 0] }: ArtWorldProps) {
       {/* Admin Terminal - Near center but not blocking */}
       <AdminTerminalWrapper world="ART" position={[-8, 0, 8]} />
 
-      {/* AI Guide - Art Curator */}
-      <ArtCuratorGuide position={[5, 0, 8]} />
+      {/* AI Guide - Art Curator - REMOVED: npc module deleted */}
+      {/* <ArtCuratorGuide position={[5, 0, 8]} /> */}
 
       {/* Content Terminals - For reading blogs and projects */}
       <BlogContentTerminal position={[-15, 0, 15]} world="ART" />

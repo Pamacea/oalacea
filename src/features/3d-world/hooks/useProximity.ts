@@ -30,7 +30,7 @@ export function useProximity(
 ) {
   const { checkInterval = 100, disabled = false } = options;
   const checkIntervalRef = useRef<number | undefined>(undefined);
-  const { setCanInteract, position: characterPos } = useCharacterStore();
+  const setCanInteract = useCharacterStore((s) => s.setCanInteract);
 
   useEffect(() => {
     if (disabled || objects.length === 0) {
@@ -39,14 +39,21 @@ export function useProximity(
     }
 
     const checkProximity = () => {
+      // IMPORTANT: Read position directly from store on each check
+      // to avoid closure stale values
+      const characterPos = useCharacterStore.getState().position;
       const charPosition = new Vector3(...characterPos);
 
       let closestObject: ProximityObject | null = null;
       let closestDistance = Infinity;
 
+      console.log('[useProximity] Char pos:', characterPos, 'checking', objects.length, 'objects');
+
       for (const obj of objects) {
         const objPosition = new Vector3(...obj.position);
         const distance = charPosition.distanceTo(objPosition);
+
+        console.log(`[useProximity] Distance to ${obj.data.name}:`, distance.toFixed(2), '(radius:', obj.radius, ')');
 
         if (distance < obj.radius && distance < closestDistance) {
           closestObject = obj;
@@ -55,6 +62,7 @@ export function useProximity(
       }
 
       if (closestObject) {
+        console.log('[useProximity] ✓ INTERACT:', closestObject.data.name, 'dist:', closestDistance.toFixed(2));
         setCanInteract(
           true,
           {
@@ -66,6 +74,7 @@ export function useProximity(
           }
         );
       } else {
+        console.log('[useProximity] ✗ No interaction in range');
         setCanInteract(false);
       }
     };
@@ -78,7 +87,7 @@ export function useProximity(
         clearInterval(checkIntervalRef.current);
       }
     };
-  }, [objects, characterPos, checkInterval, disabled, setCanInteract]);
+  }, [objects, checkInterval, disabled, setCanInteract]);
 
   return { objects };
 }

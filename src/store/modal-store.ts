@@ -24,10 +24,12 @@ export const useModalStore = create<ModalState>((set, get) => ({
     set({ isOpen: true, type: 'admin-listing' });
   },
   close: () => {
+    console.log('[modal-store] close() called - stack:', new Error().stack?.split('\n').slice(1, 4));
     const state = get();
     if (state.type === 'admin-listing') {
       useInWorldAdminStore.getState().closeAdmin();
     }
+    console.log('[modal-store] Closing modal - was type:', state.type);
     set({ isOpen: false, type: null });
   },
 }));

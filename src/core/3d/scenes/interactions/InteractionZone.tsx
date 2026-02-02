@@ -101,7 +101,7 @@ export function InteractionZone({
       />
 
       <InSceneLabel
-        position={position}
+        position={[0, 4.5, 0]}
         label={_label}
         type={type}
         isActive={isActive}

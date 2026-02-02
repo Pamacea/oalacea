@@ -57,38 +57,61 @@ export const INTERACTIONS_REGISTRY: InteractionConfig[] = [
 
   // =========================================
   // ZONES DE CONTENU (Routes)
+  // IMPORTANT: positions MUST match the actual 3D objects in DevWorld/ArtWorld
   // =========================================
   {
-    id: 'zone-blog',
-    world: 'both',
-    position: [-15, 0, -15],
+    id: 'zone-blog-dev',
+    world: 'dev',
+    position: [-12, 0, 12],
     type: 'route',
     label: 'Blog',
     route: '/blog',
+    radius: 4,
+  },
+  {
+    id: 'zone-blog-art',
+    world: 'art',
+    position: [-15, 0, 15],
+    type: 'route',
+    label: 'Blog',
+    route: '/blog',
+    radius: 4,
   },
   {
     id: 'zone-portfolio-dev',
     world: 'dev',
-    position: [15, 0, -15],
+    position: [12, 0, 12],
     type: 'route',
-    label: 'Portfolio Dev',
+    label: 'Portfolio',
     route: '/portfolio',
+    radius: 4,
   },
   {
     id: 'zone-portfolio-art',
     world: 'art',
-    position: [-15, 0, 15],
+    position: [15, 0, 15],
     type: 'route',
-    label: 'Portfolio Art',
+    label: 'Portfolio',
     route: '/portfolio',
+    radius: 4,
   },
   {
-    id: 'zone-about',
-    world: 'both',
-    position: [15, 0, 15],
+    id: 'zone-about-dev',
+    world: 'dev',
+    position: [0, 0, -8],
     type: 'route',
     label: 'About',
     route: '/about',
+    radius: 4,
+  },
+  {
+    id: 'zone-about-art',
+    world: 'art',
+    position: [0, 0, -8],
+    type: 'route',
+    label: 'About',
+    route: '/about',
+    radius: 4,
   },
 
   // =========================================

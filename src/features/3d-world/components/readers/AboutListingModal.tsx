@@ -15,8 +15,9 @@ export function AboutListingModal() {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    // Use capture phase to ensure we catch Escape before other handlers
+    window.addEventListener('keydown', handleEscape, true);
+    return () => window.removeEventListener('keydown', handleEscape, true);
   }, [close]);
 
   return (
@@ -27,8 +28,11 @@ export function AboutListingModal() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
-        onClick={close}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
+        onClick={(e) => {
+          console.log('[AboutListingModal] Backdrop clicked!', e);
+          close();
+        }}
       >
         <ChaoticOverlay type="all" opacity={0.25} />
         <ScanlineBeam color="#9a1115" duration={5} />
@@ -41,7 +45,7 @@ export function AboutListingModal() {
         animate={{ scale: 1, opacity: 1, rotateX: 0, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, rotateX: -10, y: 50 }}
         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-        className="relative z-[51] w-[90vw] max-w-2xl h-[85vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+        className="fixed left-1/2 top-1/2 z-[10000] w-[90vw] max-w-2xl h-[85vh] -translate-x-1/2 -translate-y-1/2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-imperium-black-raise border-2 border-imperium-crimson rounded-none shadow-[0_0_60px_rgba(154,17,21,0.4),_8px_8px_0_rgba(154,17,21,0.2)] overflow-hidden flex flex-col h-full">

@@ -28,7 +28,7 @@ export function InSceneLabel({ position, label, type, isActive, targetWorld }: I
 
   return (
     <Html
-      position={[position[0], position[1] + 4.5, position[2]]}
+      position={position}
       center
       distanceFactor={7}
       zIndexRange={[100, 0]}

@@ -34,8 +34,8 @@ export {
   useDetailedPerformanceMonitor,
 } from '@/features/analytics';
 
-// AI Chat
-export { useAIChat } from '@/features/ai-chat';
+// AI Chat - feature removed
+// export { useAIChat } from '@/features/ai-chat';
 
 // Shared hooks
 export {

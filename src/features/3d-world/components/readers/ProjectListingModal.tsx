@@ -19,10 +19,29 @@ const CATEGORY_CONFIG: Record<string, { icon: any; color: string; label: string 
 
 export function ProjectListingModal() {
   const { close } = useModalStore();
+
+  // Debug global keydown listener to track all key events
+  useEffect(() => {
+    const debugKeydown = (e: KeyboardEvent) => {
+      console.log('[DEBUG GLOBAL] Key event:', {
+        key: e.key,
+        code: e.code,
+        type: e.type,
+        bubbles: e.bubbles,
+        cancelable: e.cancelable,
+        defaultPrevented: e.defaultPrevented,
+      });
+    };
+    window.addEventListener('keydown', debugKeydown, true);
+    return () => window.removeEventListener('keydown', debugKeydown, true);
+  }, []);
   const { data: projects, isLoading } = useProjects();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const { playClick, playHover } = useUISound();
+
+  // Debug: log when modal mounts
+  console.log('[ProjectListingModal] MOUNTED - isOpen=true, component mounted');
 
   const projectsList = projects || [];
   const hasPrev = selectedIndex > 0;
@@ -31,16 +50,24 @@ export function ProjectListingModal() {
   // Close on Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
+      console.log('[ProjectListingModal] handleEscape called - key:', e.key, 'code:', e.code, 'selectedProject:', selectedProject);
       if (e.key === 'Escape') {
+        console.log('[ProjectListingModal] Escape detected, closing...');
         if (selectedProject) {
           setSelectedProject(null);
         } else {
+          console.log('[ProjectListingModal] Calling close() from handleEscape');
           close();
         }
       }
     };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    console.log('[ProjectListingModal] Adding Escape listener (capture phase)');
+    // Use capture phase to ensure we catch Escape before other handlers
+    window.addEventListener('keydown', handleEscape, true);
+    return () => {
+      console.log('[ProjectListingModal] Removing Escape listener');
+      window.removeEventListener('keydown', handleEscape, true);
+    };
   }, [selectedProject, close]);
 
   const handleSelectProject = (slug: string, index: number) => {
@@ -50,9 +77,11 @@ export function ProjectListingModal() {
   };
 
   const handleClose = () => {
+    console.log('[ProjectListingModal] handleClose called - selectedProject:', selectedProject);
     if (selectedProject) {
       setSelectedProject(null);
     } else {
+      console.log('[ProjectListingModal] Calling close()');
       close();
     }
   };
@@ -86,8 +115,11 @@ export function ProjectListingModal() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
-        onClick={handleClose}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
+        onClick={(e) => {
+          console.log('[ProjectListingModal] Backdrop clicked!', e);
+          handleClose();
+        }}
       >
         <ChaoticOverlay type="all" opacity={0.3} />
         <ScanlineBeam color="#d4af37" duration={3.5} />
@@ -100,7 +132,7 @@ export function ProjectListingModal() {
         animate={{ scale: 1, opacity: 1, rotateX: 0, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, rotateX: -10, y: 50 }}
         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-        className="relative z-[51] w-[90vw] max-w-4/5 h-[85vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+        className="fixed left-1/2 top-1/2 z-[10000] w-[90vw] max-w-4/5 h-[85vh] -translate-x-1/2 -translate-y-1/2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-imperium-black-raise border-2 border-imperium-gold rounded-none shadow-[0_0_60px_rgba(212,175,55,0.3),_8px_8px_0_rgba(212,175,55,0.15)] overflow-hidden flex flex-col h-full">

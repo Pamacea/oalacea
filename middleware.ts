@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 import { isProtectedPath, getRequiredRole } from "@/lib/rbac"
 import type { UserRole } from "@/types/auth"
 
-const publicPaths = ["/login", "/api/auth"]
+const publicPaths = ["/", "/login", "/api/auth"]
 
 // Create Edge-compatible auth instance from config
 const { auth } = NextAuth(authConfig)

@@ -6,7 +6,8 @@ import { ImperialPillar, GothicArch, DevTerminal, DustParticles } from './dev/De
 import { ImperiumPortal } from '../portals';
 import { DevProjectPedestals } from '../objects/ProjectPedestal';
 import { BlogDocuments, AdminTerminalWrapper, BlogContentTerminal, ProjectContentTerminal } from '../objects';
-import { TechPriestGuide } from '@/core/3d/npc';
+// NPC module removed - commenting out TechPriestGuide
+// import { TechPriestGuide } from '@/core/3d/npc';
 
 interface DevWorldProps {
   position?: [number, number, number];
@@ -58,8 +59,8 @@ export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
       {/* Admin Terminal - Near center but not blocking */}
       <AdminTerminalWrapper world="DEV" position={[8, 0, 8]} />
 
-      {/* AI Guide - Tech Priest */}
-      <TechPriestGuide position={[-5, 0, 8]} />
+      {/* AI Guide - Tech Priest - REMOVED: npc module deleted */}
+      {/* <TechPriestGuide position={[-5, 0, 8]} /> */}
 
       {/* Content Terminals - For reading blogs and projects */}
       <BlogContentTerminal position={[-12, 0, 12]} world="DEV" />

@@ -16,6 +16,9 @@ export function BlogListingModal() {
   const [selectedBlog, setSelectedBlog] = useState<string | null>(null);
   const { playClick, playHover } = useUISound();
 
+  // Debug: log when modal renders
+  console.log('[BlogListingModal] MOUNTED - Escape listener will be added');
+
   const posts = postsData?.posts || [];
   const hasPrev = useMemo(() => selectedIndex > 0, [selectedIndex]);
   const hasNext = useMemo(() => selectedIndex < posts.length - 1, [selectedIndex, posts.length]);
@@ -23,7 +26,9 @@ export function BlogListingModal() {
   // Close on Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
+      console.log('[BlogListingModal] Keydown:', e.key, 'code:', e.code, 'selectedBlog:', selectedBlog);
       if (e.key === 'Escape') {
+        console.log('[BlogListingModal] Escape pressed - closing');
         if (selectedBlog) {
           setSelectedBlog(null);
         } else {
@@ -31,8 +36,13 @@ export function BlogListingModal() {
         }
       }
     };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    console.log('[BlogListingModal] Adding Escape key listener (capture phase)');
+    // Use capture phase to ensure we catch Escape before other handlers
+    window.addEventListener('keydown', handleEscape, true);
+    return () => {
+      console.log('[BlogListingModal] Removing Escape key listener');
+      window.removeEventListener('keydown', handleEscape, true);
+    };
   }, [selectedBlog, close]);
 
   const handleSelectBlog = useCallback((slug: string, index: number) => {
@@ -42,9 +52,11 @@ export function BlogListingModal() {
   }, [playClick]);
 
   const handleClose = useCallback(() => {
+    console.log('[BlogListingModal] handleClose called - selectedBlog:', selectedBlog);
     if (selectedBlog) {
       setSelectedBlog(null);
     } else {
+      console.log('[BlogListingModal] Calling close()');
       close();
     }
   }, [selectedBlog, close]);
@@ -86,8 +98,11 @@ export function BlogListingModal() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
-        onClick={() => handleClose()}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-imperium-black-deep/90 backdrop-blur-sm"
+        onClick={(e) => {
+          console.log('[BlogListingModal] Backdrop clicked!', e);
+          handleClose();
+        }}
       >
         <ChaoticOverlay type="all" opacity={0.3} />
         <ScanlineBeam color="#9a1115" duration={4} />
@@ -100,7 +115,7 @@ export function BlogListingModal() {
         animate={{ scale: 1, opacity: 1, rotateX: 0, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, rotateX: -10, y: 50 }}
         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-        className="relative z-[51] w-[90vw] max-w-4xl h-[85vh] -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2"
+        className="fixed left-1/2 top-1/2 z-[10000] w-[90vw] max-w-4xl h-[85vh] -translate-x-1/2 -translate-y-1/2"
         onClick={(e) => {
           e.stopPropagation();
         }}
