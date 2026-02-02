@@ -11,7 +11,8 @@ export * from "@/features/portfolio";
 export * from "@/features/3d-world";
 export * from "@/features/admin";
 export * from "@/features/onboarding";
-export * from "@/features/newsletter";
+// newsletter feature removed
+// export * from "@/features/newsletter";
 export * from "@/features/analytics";
 
 // Shared
