@@ -9,36 +9,31 @@ type GlobalPrisma = {
 
 const globalForPrisma = globalThis as unknown as GlobalPrisma;
 
-// Supabase connection string
-const connectionString =
-  process.env.DATABASE_URL || // Fallback to standard name
-  process.env.POSTGRES_URL || // Supabase pooler (recommended for serverless)
-  process.env.POSTGRES_URL_NON_POOLING; // Direct connection (for migrations)
+// Direct connection URL - use non-pooling for Prisma to work correctly
+// The pgbouncer connection pooling in Vercel serverless doesn't work well with Prisma's connection pool
+const connectionString = process.env.POSTGRES_URL_NON_POOLING || process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
-const pool =
-  globalForPrisma.pool ??
-  new Pool({
-    connectionString,
-    max: 10,
-    idleTimeoutMillis: 20000,
-    connectionTimeoutMillis: 10000,
-  });
-
-const adapter = new PrismaPg(pool, {
-  // Use read replica for reads if available
-  // datasources: { db: { url: process.env.DATABASE_URL_RO } },
+// Create connection pool
+const pool = globalForPrisma.pool ?? new Pool({
+  connectionString,
+  max: 10,
+  idleTimeoutMillis: 20000,
+  connectionTimeoutMillis: 10000,
 });
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.pool = pool;
+}
+
+// Create adapter
+const adapter = new PrismaPg(pool);
 
 export const prisma =
   globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-  });
+  new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
-  globalForPrisma.pool = pool;
 }
 
 export const disconnect = async () => {

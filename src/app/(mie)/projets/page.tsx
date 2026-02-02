@@ -5,7 +5,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { GlitchText } from "@/components/ui/imperium"
 import { BrutalCard } from "@/components/navigation/BrutalBackground"
+import { portfolioMetadata } from "@/shared/components/seo/PageMetadata"
 
+export const metadata = portfolioMetadata
 export const dynamic = 'force-dynamic'
 
 export default async function ProjetsPage() {

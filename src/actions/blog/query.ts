@@ -5,6 +5,19 @@ import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import type { Category, PostVersion, Prisma } from '@/generated/prisma/client';
 
+// Safe wrapper for database calls with error handling
+async function safeDbCall<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    // Log error but don't crash the page
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[DB Error]', error);
+    }
+    return fallback;
+  }
+}
+
 export type PostListItem = {
   id: string;
   slug: string;
@@ -31,6 +44,7 @@ export type PostDetail = {
   coverImage: string | null;
   publishDate: Date | null;
   createdAt: Date;
+  updatedAt: Date;
   readingTime: number | null;
   tags: string[] | null;
   metaTitle: string | null;
@@ -125,54 +139,56 @@ export async function getPostsUncached({
   page?: number;
   limit?: number;
 } = {}): Promise<GetPostsResult> {
-  const skip = (page - 1) * limit;
-  const where: Prisma.PostWhereInput = {};
-  if (published !== undefined) where.published = published;
-  if (featured) where.featured = true;
-  if (categoryId) where.categoryId = categoryId;
+  return safeDbCall(async () => {
+    const skip = (page - 1) * limit;
+    const where: Prisma.PostWhereInput = {};
+    if (published !== undefined) where.published = published;
+    if (featured) where.featured = true;
+    if (categoryId) where.categoryId = categoryId;
 
-  const [posts, total] = await Promise.all([
-    prisma.post.findMany({
-      where,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        excerpt: true,
-        coverImage: true,
-        publishDate: true,
-        createdAt: true,
-        readingTime: true,
-        featured: true,
-        published: true,
-        category: {
-          select: {
-            name: true,
-            slug: true,
+    const [posts, total] = await Promise.all([
+      prisma.post.findMany({
+        where,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          excerpt: true,
+          coverImage: true,
+          publishDate: true,
+          createdAt: true,
+          readingTime: true,
+          featured: true,
+          published: true,
+          category: {
+            select: {
+              name: true,
+              slug: true,
+            },
           },
         },
-      },
-      orderBy: { publishDate: 'desc' },
-      skip,
-      take: limit,
-    }),
-    prisma.post.count({ where }),
-  ]);
+        orderBy: { publishDate: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.post.count({ where }),
+    ]);
 
-  return {
-    posts,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
+    return {
+      posts,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }, { posts: [], pagination: { page, limit, total: 0, totalPages: 0 } });
 }
 
 const getCachedPostBySlug = unstable_cache(
   async (slug: string) => {
-    return prisma.post.findUnique({
+    const result = await prisma.post.findUnique({
       where: { slug },
       select: {
         id: true,
@@ -183,6 +199,7 @@ const getCachedPostBySlug = unstable_cache(
         coverImage: true,
         publishDate: true,
         createdAt: true,
+        updatedAt: true,
         readingTime: true,
         tags: true,
         metaTitle: true,
@@ -198,6 +215,7 @@ const getCachedPostBySlug = unstable_cache(
         },
       },
     });
+    return result as PostDetail | null;
   },
   ['blog-post'],
   { revalidate: 10, tags: ['blog-posts'] }
@@ -216,6 +234,7 @@ const getCachedPostById = unstable_cache(
         coverImage: true,
         publishDate: true,
         createdAt: true,
+        updatedAt: true,
         readingTime: true,
         tags: true,
         metaTitle: true,
@@ -285,32 +304,36 @@ export async function getAllCategoriesUncached({ type }: { type?: 'BLOG' | 'PROJ
 
 // Uncached version for client components - bypasses cache entirely
 export async function getPostBySlugUncached(slug: string): Promise<PostDetail | null> {
-  return prisma.post.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      excerpt: true,
-      content: true,
-      coverImage: true,
-      publishDate: true,
-      createdAt: true,
-      readingTime: true,
-      tags: true,
-      metaTitle: true,
-      metaDescription: true,
-      featured: true,
-      published: true,
-      category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
+  return safeDbCall(async () => {
+    const result = await prisma.post.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        excerpt: true,
+        content: true,
+        coverImage: true,
+        publishDate: true,
+        createdAt: true,
+        updatedAt: true,
+        readingTime: true,
+        tags: true,
+        metaTitle: true,
+        metaDescription: true,
+        featured: true,
+        published: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
         },
       },
-    },
-  });
+    });
+    return result as PostDetail | null;
+  }, null);
 }
 
 const getCachedPostVersions = unstable_cache(
