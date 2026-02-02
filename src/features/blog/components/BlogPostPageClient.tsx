@@ -3,13 +3,15 @@
 import { notFound } from 'next/navigation'
 import { useBlogPost } from '../hooks'
 import { BlogPostTemplate } from './BlogPostTemplate'
+import type { PostDetail } from '@/actions/blog/query'
 
 interface BlogPostPageClientProps {
   slug: string
+  initialPost?: PostDetail | null
 }
 
-export function BlogPostPageClient({ slug }: BlogPostPageClientProps) {
-  const { data: post, isLoading } = useBlogPost(slug)
+export function BlogPostPageClient({ slug, initialPost }: BlogPostPageClientProps) {
+  const { data: post, isLoading } = useBlogPost(slug, initialPost)
 
   if (isLoading) {
     return (

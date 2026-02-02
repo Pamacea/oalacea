@@ -1,4 +1,4 @@
-import { getProjects } from "@/actions/projects"
+import { getProjectsForServer } from "@/actions/projects-server"
 import type { ProjectListItem } from "@/actions/projects"
 import { CATEGORY_LABELS } from "@/features/portfolio/constants"
 import Link from "next/link"
@@ -9,7 +9,7 @@ import { BrutalCard } from "@/components/navigation/BrutalBackground"
 export const dynamic = 'force-dynamic'
 
 export default async function ProjetsPage() {
-  const projects = await getProjects()
+  const projects = await getProjectsForServer()
 
   if (projects.length === 0) {
     return (
