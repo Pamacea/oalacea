@@ -10,6 +10,8 @@ import {
   Menu,
   X,
   Skull,
+  MessageSquare,
+  Folder,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
@@ -27,6 +29,8 @@ const navItems: NavItem[] = [
   { href: '/admin', label: 'COMMAND', icon: LayoutDashboard },
   { href: '/admin/blog', label: 'ARCHIVES', icon: FileText },
   { href: '/admin/projects', label: 'FORGE', icon: FolderKanban },
+  { href: '/admin/blog/categories', label: 'INDEX', icon: Folder },
+  { href: '/admin/comments', label: 'TRANSMISSIONS', icon: MessageSquare },
 ];
 
 interface AdminSidebarProps {

@@ -8,29 +8,13 @@ import { ArrowLeft, Save, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Glo
 import { motion } from 'framer-motion';
 import { createProject, updateProject, getProjectCategories } from '@/actions/projects';
 import { GlitchText } from '@/components/ui/imperium';
+import { useForm } from '@tanstack/react-form';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
   () => import('@/features/3d-world/components/admin/markdown-editor').then(mod => ({ default: mod.MarkdownEditor })),
   { ssr: false, loading: () => <div className="w-full h-64 border-2 border-imperium-steel-dark bg-imperium-black animate-pulse" /> }
 );
-
-type FormData = {
-  title: string;
-  slug: string;
-  description: string;
-  longDescription: string;
-  thumbnail: string;
-  year: string;
-  categoryId: string;
-  techStack: string;
-  githubUrl: string;
-  liveUrl: string;
-  featured: boolean;
-  world: 'DEV' | 'ART' | '';
-  worldX: string;
-  worldZ: string;
-};
 
 interface ProjectFormProps {
   projectId?: string;
@@ -40,21 +24,23 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<FormData>({
-    title: '',
-    slug: '',
-    description: '',
-    longDescription: '',
-    thumbnail: '',
-    year: new Date().getFullYear().toString(),
-    categoryId: '',
-    techStack: '',
-    githubUrl: '',
-    liveUrl: '',
-    featured: false,
-    world: '',
-    worldX: '',
-    worldZ: '',
+  const form = useForm({
+    defaultValues: {
+      title: '',
+      slug: '',
+      description: '',
+      longDescription: '',
+      thumbnail: '',
+      year: new Date().getFullYear().toString(),
+      categoryId: '',
+      techStack: '',
+      githubUrl: '',
+      liveUrl: '',
+      featured: false,
+      world: '' as 'DEV' | 'ART' | '',
+      worldX: '',
+      worldZ: '',
+    },
   });
 
   const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
@@ -73,28 +59,26 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         const project = await fetch(`/api/projects/${projectId}`).then(r => r.json()).catch(() => null);
         if (project) {
           const catId = cats?.find((c) => c.id === project.categoryId)?.id || '';
-          setFormData({
-            title: project.title,
-            slug: project.slug,
-            description: project.description || '',
-            longDescription: project.longDescription || '',
-            thumbnail: project.thumbnail || '',
-            year: project.year?.toString() || new Date().getFullYear().toString(),
-            categoryId: catId,
-            techStack: project.techStack?.join(', ') || '',
-            githubUrl: project.githubUrl || '',
-            liveUrl: project.liveUrl || '',
-            featured: project.featured,
-            world: project.worldPosition?.world || '',
-            worldX: project.worldPosition?.x?.toString() || '',
-            worldZ: project.worldPosition?.z?.toString() || '',
-          });
+          form.setFieldValue('title', project.title);
+          form.setFieldValue('slug', project.slug);
+          form.setFieldValue('description', project.description || '');
+          form.setFieldValue('longDescription', project.longDescription || '');
+          form.setFieldValue('thumbnail', project.thumbnail || '');
+          form.setFieldValue('year', project.year?.toString() || new Date().getFullYear());
+          form.setFieldValue('categoryId', catId);
+          form.setFieldValue('techStack', project.techStack?.join(', ') || '');
+          form.setFieldValue('githubUrl', project.githubUrl || '');
+          form.setFieldValue('liveUrl', project.liveUrl || '');
+          form.setFieldValue('featured', project.featured);
+          form.setFieldValue('world', project.worldPosition?.world || '');
+          form.setFieldValue('worldX', project.worldPosition?.x?.toString() || '');
+          form.setFieldValue('worldZ', project.worldPosition?.z?.toString() || '');
         }
       }
       setIsLoading(false);
     }
     loadData();
-  }, [projectId]);
+  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generateSlug = (title: string) => {
     return title
@@ -103,15 +87,6 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-  };
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTitle = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      title: newTitle,
-      slug: projectId ? prev.slug : generateSlug(newTitle),
-    }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +138,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         ctx.drawImage(img, 0, 0, width, height);
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        setFormData((prev) => ({ ...prev, thumbnail: compressedDataUrl }));
+        form.setFieldValue('thumbnail', compressedDataUrl);
         setUploadProgress(100);
         setIsUploading(false);
         setTimeout(() => setUploadProgress(0), 500);
@@ -186,22 +161,23 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
     setIsSaving(true);
 
     try {
+      const values = form.state.values;
       const data = {
-        title: formData.title,
-        slug: formData.slug || generateSlug(formData.title),
-        description: formData.description,
-        longDescription: formData.longDescription || undefined,
-        thumbnail: formData.thumbnail || undefined,
-        year: parseInt(formData.year) || new Date().getFullYear(),
-        categoryId: formData.categoryId,
-        techStack: formData.techStack.split(',').map((t) => t.trim()).filter(Boolean),
-        githubUrl: formData.githubUrl || undefined,
-        liveUrl: formData.liveUrl || undefined,
-        featured: formData.featured,
-        worldPosition: formData.world ? {
-          world: formData.world as 'DEV' | 'ART',
-          x: parseFloat(formData.worldX) || 0,
-          z: parseFloat(formData.worldZ) || 0,
+        title: values.title,
+        slug: values.slug || generateSlug(values.title),
+        description: values.description,
+        longDescription: values.longDescription || undefined,
+        thumbnail: values.thumbnail || undefined,
+        year: parseInt(values.year) || new Date().getFullYear(),
+        categoryId: values.categoryId,
+        techStack: values.techStack.split(',').map((t) => t.trim()).filter(Boolean),
+        githubUrl: values.githubUrl || undefined,
+        liveUrl: values.liveUrl || undefined,
+        featured: values.featured,
+        worldPosition: values.world ? {
+          world: values.world as 'DEV' | 'ART',
+          x: parseFloat(values.worldX) || 0,
+          z: parseFloat(values.worldZ) || 0,
         } : undefined,
       };
 
@@ -218,16 +194,6 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-    }));
   };
 
   if (isLoading) {
@@ -263,12 +229,12 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
         <div className="w-6" />
       </div>
 
-      {formData.thumbnail && (
+      {form.state.values.thumbnail && (
         <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-          <Image src={formData.thumbnail} alt="Thumbnail preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
+          <Image src={form.state.values.thumbnail} alt="Thumbnail preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <button
             type="button"
-            onClick={() => setFormData((prev) => ({ ...prev, thumbnail: '' }))}
+            onClick={() => form.setFieldValue('thumbnail', '')}
             className="absolute top-3 right-3 border-2 border-imperium-gold bg-imperium-gold/10 p-2 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
           >
             <XIcon className="h-4 w-4" />
@@ -277,17 +243,42 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
       )}
 
       <div className="space-y-2">
-        <input
-          type="text"
+        <form.Field
           name="title"
-          value={formData.title}
-          onChange={handleTitleChange}
-          required
-          placeholder="ENTER BLUEPRINT TITLE..."
-          className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold transition-colors"
-        />
+          validators={{
+            onChange: ({ value }) => value.length > 0 ? undefined : "Title is required",
+            onChangeAsync: async ({ value }) => {
+              if (value.length > 200) return "Title too long";
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <div>
+              <input
+                type="text"
+                name={field.name}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (!projectId) {
+                    form.setFieldValue('slug', generateSlug(e.target.value));
+                  }
+                }}
+                required
+                placeholder="ENTER BLUEPRINT TITLE..."
+                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold transition-colors"
+              />
+              {field.state.meta.errors && (
+                <p className="font-terminal text-xs text-imperium-crimson mt-1">
+                  {field.state.meta.errors.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
         <p className="font-terminal text-xs text-imperium-steel-dark pl-1">
-          /{formData.slug || 'SLUG-AUTO-GENERATED'}
+          /{form.state.values.slug || 'SLUG-AUTO-GENERATED'}
         </p>
       </div>
 
@@ -297,47 +288,75 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
             <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
               {'>'} DESCRIPTION *
             </label>
-            <textarea
+            <form.Field
               name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={2}
-              placeholder="Short description for project cards..."
-              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold resize-none"
-            />
+              validators={{
+                onChange: ({ value }) => value.length > 0 ? undefined : "Description is required",
+                onChangeAsync: async ({ value }) => {
+                  if (value.length > 1000) return "Description too long";
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <textarea
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    rows={2}
+                    placeholder="Short description for project cards..."
+                    className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold resize-none"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
           </div>
 
           <div>
             <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
               {'>'} LONG DESCRIPTION
             </label>
-            <Suspense fallback={<div className="w-full h-64 border-2 border-imperium-steel-dark bg-imperium-black animate-pulse" />}>
-              <MarkdownEditor
-                content={formData.longDescription}
-                onChange={(content) => setFormData(prev => ({ ...prev, longDescription: content }))}
-                placeholder="Detailed project description..."
-                editable
-              />
-            </Suspense>
+            <form.Field name="longDescription">
+              {(field) => (
+                <Suspense fallback={<div className="w-full h-64 border-2 border-imperium-steel-dark bg-imperium-black animate-pulse" />}>
+                  <MarkdownEditor
+                    content={field.state.value}
+                    onChange={(content) => field.handleChange(content)}
+                    placeholder="Detailed project description..."
+                    editable
+                  />
+                </Suspense>
+              )}
+            </form.Field>
           </div>
 
           <div>
             <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
               {'>'} CATEGORY
             </label>
-            <select
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
-            >
-              <option value="">-- SELECT CATEGORY --</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+            <form.Field name="categoryId">
+              {(field) => (
+                <select
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                >
+                  <option value="">-- SELECT CATEGORY --</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </form.Field>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -345,57 +364,134 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
               <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
                 {'>'} YEAR
               </label>
-              <input
-                type="number"
+              <form.Field
                 name="year"
-                value={formData.year}
-                onChange={handleChange}
-                placeholder="2024"
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
-              />
+                validators={{
+                  onChange: ({ value }) => {
+                    const year = parseInt(value);
+                    return year > 1900 && year <= 2100 ? undefined : "Invalid year";
+                  },
+                }}
+              >
+                {(field) => (
+                  <div>
+                    <input
+                      type="number"
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="2024"
+                      className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
+                    />
+                    {field.state.meta.errors && (
+                      <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </form.Field>
             </div>
             <div>
               <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
                 {'>'} TECH STACK
               </label>
-              <input
-                type="text"
+              <form.Field
                 name="techStack"
-                value={formData.techStack}
-                onChange={handleChange}
-                placeholder="React, TypeScript, Three.js"
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
-              />
+                validators={{
+                  onChangeAsync: async ({ value }) => {
+                    if (value.length > 200) return "Tech stack too long";
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => (
+                  <div>
+                    <input
+                      type="text"
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="React, TypeScript, Three.js"
+                      className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
+                    />
+                    {field.state.meta.errors && (
+                      <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                        {field.state.meta.errors.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </form.Field>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-                {'>'} GITHUB URL
-              </label>
-              <input
-                type="url"
-                name="githubUrl"
-                value={formData.githubUrl}
-                onChange={handleChange}
-                placeholder="https://github.com/..."
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-                {'>'} LIVE URL
-              </label>
-              <input
-                type="url"
-                name="liveUrl"
-                value={formData.liveUrl}
-                onChange={handleChange}
-                placeholder="https://..."
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
-              />
-            </div>
+            <form.Field
+              name="githubUrl"
+              validators={{
+                onChangeAsync: async ({ value }) => {
+                  if (value && !/^https?:\/\/.+/.test(value)) {
+                    return "Invalid URL";
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                    {'>'} GITHUB URL
+                  </label>
+                  <input
+                    type="url"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="https://github.com/..."
+                    className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field
+              name="liveUrl"
+              validators={{
+                onChangeAsync: async ({ value }) => {
+                  if (value && !/^https?:\/\/.+/.test(value)) {
+                    return "Invalid URL";
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                    {'>'} LIVE URL
+                  </label>
+                  <input
+                    type="url"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
           </div>
 
           <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
@@ -404,43 +500,55 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
               WORLD POSITION
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">WORLD</label>
-                <select
-                  name="world"
-                  value={formData.world}
-                  onChange={handleChange}
-                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
-                >
-                  <option value="">-- NONE --</option>
-                  <option value="DEV">DEV</option>
-                  <option value="ART">ART</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">X</label>
-                <input
-                  type="number"
-                  name="worldX"
-                  value={formData.worldX}
-                  onChange={handleChange}
-                  placeholder="0"
-                  step="0.1"
-                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">Z</label>
-                <input
-                  type="number"
-                  name="worldZ"
-                  value={formData.worldZ}
-                  onChange={handleChange}
-                  placeholder="0"
-                  step="0.1"
-                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
-                />
-              </div>
+              <form.Field name="world">
+                {(field) => (
+                  <div>
+                    <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">WORLD</label>
+                    <select
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value as 'DEV' | 'ART' | '')}
+                      className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                    >
+                      <option value="">-- NONE --</option>
+                      <option value="DEV">DEV</option>
+                      <option value="ART">ART</option>
+                    </select>
+                  </div>
+                )}
+              </form.Field>
+              <form.Field name="worldX">
+                {(field) => (
+                  <div>
+                    <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">X</label>
+                    <input
+                      type="number"
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="0"
+                      step="0.1"
+                      className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
+                    />
+                  </div>
+                )}
+              </form.Field>
+              <form.Field name="worldZ">
+                {(field) => (
+                  <div>
+                    <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">Z</label>
+                    <input
+                      type="number"
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="0"
+                      step="0.1"
+                      className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold"
+                    />
+                  </div>
+                )}
+              </form.Field>
             </div>
           </div>
         </div>
@@ -481,14 +589,18 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
                 </div>
               )}
             </button>
-            <input
-              type="url"
-              name="thumbnail"
-              value={formData.thumbnail}
-              onChange={handleChange}
-              placeholder="https://..."
-              className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-gold"
-            />
+            <form.Field name="thumbnail">
+              {(field) => (
+                <input
+                  type="url"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="https://..."
+                  className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                />
+              )}
+            </form.Field>
           </div>
 
           <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
@@ -496,23 +608,27 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
               <span className="w-1 h-4 bg-imperium-gold" />
               OPTIONS
             </h3>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="featured"
-                id="featured-project"
-                checked={formData.featured}
-                onChange={handleChange}
-                className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black checked:bg-imperium-gold checked:border-imperium-gold"
-              />
-              <span className="font-terminal text-sm text-imperium-bone">Featured blueprint</span>
-            </label>
+            <form.Field name="featured">
+              {(field) => (
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name={field.name}
+                    id="featured"
+                    checked={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.checked)}
+                    className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black checked:bg-imperium-gold checked:border-imperium-gold"
+                  />
+                  <span className="font-terminal text-sm text-imperium-bone">Featured blueprint</span>
+                </label>
+              )}
+            </form.Field>
           </div>
 
-          {formData.slug && (
+          {form.state.values.slug && (
             <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
               <a
-                href={`/portfolio/${formData.slug}`}
+                href={`/portfolio/${form.state.values.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 font-terminal text-sm text-imperium-bone hover:text-imperium-gold transition-colors"
@@ -548,7 +664,7 @@ export function ProjectForm({ projectId }: ProjectFormProps) {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isSaving || !formData.title || !formData.description}
+            disabled={isSaving || !form.state.values.title || !form.state.values.description}
             className="border-2 border-imperium-gold bg-imperium-gold/20 px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Save className="h-4 w-4" />

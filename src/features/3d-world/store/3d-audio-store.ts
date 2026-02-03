@@ -1,8 +1,24 @@
 // Audio store for 3D worlds
 import { create } from 'zustand';
 import type { WorldType } from '@/core/3d/scenes/types';
-import { WORLD_AUDIO_CONFIGS } from '@/config/3d/audio';
+import { WORLD_AUDIO_CONFIGS, SFX_CONFIGS } from '@/config/3d/audio';
 import { useWorldStore } from './3d-world-store';
+
+// Helper to properly cleanup an audio element
+function cleanupAudioElement(audio: HTMLAudioElement): void {
+  audio.pause();
+  audio.removeEventListener('ended', audio._onEndedHandler as EventListener);
+  audio.src = '';
+  audio.load();
+}
+
+// Extend HTMLAudioElement to store handler reference
+declare global {
+  interface HTMLAudioElement {
+    _onEndedHandler?: (() => void) | null;
+    _rafId?: number | null;
+  }
+}
 
 interface AudioState {
   masterVolume: number;
@@ -18,14 +34,50 @@ interface AudioState {
   isMuted: boolean;
   setMuted: (muted: boolean) => void;
   loadedTracks: Map<string, HTMLAudioElement>;
+  loadedWorlds: Set<WorldType>;
   loadWorldTracks: (world: WorldType) => Promise<void>;
   unloadWorldTracks: (world: WorldType) => void;
   playSfx: (soundName: string, volume?: number) => void;
   footstepPlaying: boolean;
   playFootstep: () => void;
   isFading: boolean;
-  setIsFading: (fading: boolean) => void;
+  fadingFrom: WorldType | null;
+  fadingTo: WorldType | null;
+  setIsFading: (fading: boolean, from?: WorldType | null, to?: WorldType | null) => void;
   crossfadeWorlds: (fromWorld: WorldType, toWorld: WorldType, duration: number) => Promise<void>;
+  // Ambient SFX
+  ambientSfx: HTMLAudioElement | null;
+  playAmbient: () => Promise<void>;
+  stopAmbient: () => void;
+  // UI SFX actions
+  playDoorOpen: () => void;
+  playDoorClose: () => void;
+  playNotification: () => void;
+  playNotificationDelete: () => void;
+  // Cleanup
+  cleanup: () => void;
+}
+
+// Store active RAF IDs for cleanup
+const activeRafIds = new Set<number>();
+
+// Safe requestAnimationFrame that tracks IDs
+function safeRaf(callback: FrameRequestCallback): number {
+  const id = requestAnimationFrame(callback);
+  activeRafIds.add(id);
+  return id;
+}
+
+// Safe cancelAnimationFrame that removes from tracking
+function safeCancelRaf(id: number): void {
+  activeRafIds.delete(id);
+  cancelAnimationFrame(id);
+}
+
+// Cancel all active RAF IDs
+function cancelAllActiveRafs(): void {
+  activeRafIds.forEach((id) => cancelAnimationFrame(id));
+  activeRafIds.clear();
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
@@ -33,8 +85,9 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setMasterVolume: (volume) => {
     const clamped = Math.max(0, Math.min(1, volume));
     set({ masterVolume: clamped });
-    get().loadedTracks.forEach((audio) => {
-      audio.volume = clamped * get().musicVolume;
+    const { loadedTracks, musicVolume } = get();
+    loadedTracks.forEach((audio) => {
+      audio.volume = clamped * musicVolume;
     });
   },
 
@@ -42,8 +95,9 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setMusicVolume: (volume) => {
     const clamped = Math.max(0, Math.min(1, volume));
     set({ musicVolume: clamped });
-    get().loadedTracks.forEach((audio) => {
-      audio.volume = get().masterVolume * clamped;
+    const { loadedTracks, masterVolume } = get();
+    loadedTracks.forEach((audio) => {
+      audio.volume = masterVolume * clamped;
     });
   },
 
@@ -57,7 +111,12 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     set({ isEnabled: enabled });
     const { loadedTracks } = get();
     if (enabled) {
-      loadedTracks.forEach((audio) => audio.play().catch(() => {}));
+      loadedTracks.forEach((audio) => audio.play().catch((err) => {
+        // Log only significant errors, not autoplay blocking
+        if (err.name !== 'NotAllowedError') {
+          console.warn('[Audio] Failed to play:', err);
+        }
+      }));
     } else {
       loadedTracks.forEach((audio) => audio.pause());
     }
@@ -71,7 +130,11 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     if (paused) {
       loadedTracks.forEach((audio) => audio.pause());
     } else {
-      loadedTracks.forEach((audio) => audio.play().catch(() => {}));
+      loadedTracks.forEach((audio) => audio.play().catch((err) => {
+        if (err.name !== 'NotAllowedError') {
+          console.warn('[Audio] Failed to resume:', err);
+        }
+      }));
     }
   },
 
@@ -85,112 +148,398 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   },
 
   loadedTracks: new Map(),
+  loadedWorlds: new Set<WorldType>(),
 
   loadWorldTracks: async (world: WorldType) => {
-    const config = WORLD_AUDIO_CONFIGS[world];
-    const { loadedTracks, masterVolume, musicVolume } = get();
-    get().unloadWorldTracks(world);
+    const { loadedTracks, loadedWorlds, masterVolume, musicVolume, isEnabled } = get();
 
-    for (const track of config) {
-      const audio = new Audio(track.path);
-      audio.volume = track.volume * masterVolume * musicVolume;
-      audio.loop = track.loop;
-      audio.preload = 'auto';
-
-      await new Promise((resolve, reject) => {
-        audio.addEventListener('canplaythrough', resolve, { once: true });
-        audio.addEventListener('error', reject, { once: true });
-      });
-
-      loadedTracks.set(`${world}-${track.path}`, audio);
-      if (get().isEnabled) audio.play().catch(() => {});
+    // Prevent duplicate loading
+    if (loadedWorlds.has(world)) {
+      return;
     }
 
-    set({ loadedTracks: new Map(loadedTracks) });
+    const config = WORLD_AUDIO_CONFIGS[world];
+    const FADE_IN_DURATION = 3000;
+
+    for (const track of config) {
+      const trackKey = `${world}-${track.path}`;
+      const existing = loadedTracks.get(trackKey);
+
+      if (existing) {
+        // Already loaded, just make sure it's playing
+        if (isEnabled && existing.paused) {
+          existing.play().catch(() => {});
+        }
+        continue;
+      }
+
+      const audio = new Audio(track.path);
+      audio.volume = 0;
+      audio.loop = true;
+      audio.preload = 'auto';
+
+      // Handle loop manually for better control - store reference for cleanup
+      const handleEnded = () => {
+        if (audio.loop) {
+          audio.currentTime = 0;
+          audio.play().catch(() => {});
+        }
+      };
+
+      audio._onEndedHandler = handleEnded;
+      audio.addEventListener('ended', handleEnded);
+
+      await new Promise<void>((resolve) => {
+        if (audio.readyState >= 4) {
+          resolve();
+          return;
+        }
+
+        const timeoutId = setTimeout(() => resolve(), 10000);
+
+        const cleanup = () => {
+          clearTimeout(timeoutId);
+          audio.removeEventListener('canplaythrough', onCanPlay);
+          audio.removeEventListener('error', onError);
+        };
+
+        const onCanPlay = () => {
+          cleanup();
+          resolve();
+        };
+        const onError = (e: Event) => {
+          console.warn('[Audio] Failed to load track:', track.path, e);
+          cleanup();
+          resolve();
+        };
+
+        audio.addEventListener('canplaythrough', onCanPlay, { once: true });
+        audio.addEventListener('error', onError, { once: true });
+      });
+
+      loadedTracks.set(trackKey, audio);
+      const targetVolume = track.volume * masterVolume * musicVolume;
+
+      if (isEnabled) {
+        audio.play().catch((err) => {
+          if (err.name !== 'NotAllowedError') {
+            console.warn('[Audio] Failed to play track:', trackKey, err);
+          }
+        });
+
+        // Fade in with proper cleanup
+        const fadeInStart = Date.now();
+        const fadeIn = () => {
+          if (audio.paused) {
+            audio._rafId = undefined;
+            return;
+          }
+          const elapsed = Date.now() - fadeInStart;
+          const progress = Math.min(elapsed / FADE_IN_DURATION, 1);
+          audio.volume = progress * targetVolume;
+          if (progress < 1 && !audio.paused) {
+            audio._rafId = safeRaf(fadeIn);
+          } else {
+            audio._rafId = undefined;
+          }
+        };
+        audio._rafId = safeRaf(fadeIn);
+      }
+    }
+
+    // Mark world as loaded
+    loadedWorlds.add(world);
+    set({ loadedTracks: new Map(loadedTracks), loadedWorlds: new Set(loadedWorlds) });
   },
 
   unloadWorldTracks: (world: WorldType) => {
-    const { loadedTracks } = get();
+    const { loadedTracks, loadedWorlds } = get();
     const toRemove: string[] = [];
+
     loadedTracks.forEach((audio, key) => {
       if (key.startsWith(world)) {
-        audio.pause();
-        audio.src = '';
+        // Cancel any pending RAF for this audio
+        if (audio._rafId) {
+          safeCancelRaf(audio._rafId);
+          audio._rafId = undefined;
+        }
+        cleanupAudioElement(audio);
         toRemove.push(key);
       }
     });
+
     toRemove.forEach((key) => loadedTracks.delete(key));
-    set({ loadedTracks: new Map(loadedTracks) });
+    loadedWorlds.delete(world);
+
+    set({ loadedTracks: new Map(loadedTracks), loadedWorlds: new Set(loadedWorlds) });
   },
 
   playSfx: (soundName: string, volume = 1) => {
     const { sfxVolume, masterVolume, isEnabled, isPaused } = get();
     if (!isEnabled || isPaused) return;
-    const audio = new Audio(`/3d/audio/sfx/${soundName}.mp3`);
-    audio.volume = volume * sfxVolume * masterVolume;
-    audio.play().catch(() => {});
+
+    const sfxConfig = (SFX_CONFIGS as Record<string, { volume: number; path: string; loop?: boolean }>)[soundName];
+    if (!sfxConfig) {
+      console.warn('[Audio] SFX not found:', soundName);
+      return;
+    }
+
+    const audio = new Audio(sfxConfig.path);
+    audio.volume = Math.max(0, Math.min(1, volume * sfxConfig.volume * sfxVolume * masterVolume));
+    if (sfxConfig.loop) audio.loop = true;
+
+    audio.play().catch((err) => {
+      if (err.name !== 'NotAllowedError') {
+        console.warn('[Audio] Failed to play SFX:', soundName, err);
+      }
+    });
+
+    // Auto-cleanup after playback for non-looping sounds
+    if (!sfxConfig.loop) {
+      audio.addEventListener('ended', () => {
+        cleanupAudioElement(audio);
+      }, { once: true });
+    }
   },
 
   footstepPlaying: false,
   playFootstep: () => {
     const { footstepPlaying, sfxVolume, masterVolume, isEnabled, isPaused } = get();
     if (!isEnabled || isPaused || footstepPlaying) return;
+
     set({ footstepPlaying: true });
     const audio = new Audio('/3d/audio/sfx/footstep.mp3');
-    audio.volume = 0.3 * sfxVolume * masterVolume;
-    audio.addEventListener('ended', () => set({ footstepPlaying: false }));
-    audio.play().catch(() => set({ footstepPlaying: false }));
+    audio.volume = Math.max(0, Math.min(1, 0.3 * sfxVolume * masterVolume));
+
+    const cleanup = () => {
+      set({ footstepPlaying: false });
+      cleanupAudioElement(audio);
+    };
+
+    audio.addEventListener('ended', cleanup, { once: true });
+    audio.addEventListener('error', cleanup, { once: true });
+
+    audio.play().catch(() => cleanup());
   },
 
   isFading: false,
-  setIsFading: (fading) => set({ isFading: fading }),
+  fadingFrom: null,
+  fadingTo: null,
+  setIsFading: (fading, from = null, to = null) => set({ isFading: fading, fadingFrom: from, fadingTo: to }),
+
+  ambientSfx: null,
+  playAmbient: async () => {
+    const { ambientSfx, sfxVolume, masterVolume, isEnabled } = get();
+    if (ambientSfx) return;
+    if (!isEnabled) return;
+
+    const audio = new Audio(SFX_CONFIGS.ambient.path);
+    audio.loop = true;
+    audio.volume = Math.max(0, Math.min(1, SFX_CONFIGS.ambient.volume * sfxVolume * masterVolume));
+
+    await new Promise<void>((resolve, reject) => {
+      const onCanPlay = () => {
+        audio.removeEventListener('canplaythrough', onCanPlay);
+        audio.removeEventListener('error', onError);
+        clearTimeout(timeoutId);
+        resolve();
+      };
+      const onError = () => {
+        audio.removeEventListener('canplaythrough', onCanPlay);
+        audio.removeEventListener('error', onError);
+        clearTimeout(timeoutId);
+        reject(new Error('Failed to load ambient audio'));
+      };
+      const timeoutId = setTimeout(() => {
+        audio.removeEventListener('canplaythrough', onCanPlay);
+        audio.removeEventListener('error', onError);
+        resolve(); // Resolve anyway after timeout
+      }, 2000);
+
+      audio.addEventListener('canplaythrough', onCanPlay, { once: true });
+      audio.addEventListener('error', onError, { once: true });
+    });
+
+    audio.play().catch((err) => {
+      if (err.name !== 'NotAllowedError') {
+        console.warn('[Audio] Failed to play ambient:', err);
+      }
+    });
+    set({ ambientSfx: audio });
+  },
+
+  stopAmbient: () => {
+    const { ambientSfx } = get();
+    if (ambientSfx) {
+      cleanupAudioElement(ambientSfx);
+      set({ ambientSfx: null });
+    }
+  },
+
+  playDoorOpen: () => {
+    const { sfxVolume, masterVolume, isEnabled, isPaused } = get();
+    if (!isEnabled || isPaused) return;
+
+    const audio = new Audio(SFX_CONFIGS.doorOpen.path);
+    audio.volume = Math.max(0, Math.min(1, SFX_CONFIGS.doorOpen.volume * sfxVolume * masterVolume));
+
+    audio.addEventListener('ended', () => cleanupAudioElement(audio), { once: true });
+    audio.play().catch(() => cleanupAudioElement(audio));
+  },
+
+  playDoorClose: () => {
+    const { sfxVolume, masterVolume, isEnabled, isPaused } = get();
+    if (!isEnabled || isPaused) return;
+
+    const audio = new Audio(SFX_CONFIGS.doorClose.path);
+    audio.volume = Math.max(0, Math.min(1, SFX_CONFIGS.doorClose.volume * sfxVolume * masterVolume));
+
+    audio.addEventListener('ended', () => cleanupAudioElement(audio), { once: true });
+    audio.play().catch(() => cleanupAudioElement(audio));
+  },
+
+  playNotification: () => {
+    const { sfxVolume, masterVolume, isEnabled, isPaused } = get();
+    if (!isEnabled || isPaused) return;
+
+    const audio = new Audio(SFX_CONFIGS.notification.path);
+    audio.volume = Math.max(0, Math.min(1, SFX_CONFIGS.notification.volume * sfxVolume * masterVolume));
+
+    audio.addEventListener('ended', () => cleanupAudioElement(audio), { once: true });
+    audio.play().catch(() => cleanupAudioElement(audio));
+  },
+
+  playNotificationDelete: () => {
+    const { sfxVolume, masterVolume, isEnabled, isPaused } = get();
+    if (!isEnabled || isPaused) return;
+
+    const audio = new Audio(SFX_CONFIGS.notificationDelete.path);
+    audio.volume = Math.max(0, Math.min(1, SFX_CONFIGS.notificationDelete.volume * sfxVolume * masterVolume));
+
+    audio.addEventListener('ended', () => cleanupAudioElement(audio), { once: true });
+    audio.play().catch(() => cleanupAudioElement(audio));
+  },
 
   crossfadeWorlds: async (fromWorld: WorldType, toWorld: WorldType, duration: number) => {
-    if (get().isFading) return;
-    set({ isFading: true });
-    const { loadedTracks } = get();
+    const { isFading, fadingFrom, fadingTo } = get();
 
-    const fromTracks: HTMLAudioElement[] = [];
+    // Check if already fading in same direction
+    if (isFading && fadingFrom === fromWorld && fadingTo === toWorld) {
+      return;
+    }
+
+    set({ isFading: true, fadingFrom: fromWorld, fadingTo: toWorld });
+    const { loadedTracks, masterVolume } = get();
+
+    // Get from tracks
+    const fromTracks: Array<{ audio: HTMLAudioElement; initialVolume: number }> = [];
     loadedTracks.forEach((audio, key) => {
-      if (key.startsWith(fromWorld)) fromTracks.push(audio);
+      if (key.startsWith(fromWorld)) {
+        fromTracks.push({ audio, initialVolume: audio.volume });
+      }
     });
 
-    const startTime = Date.now();
-    const fadeOut = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const volume = (1 - progress) * get().masterVolume;
-      fromTracks.forEach((audio) => { audio.volume = volume; });
-      if (progress < 1) {
-        requestAnimationFrame(fadeOut);
-      } else {
-        fromTracks.forEach((audio) => {
-          audio.pause();
-          audio.currentTime = 0;
-        });
+    // Cancel any pending RAF on from tracks
+    fromTracks.forEach(({ audio }) => {
+      if (audio._rafId) {
+        safeCancelRaf(audio._rafId);
+        audio._rafId = undefined;
       }
-    };
-    fadeOut();
+    });
+
+    // Start fade out
+    const fadeOutStartTime = Date.now();
+    const fadeOutPromises = fromTracks.map(({ audio, initialVolume }) => {
+      return new Promise<void>((resolve) => {
+        const fadeOut = () => {
+          const elapsed = Date.now() - fadeOutStartTime;
+          const progress = Math.min(elapsed / duration, 1);
+          audio.volume = (1 - progress) * initialVolume;
+
+          if (progress < 1) {
+            audio._rafId = safeRaf(fadeOut);
+          } else {
+            audio.pause();
+            audio.currentTime = 0;
+            audio._rafId = undefined;
+            resolve();
+          }
+        };
+        audio._rafId = safeRaf(fadeOut);
+      });
+    });
+
+    // Wait for fade out to complete halfway
+    await new Promise(resolve => setTimeout(resolve, duration / 2));
+
+    // Load new world tracks
     await get().loadWorldTracks(toWorld);
 
+    // Wait for fade out completion
+    await Promise.all(fadeOutPromises);
+
+    // Get fresh loadedTracks after loading
     const toTracks: HTMLAudioElement[] = [];
-    loadedTracks.forEach((audio, key) => {
-      if (key.startsWith(toWorld)) toTracks.push(audio);
+    get().loadedTracks.forEach((audio, key) => {
+      if (key.startsWith(toWorld)) {
+        toTracks.push(audio);
+      }
     });
 
-    const fadeInStart = Date.now();
-    const fadeIn = () => {
-      const elapsed = Date.now() - fadeInStart;
-      const progress = Math.min(elapsed / duration, 1);
-      const volume = progress * get().masterVolume;
-      toTracks.forEach((audio) => { audio.volume = volume; });
-      if (progress < 1) {
-        requestAnimationFrame(fadeIn);
-      } else {
-        set({ isFading: false });
+    const targetVolume = masterVolume * 0.6; // musicVolume
+    const fadeInStartTime = Date.now();
+    const fadeInPromises = toTracks.map((audio) => {
+      return new Promise<void>((resolve) => {
+        audio.play().catch(() => {
+          resolve();
+        });
+
+        const fadeIn = () => {
+          const elapsed = Date.now() - fadeInStartTime;
+          const progress = Math.min(elapsed / duration, 1);
+          audio.volume = progress * targetVolume;
+
+          if (progress < 1) {
+            audio._rafId = safeRaf(fadeIn);
+          } else {
+            audio._rafId = undefined;
+            resolve();
+          }
+        };
+        audio._rafId = safeRaf(fadeIn);
+      });
+    });
+
+    await Promise.all(fadeInPromises);
+    set({ isFading: false, fadingFrom: null, fadingTo: null });
+  },
+
+  cleanup: () => {
+    // Clean up all resources
+    const { loadedTracks, ambientSfx } = get();
+
+    // Cancel all active RAFs
+    cancelAllActiveRafs();
+
+    // Clean up all loaded tracks
+    loadedTracks.forEach((audio) => {
+      if (audio._rafId) {
+        safeCancelRaf(audio._rafId);
+        audio._rafId = undefined;
       }
-    };
-    fadeIn();
+      cleanupAudioElement(audio);
+    });
+
+    // Clean up ambient
+    if (ambientSfx) {
+      cleanupAudioElement(ambientSfx);
+    }
+
+    set({
+      loadedTracks: new Map(),
+      loadedWorlds: new Set(),
+      ambientSfx: null,
+    });
   },
 }));
 
@@ -204,20 +553,30 @@ export function useAudioWorldSync() {
   const crossfadeWorlds = useAudioStore((state) => state.crossfadeWorlds);
   const isEnabled = useAudioStore((state) => state.isEnabled);
 
-  // Sync audio world with world store
-  // Note: This hook must be called unconditionally per rules of hooks
-  // The isEnabled check inside the effect handles the conditional behavior
   const previousWorldRef = useRef(currentWorld);
+  const crossfadeInProgressRef = useRef(false);
 
   useEffect(() => {
     if (!isEnabled) return;
 
     const previousWorld = previousWorldRef.current;
-    if (previousWorld !== currentWorld && !isTransitioning) {
-      crossfadeWorlds(previousWorld, currentWorld, 2000);
-      previousWorldRef.current = currentWorld;
+
+    // Only crossfade if world actually changed and not already crossfading
+    if (previousWorld !== currentWorld && !isTransitioning && !crossfadeInProgressRef.current) {
+      crossfadeInProgressRef.current = true;
+      crossfadeWorlds(previousWorld, currentWorld, 2000).finally(() => {
+        previousWorldRef.current = currentWorld;
+        crossfadeInProgressRef.current = false;
+      });
     }
   }, [currentWorld, crossfadeWorlds, isEnabled, isTransitioning]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cancelAllActiveRafs();
+    };
+  }, []);
 }
 
 export const selectVolumes = (state: AudioState) => ({

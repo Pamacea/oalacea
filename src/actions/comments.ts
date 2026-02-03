@@ -4,12 +4,45 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { commentSchema, type CommentInput } from '@/lib/validations';
-import type { Comment, CommentStatus, Prisma } from '@/generated/prisma/client';
-import { cookies } from 'next/headers';
+import { sanitizeHtml } from '@/lib/sanitize';
+import { auth } from '@/core/auth';
+import { requirePermission, AuthorizationError } from '@/lib/rbac';
+import { headers } from 'next/headers';
 import { RateLimitError } from '@/core/errors';
+import type { Comment, CommentStatus, Prisma } from '@/generated/prisma/client';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_COMMENTS_PER_WINDOW = 5;
+
+/**
+ * Extract real client IP from request headers
+ * Handles various proxy/load balancer configurations
+ */
+async function getClientIp(): Promise<string> {
+  const headersList = await headers();
+
+  // Try various headers in order of reliability
+  const forwardedFor = headersList.get('x-forwarded-for');
+  const realIp = headersList.get('x-real-ip');
+  const cfConnectingIp = headersList.get('cf-connecting-ip'); // Cloudflare
+  const flyClientIp = headersList.get('fly-client-ip'); // Fly.io
+  const xClientIp = headersList.get('x-client-ip');
+
+  // x-forwarded-for can contain multiple IPs, use the first one (original client)
+  const ip = forwardedFor?.split(',')[0]?.trim()
+    || cfConnectingIp
+    || flyClientIp
+    || realIp
+    || xClientIp
+    || '0.0.0.0'; // Fallback for local dev
+
+  // Basic validation - prevent injection via headers
+  if (!ip || ip === 'unknown' || !/^[a-fA-F0-9.:]+$/.test(ip)) {
+    return '0.0.0.0';
+  }
+
+  return ip;
+}
 
 async function checkRateLimit(ipAddress: string): Promise<void> {
   const now = new Date();
@@ -25,11 +58,6 @@ async function checkRateLimit(ipAddress: string): Promise<void> {
   if (recentCount >= MAX_COMMENTS_PER_WINDOW) {
     throw new RateLimitError(`Too many comments. Maximum ${MAX_COMMENTS_PER_WINDOW} per hour.`);
   }
-}
-
-async function getClientIp(): Promise<string> {
-  const cookieStore = await cookies();
-  return cookieStore.get('clientIp')?.value || 'unknown';
 }
 
 // =========================================
@@ -143,7 +171,38 @@ export async function getCommentsCount({
 // MUTATION ACTIONS
 // =========================================
 
-export async function createComment(data: CommentInput & { ipAddress?: string; userAgent?: string }) {
+/**
+ * Wrapper for form submission - extracts data from FormData
+ * Compatible with native HTML form submission
+ */
+export async function createCommentAction(
+  prevState: { success?: boolean; error?: string; errors?: Record<string, string[]> } | undefined,
+  formData: FormData
+) {
+  // Helper: FormData.get() returns null for missing fields, convert to undefined
+  const nullToUndefined = <T,>(value: T | null): T | undefined =>
+    value === null ? undefined : value
+
+  // Helper: For optional email, convert null to empty string (schema allows empty string)
+  const nullToEmptyString = (value: FormDataEntryValue | null): string =>
+    value === null ? '' : String(value)
+
+  const rawData = {
+    authorName: formData.get('authorName'),
+    authorEmail: nullToEmptyString(formData.get('authorEmail')),
+    content: formData.get('content'),
+    consent: formData.get('consent') === 'on',
+    postId: nullToUndefined(formData.get('postId')),
+    projectId: nullToUndefined(formData.get('projectId')),
+    parentId: nullToUndefined(formData.get('parentId')),
+  }
+
+  const result = await createComment(rawData as CommentInput & { userAgent?: string })
+
+  return result
+}
+
+export async function createComment(data: CommentInput & { userAgent?: string }) {
   const validationResult = commentSchema.safeParse(data);
 
   if (!validationResult.success) {
@@ -153,7 +212,7 @@ export async function createComment(data: CommentInput & { ipAddress?: string; u
     };
   }
 
-  const { postId, projectId, ...commentData } = validationResult.data;
+  const { postId, projectId, parentId, content, consent, authorEmail, ...commentData } = validationResult.data;
 
   if (!postId && !projectId) {
     return {
@@ -162,7 +221,53 @@ export async function createComment(data: CommentInput & { ipAddress?: string; u
     };
   }
 
-  const ipAddress = data.ipAddress || await getClientIp();
+  // SECURITY: Validate parent comment belongs to same post/project
+  if (parentId) {
+    const parentComment = await prisma.comment.findUnique({
+      where: { id: parentId },
+      select: { postId: true, projectId: true, parentId: true },
+    });
+
+    if (!parentComment) {
+      return {
+        success: false,
+        error: 'Parent comment not found',
+      };
+    }
+
+    // Verify parent belongs to the same post/project
+    if (postId && parentComment.postId !== postId) {
+      return {
+        success: false,
+        error: 'Parent comment does not belong to this post',
+      };
+    }
+
+    if (projectId && parentComment.projectId !== projectId) {
+      return {
+        success: false,
+        error: 'Parent comment does not belong to this project',
+      };
+    }
+
+    // Enforce max depth of 3 levels on server side
+    if (parentComment.parentId) {
+      // Parent is already a reply, check if it's a reply to a reply
+      const grandParent = await prisma.comment.findUnique({
+        where: { id: parentComment.parentId },
+        select: { postId: true, projectId: true, parentId: true },
+      });
+
+      if (grandParent?.parentId) {
+        return {
+          success: false,
+          error: 'Maximum reply depth exceeded (3 levels)',
+        };
+      }
+    }
+  }
+
+  const ipAddress = await getClientIp();
 
   try {
     await checkRateLimit(ipAddress);
@@ -176,18 +281,39 @@ export async function createComment(data: CommentInput & { ipAddress?: string; u
     throw error;
   }
 
+  // SECURITY: Sanitize content to prevent XSS
+  const sanitizedContent = sanitizeHtml(content);
+
   const comment = await prisma.comment.create({
     data: {
       ...commentData,
+      content: sanitizedContent,
       postId,
       projectId,
+      parentId,
       ipAddress,
       userAgent: data.userAgent,
       status: 'PENDING',
     },
   });
 
-  revalidatePath(postId ? `/blog/${postId}` : `/projects/${projectId}`);
+  // Fetch post/project slug for proper revalidation
+  let revalidatePathValue = '/';
+  if (postId) {
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { slug: true },
+    });
+    if (post) revalidatePathValue = `/blog/${post.slug}`;
+  } else if (projectId) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { slug: true },
+    });
+    if (project) revalidatePathValue = `/projects/${project.slug}`;
+  }
+
+  revalidatePath(revalidatePathValue);
 
   return {
     success: true,
@@ -196,16 +322,58 @@ export async function createComment(data: CommentInput & { ipAddress?: string; u
   };
 }
 
+// Helper function for admin authorization
+async function requireAdmin() {
+  const session = await auth();
+  if (!session?.user) {
+    throw new AuthorizationError('You must be logged in');
+  }
+
+  requirePermission(session.user.role, 'comments:moderate');
+
+  return session;
+}
+
+async function getRevalidationPath(commentId: string): Promise<string> {
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { postId: true, projectId: true },
+  });
+
+  if (!comment) return '/';
+
+  if (comment.postId) {
+    const post = await prisma.post.findUnique({
+      where: { id: comment.postId },
+      select: { slug: true },
+    });
+    return post ? `/blog/${post.slug}` : '/';
+  }
+
+  if (comment.projectId) {
+    const project = await prisma.project.findUnique({
+      where: { id: comment.projectId },
+      select: { slug: true },
+    });
+    return project ? `/projects/${project.slug}` : '/';
+  }
+
+  return '/';
+}
+
 export async function updateCommentStatus(
   id: string,
   status: CommentStatus
 ) {
+  await requireAdmin();
+
   const comment = await prisma.comment.update({
     where: { id },
     data: { status },
   });
 
-  revalidatePath(comment.postId ? `/blog/${comment.postId}` : `/projects/${comment.projectId}`);
+  const revalidatePathValue = await getRevalidationPath(id);
+  revalidatePath(revalidatePathValue);
 
   return comment;
 }
@@ -223,6 +391,8 @@ export async function markCommentAsSpam(id: string) {
 }
 
 export async function deleteComment(id: string) {
+  await requireAdmin();
+
   const comment = await prisma.comment.findUnique({
     where: { id },
     select: { postId: true, projectId: true },
@@ -236,7 +406,8 @@ export async function deleteComment(id: string) {
     where: { id },
   });
 
-  revalidatePath(comment.postId || '/projects');
+  const revalidatePathValue = await getRevalidationPath(id);
+  revalidatePath(revalidatePathValue);
 
   return { success: true };
 }
@@ -245,15 +416,23 @@ export async function updateComment(
   id: string,
   data: { content?: string }
 ) {
+  await requireAdmin();
+
+  const updateData: { content?: string; status: CommentStatus } = {
+    status: 'PENDING', // Reset to pending on edit
+  };
+
+  if (data.content) {
+    updateData.content = sanitizeHtml(data.content);
+  }
+
   const comment = await prisma.comment.update({
     where: { id },
-    data: {
-      ...data,
-      status: 'PENDING', // Reset to pending on edit
-    },
+    data: updateData,
   });
 
-  revalidatePath(comment.postId || '/projects');
+  const revalidatePathValue = await getRevalidationPath(id);
+  revalidatePath(revalidatePathValue);
 
   return comment;
 }

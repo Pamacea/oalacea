@@ -10,6 +10,7 @@ import { useCreatePost, useUpdatePost } from '@/features/blog/queries';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { GlitchText } from '@/components/ui/imperium';
 import { useUISound } from '@/hooks/use-ui-sound';
+import { useForm } from '@tanstack/react-form';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
@@ -17,31 +18,22 @@ const MarkdownEditor = dynamic(
   { ssr: false }
 );
 
-type FormData = {
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  categoryId: string;
-  coverImage: string;
-  tags: string;
-  featured: boolean;
-};
-
 export function BlogPostForm({ postId }: { postId?: string }) {
   const { setView } = useInWorldAdminStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { playHover, playClick } = useUISound();
 
-  const [formData, setFormData] = useState<FormData>({
-    title: '',
-    slug: '',
-    excerpt: '',
-    content: '',
-    categoryId: '',
-    coverImage: '',
-    tags: '',
-    featured: false,
+  const form = useForm({
+    defaultValues: {
+      title: '',
+      slug: '',
+      excerpt: '',
+      content: '',
+      categoryId: '',
+      coverImage: '',
+      tags: '',
+      featured: false,
+    },
   });
 
   const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
@@ -72,16 +64,14 @@ export function BlogPostForm({ postId }: { postId?: string }) {
 
         if (post) {
           const catId = cats?.find((c) => c.slug === post.category?.slug)?.id || '';
-          setFormData({
-            title: post.title,
-            slug: post.slug,
-            excerpt: post.excerpt || '',
-            content: post.content || '',
-            categoryId: catId,
-            coverImage: post.coverImage || '',
-            tags: post.tags?.join(', ') || '',
-            featured: post.featured,
-          });
+          form.setFieldValue('title', post.title);
+          form.setFieldValue('slug', post.slug);
+          form.setFieldValue('excerpt', post.excerpt || '');
+          form.setFieldValue('content', post.content || '');
+          form.setFieldValue('categoryId', catId);
+          form.setFieldValue('coverImage', post.coverImage || '');
+          form.setFieldValue('tags', post.tags?.join(', ') || '');
+          form.setFieldValue('featured', post.featured);
         }
       } catch {
         // Error silently ignored
@@ -90,7 +80,7 @@ export function BlogPostForm({ postId }: { postId?: string }) {
       }
     }
     loadData();
-  }, [postId]);
+  }, [postId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generateSlug = (title: string) => {
     return title
@@ -99,15 +89,6 @@ export function BlogPostForm({ postId }: { postId?: string }) {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-  };
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTitle = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      title: newTitle,
-      slug: postId ? prev.slug : generateSlug(newTitle),
-    }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,7 +140,7 @@ export function BlogPostForm({ postId }: { postId?: string }) {
         ctx.drawImage(img, 0, 0, width, height);
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        setFormData((prev) => ({ ...prev, coverImage: compressedDataUrl }));
+        form.setFieldValue('coverImage', compressedDataUrl);
         setUploadProgress(100);
         setIsUploading(false);
         setTimeout(() => setUploadProgress(0), 500);
@@ -179,21 +160,22 @@ export function BlogPostForm({ postId }: { postId?: string }) {
 
   const handleSubmit = async (publish: boolean) => {
     setSaveStatus('idle');
+    const values = form.state.values;
     const data = {
-      title: formData.title,
-      slug: formData.slug || generateSlug(formData.title),
-      excerpt: formData.excerpt || undefined,
-      content: formData.content,
-      categoryId: formData.categoryId || undefined,
-      coverImage: formData.coverImage || undefined,
-      tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
-      featured: formData.featured,
+      title: values.title,
+      slug: values.slug || generateSlug(values.title),
+      excerpt: values.excerpt || undefined,
+      content: values.content,
+      categoryId: values.categoryId || undefined,
+      coverImage: values.coverImage || undefined,
+      tags: values.tags.split(',').map((t) => t.trim()).filter(Boolean),
+      featured: values.featured,
       published: publish,
     };
 
     try {
       if (postId) {
-        await updateMutation.mutateAsync({ slug: formData.slug, data });
+        await updateMutation.mutateAsync({ slug: values.slug, data });
       } else {
         await createMutation.mutateAsync(data);
       }
@@ -202,16 +184,6 @@ export function BlogPostForm({ postId }: { postId?: string }) {
     } catch {
       setSaveStatus('error');
     }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-    }));
   };
 
   if (isLoading) {
@@ -258,13 +230,13 @@ export function BlogPostForm({ postId }: { postId?: string }) {
       </div>
 
       {/* Cover Image Preview */}
-      {formData.coverImage && (
+      {form.state.values.coverImage && (
         <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-          <Image src={formData.coverImage} alt="Cover preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
+          <Image src={form.state.values.coverImage} alt="Cover preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <motion.button
             type="button"
             onMouseEnter={playHover}
-            onClick={() => setFormData((prev) => ({ ...prev, coverImage: '' }))}
+            onClick={() => form.setFieldValue('coverImage', '')}
             className="absolute top-3 right-3 border-2 border-imperium-crimson bg-imperium-crimson/10 p-2 text-imperium-crimson hover:bg-imperium-crimson hover:text-imperium-bone transition-all"
           >
             <XIcon className="h-4 w-4" />
@@ -274,17 +246,42 @@ export function BlogPostForm({ postId }: { postId?: string }) {
 
       {/* Title and Slug */}
       <div className="space-y-2">
-        <input
-          type="text"
+        <form.Field
           name="title"
-          value={formData.title}
-          onChange={handleTitleChange}
-          required
-          placeholder="ENTER ARCHIVE TITLE..."
-          className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson transition-colors"
-        />
+          validators={{
+            onChange: ({ value }) => value.length > 0 ? undefined : "Title is required",
+            onChangeAsync: async ({ value }) => {
+              if (value.length > 200) return "Title too long";
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <div>
+              <input
+                type="text"
+                name={field.name}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (!postId) {
+                    form.setFieldValue('slug', generateSlug(e.target.value));
+                  }
+                }}
+                required
+                placeholder="ENTER ARCHIVE TITLE..."
+                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson transition-colors"
+              />
+              {field.state.meta.errors && (
+                <p className="font-terminal text-xs text-imperium-crimson mt-1">
+                  {field.state.meta.errors.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
         <p className="font-terminal text-xs text-imperium-steel-dark pl-1">
-          /{formData.slug || 'SLUG-AUTO-GENERATED'}
+          /{form.state.values.slug || 'SLUG-AUTO-GENERATED'}
         </p>
       </div>
 
@@ -293,57 +290,92 @@ export function BlogPostForm({ postId }: { postId?: string }) {
         {/* Left - Main content */}
         <div className="col-span-2 space-y-4">
           {/* Excerpt */}
-          <div>
-            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-              {'>'} EXCERPT
-            </label>
-            <textarea
-              name="excerpt"
-              value={formData.excerpt}
-              onChange={handleChange}
-              rows={2}
-              placeholder="Brief summary for archive display..."
-              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson resize-none"
-            />
-          </div>
+          <form.Field
+            name="excerpt"
+            validators={{
+              onChangeAsync: async ({ value }) => {
+                if (value.length > 500) return "Excerpt too long";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <div>
+                <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                  {'>'} EXCERPT
+                </label>
+                <textarea
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  rows={2}
+                  placeholder="Brief summary for archive display..."
+                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson resize-none"
+                />
+                {field.state.meta.errors && (
+                  <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                    {field.state.meta.errors.join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
 
           {/* Content */}
-          <div>
-            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-              {'>'} CONTENT *
-            </label>
-            <MarkdownEditor
-              content={formData.content}
-              onChange={(content) => setFormData(prev => ({ ...prev, content }))}
-              placeholder="# Archive Title
+          <form.Field
+            name="content"
+            validators={{
+              onChange: ({ value }) => value.length > 0 ? undefined : "Content is required",
+            }}
+          >
+            {(field) => (
+              <div>
+                <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                  {'>'} CONTENT *
+                </label>
+                <MarkdownEditor
+                  content={field.state.value}
+                  onChange={(content) => field.handleChange(content)}
+                  placeholder="# Archive Title
 
 Write your content here in **markdown**..."
-              editable
-            />
-          </div>
+                  editable
+                />
+                {field.state.meta.errors && (
+                  <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                    {field.state.meta.errors.join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
 
           {/* Category */}
-          <div>
-            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-              {'>'} CATEGORY
-            </label>
-            <select
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
-            >
-              <option value="">-- NO CATEGORY --</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            {categories.length === 0 && (
-              <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">No categories available</p>
+          <form.Field name="categoryId">
+            {(field) => (
+              <div>
+                <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                  {'>'} CATEGORY
+                </label>
+                <select
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
+                >
+                  <option value="">-- NO CATEGORY --</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                {categories.length === 0 && (
+                  <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">No categories available</p>
+                )}
+              </div>
             )}
-          </div>
+          </form.Field>
         </div>
 
         {/* Right - Sidebar */}
@@ -386,57 +418,82 @@ Write your content here in **markdown**..."
                 </div>
               )}
             </motion.button>
-            <input
-              type="url"
-              name="coverImage"
-              value={formData.coverImage}
-              onChange={handleChange}
-              placeholder="https://..."
-              className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-crimson"
-            />
+            <form.Field name="coverImage">
+              {(field) => (
+                <input
+                  type="url"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="https://..."
+                  className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-crimson"
+                />
+              )}
+            </form.Field>
           </div>
 
           {/* Tags */}
-          <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
-            <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
-              <span className="w-1 h-4 bg-imperium-crimson" />
-              TAGS
-            </h3>
-            <input
-              type="text"
-              name="tags"
-              value={formData.tags}
-              onChange={handleChange}
-              placeholder="react, nextjs, typescript"
-              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
-            />
-            <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">Comma separated</p>
-          </div>
+          <form.Field
+            name="tags"
+            validators={{
+              onChangeAsync: async ({ value }) => {
+                if (value.length > 200) return "Tags too long";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
+                <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
+                  <span className="w-1 h-4 bg-imperium-crimson" />
+                  TAGS
+                </h3>
+                <input
+                  type="text"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="react, nextjs, typescript"
+                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
+                />
+                <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">Comma separated</p>
+                {field.state.meta.errors && (
+                  <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                    {field.state.meta.errors.join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
 
           {/* Options */}
-          <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
-            <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
-              <span className="w-1 h-4 bg-imperium-gold" />
-              OPTIONS
-            </h3>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="featured"
-                id="featured"
-                checked={formData.featured}
-                onChange={handleChange}
-                className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black focus:ring-imperium-crimson checked:bg-imperium-crimson checked:border-imperium-crimson"
-              />
-              <span className="font-terminal text-sm text-imperium-bone">Featured archive</span>
-            </label>
-          </div>
+          <form.Field name="featured">
+            {(field) => (
+              <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
+                <h3 className="mb-3 font-display text-sm uppercase tracking-wider text-imperium-steel flex items-center gap-2">
+                  <span className="w-1 h-4 bg-imperium-gold" />
+                  OPTIONS
+                </h3>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name={field.name}
+                    id="featured"
+                    checked={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.checked)}
+                    className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black focus:ring-imperium-crimson checked:bg-imperium-crimson checked:border-imperium-crimson"
+                  />
+                  <span className="font-terminal text-sm text-imperium-bone">Featured archive</span>
+                </label>
+              </div>
+            )}
+          </form.Field>
 
           {/* Preview Link */}
-          {formData.slug && (
+          {form.state.values.slug && (
             <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
               <a
-                href={`/blog/${formData.slug}`}
+                href={`/blog/${form.state.values.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 font-terminal text-sm text-imperium-bone hover:text-imperium-gold transition-colors"
@@ -476,7 +533,7 @@ Write your content here in **markdown**..."
               type="button"
               onMouseEnter={playHover}
               onClick={() => handleSubmit(false)}
-              disabled={isPending || !formData.title || !formData.content}
+              disabled={isPending || !form.state.values.title || !form.state.values.content}
               className="border-2 border-imperium-steel-dark px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-steel hover:border-imperium-steel hover:text-imperium-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Save className="h-4 w-4" />
@@ -486,7 +543,7 @@ Write your content here in **markdown**..."
               type="button"
               onMouseEnter={playHover}
               onClick={() => handleSubmit(true)}
-              disabled={isPending || !formData.title || !formData.content}
+              disabled={isPending || !form.state.values.title || !form.state.values.content}
               className="border-2 border-imperium-crimson bg-imperium-crimson/20 px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-crimson hover:bg-imperium-crimson hover:text-imperium-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <FileText className="h-4 w-4" />

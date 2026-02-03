@@ -296,7 +296,7 @@ export function BlogPostReader({ postSlug }: { postSlug: string }) {
       <div className="flex items-center justify-between border-t-2 border-imperium-steel-dark pt-6">
         <motion.a
           onMouseEnter={playHover}
-          href={`/blog/${post.slug}`}
+          href={`/blogs/${post.slug}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 font-terminal text-sm border-2 border-imperium-gold bg-imperium-gold/10 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"

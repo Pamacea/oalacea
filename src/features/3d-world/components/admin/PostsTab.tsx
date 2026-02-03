@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff, BookOpen, Scroll } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, BookOpen, Scroll, Download, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePosts, useDeletePost } from '@/features/blog/queries';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { ConfirmDialog } from './ConfirmDialog';
 import { GlitchText } from '@/components/ui/imperium';
 import { useUISound } from '@/hooks/use-ui-sound';
+import { exportBlogs, importBlogs } from '@/actions/blog/export-import';
+import { MAX_IMPORT_SIZE } from '@/actions/blog/export-import.config';
+import { useQueryClient } from '@tanstack/react-query';
+
+type ImportResult = { imported: number; skipped: number; errors: string[] };
 
 export function PostsTab() {
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; slug: string; title: string }>({
@@ -16,8 +21,16 @@ export function PostsTab() {
     title: '',
   });
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [importDialog, setImportDialog] = useState<{ open: boolean; result: ImportResult | null }>({
+    open: false,
+    result: null,
+  });
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { setView, setSelectedId } = useInWorldAdminStore();
   const { playHover, playClick } = useUISound();
+  const queryClient = useQueryClient();
 
   const { posts, isLoading } = usePosts({ published: false, page: 1, limit: 100 });
   const deleteMutation = useDeletePost();
@@ -32,6 +45,74 @@ export function PostsTab() {
         }, 1000);
       },
     });
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const data = await exportBlogs();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `blogs-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    playClick();
+    fileInputRef.current?.click();
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (10MB limit)
+    if (file.size > MAX_IMPORT_SIZE) {
+      alert(`File too large. Maximum size is ${Math.round(MAX_IMPORT_SIZE / 1024 / 1024)}MB.`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const rawData = JSON.parse(text);
+
+      // Show confirm dialog with import options
+      const shouldSkipExisting = confirm('Skip existing posts? Click OK to skip, Cancel to overwrite.');
+      const result = await importBlogs(rawData, {
+        skipExisting: shouldSkipExisting,
+        overwrite: !shouldSkipExisting,
+      });
+
+      setImportDialog({ open: true, result });
+
+      // Refresh queries
+      queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
+    } catch (error) {
+      console.error('Import failed:', error);
+      const errorMessage = error instanceof Error && error.message.includes('AuthorizationError')
+        ? 'You do not have permission to import'
+        : `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      alert(errorMessage);
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   if (isLoading) {
@@ -54,18 +135,45 @@ export function PostsTab() {
               Archives Database
             </GlitchText>
           </h2>
-          <motion.button
-            onMouseEnter={playHover}
-            onClick={() => {
-              setSelectedId(null);
-              setView('edit-post');
-              playClick();
-            }}
-            className="flex items-center gap-2 px-4 py-2 font-display text-sm uppercase tracking-wider border-2 border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson hover:bg-imperium-crimson hover:text-imperium-bone transition-all"
-          >
-            <Plus className="h-4 w-4" />
-            New Entry
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <motion.button
+              onMouseEnter={playHover}
+              onClick={handleExport}
+              disabled={isExporting}
+              className="flex items-center gap-2 px-3 py-2 font-terminal text-xs uppercase tracking-wider border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-gold hover:text-imperium-gold transition-all disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </motion.button>
+            <motion.button
+              onMouseEnter={playHover}
+              onClick={handleImportClick}
+              disabled={isImporting}
+              className="flex items-center gap-2 px-3 py-2 font-terminal text-xs uppercase tracking-wider border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-teal hover:text-imperium-teal transition-all disabled:opacity-50"
+            >
+              <Upload className="h-4 w-4" />
+              Import
+            </motion.button>
+            <motion.button
+              onMouseEnter={playHover}
+              onClick={() => {
+                setSelectedId(null);
+                setView('edit-post');
+                playClick();
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-display text-sm uppercase tracking-wider border-2 border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson hover:bg-imperium-crimson hover:text-imperium-bone transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              New Entry
+            </motion.button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+          </div>
         </div>
 
         {posts.length === 0 ? (
@@ -186,6 +294,27 @@ export function PostsTab() {
         onConfirm={handleDelete}
         isLoading={deleteMutation.isPending}
         isSuccess={deleteSuccess}
+      />
+
+      <ConfirmDialog
+        open={importDialog.open}
+        onOpenChange={(open) => setImportDialog({ ...importDialog, open, result: null })}
+        title="IMPORT COMPLETE"
+        description={
+          importDialog.result
+            ? `Imported: ${importDialog.result.imported} | Skipped: ${importDialog.result.skipped}${
+                importDialog.result.errors.length > 0
+                  ? ` | Errors: ${importDialog.result.errors.length}`
+                  : ''
+              }`
+            : ''
+        }
+        confirmLabel="CLOSE"
+        cancelLabel={undefined}
+        variant="success"
+        onConfirm={() => setImportDialog({ open: false, result: null })}
+        isLoading={false}
+        isSuccess={true}
       />
     </>
   );

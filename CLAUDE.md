@@ -10,13 +10,16 @@ Portfolio/blog professionnel avec scène 3D interactive en vue isométrique.
 
 ### Fonctionnalités principales
 
-- **Scène 3D isométrique** avec personnage contrôlable
+- **Scène 3D isométrique** avec personnage contrôlable (architecture complète, assets manquants)
 - **Pathfinding A*** intelligent pour éviter les obstacles
-- **Système de collision** par zones circulaires
-- **Blog CMS** avec Prisma + PostgreSQL (Supabase)
-- **Authentification** NextAuth.js
-- **Mode sombre/clair** avec thèmes dynamiques par monde
-- **Analytics** temps de lecture et interactions
+- **Système de collision** par hitboxes circulaires avec spatial hashing
+- **Blog CMS** complet avec CRUD, catégories, tags, versioning
+- **Portfolio** avec positionnement monde 3D
+- **Authentification** NextAuth.js v5 (OAuth GitHub/Google, rôles)
+- **Admin Dashboard** statistiques, gestion contenus
+- **Analytics** infrastructure complète (tracking en cours)
+
+**Voir `PROGRESS.md` pour l'état d'avancement détaillé.**
 
 ---
 
@@ -27,10 +30,11 @@ Portfolio/blog professionnel avec scène 3D interactive en vue isométrique.
 | **Framework** | Next.js 16, App Router, React Server Components |
 | **UI** | React 19, TypeScript, Tailwind CSS 4, Radix UI (shadcn/ui) |
 | **State** | Zustand (client), TanStack Query (server) |
-| **3D** | Three.js, React Three Fiber, Drei |
-| **Database** | PostgreSQL, Prisma ORM |
+| **3D** | Three.js, React Three Fiber, Drei, Maath |
+| **Database** | PostgreSQL (Supabase), Prisma ORM |
 | **Auth** | NextAuth.js v5 beta |
 | **Forms** | React Hook Form, Zod validation |
+| **Rich Text** | TipTap (importé, pas intégré) |
 
 ---
 
@@ -53,11 +57,13 @@ src/
 │
 ├── core/                     # Coeur technique (infrastructure)
 │   ├── 3d/                  # Moteur 3D
-│   │   ├── scenes/          # Scènes, collisions, pathfinding
-│   │   ├── character/       # Personnage, contrôles
-│   │   ├── camera/          # Caméra follow/free
-│   │   ├── physics/         # Moteur physique, hitboxes
-│   │   └── analytics/       # Tracking interactions
+│   │   ├── scenes/          # Scène principale, collisions, pathfinding A*
+│   │   │   ├── worlds/      # DevWorld, ArtWorld avec portails
+│   │   │   └── pathfinding/ # NavigationGrid, A* algorithm
+│   │   ├── character/       # Character, CharacterControls, CharacterModel
+│   │   ├── camera/          # FollowCamera, OcclusionManager
+│   │   ├── physics/         # SpatialHashGrid, CollisionDetector, hitboxes
+│   │   └── analytics/       # InteractionTracker, HeatmapGenerator
 │   ├── auth/                # Configuration NextAuth
 │   └── errors/              # Gestion des erreurs
 │
@@ -292,10 +298,11 @@ pnpm start            # Serveur production
 pnpm lint             # ESLint
 pnpm typecheck        # Vérification TypeScript
 pnpm db:generate      # Générer Prisma Client
-pnpm db:push          # Pousser le schéma vers la DB
+pnpm db:push          # Pousser le schéma vers la DB (utiliser POSTGRES_URL_NON_POOLING)
 pnpm db:migrate       # Créer une migration
 pnpm db:studio        # Ouvrir Prisma Studio
 pnpm db:seed          # Seeding de la base
+pnpm format           # Prettier formatting
 ```
 
 ---
@@ -350,6 +357,10 @@ Closes #123
 
 - **Email**: oalacea@oalacea.fr
 - **GitHub**: https://github.com/oalacea
+
+## Progression
+
+Pour l'état d'avancement du projet et les features à venir, voir **`PROGRESS.md`**.
 
 ---
 

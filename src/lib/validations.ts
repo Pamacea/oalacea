@@ -63,9 +63,9 @@ export const commentSchema = z.object({
   authorName: z.string().min(1, "Name is required").max(100, "Name too long"),
   authorEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
   content: z.string().min(3, "Comment must be at least 3 characters").max(2000, "Comment too long"),
-  postId: z.string().uuid().optional(),
-  projectId: z.string().uuid().optional(),
-  parentId: z.string().uuid().optional(),
+  postId: z.string().optional(),
+  projectId: z.string().optional(),
+  parentId: z.string().optional(),
   consent: z.boolean().refine((val) => val === true, {
     message: "You must agree to the comment policy",
   }),

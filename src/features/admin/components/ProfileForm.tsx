@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
+import { useForm } from "@tanstack/react-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -40,30 +41,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const { update } = useSession()
   const [isPending, startTransition] = useTransition()
 
-  const [formData, setFormData] = useState({
-    name: user.name || "",
-    email: user.email,
+  const form = useForm({
+    defaultValues: {
+      name: user.name || "",
+      email: user.email,
+    },
   })
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    startTransition(async () => {
-      try {
-        const response = await fetch("/api/users/profile", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: formData.name }),
-        })
-
-        if (response.ok) {
-          await update({ name: formData.name })
-          router.refresh()
-        }
-      } catch {
-        // Error silently ignored
-      }
-    })
-  }
 
   async function handleSendVerification() {
     startTransition(async () => {
@@ -103,29 +86,74 @@ export function ProfileForm({ user }: ProfileFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name" className="font-display text-imperium-bone">Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+              startTransition(async () => {
+                try {
+                  const name = form.state.values.name
+                  const response = await fetch("/api/users/profile", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name }),
+                  })
 
-            <div>
-              <Label htmlFor="email" className="font-display text-imperium-bone">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                disabled
-                className="cursor-not-allowed"
-              />
-              <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">
-                {'>'} Contact an admin to change your email
-              </p>
-            </div>
+                  if (response.ok) {
+                    await update({ name })
+                    router.refresh()
+                  }
+                } catch {
+                  // Error silently ignored
+                }
+              })
+            }}
+          >
+            <form.Field
+              name="name"
+              validators={{
+                onChange: ({ value }) =>
+                  value.length > 0 ? undefined : "Name is required",
+                onChangeAsync: async ({ value }) => {
+                  if (value.length > 100) return "Name too long"
+                  return undefined
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <Label htmlFor="name" className="font-display text-imperium-bone">Name</Label>
+                  <Input
+                    id="name"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(", ")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="email">
+              {(field) => (
+                <div>
+                  <Label htmlFor="email" className="font-display text-imperium-bone">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={field.state.value}
+                    disabled
+                    className="cursor-not-allowed"
+                  />
+                  <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">
+                    {'>'} Contact an admin to change your email
+                  </p>
+                </div>
+              )}
+            </form.Field>
 
             <Button type="submit" disabled={isPending} variant="primary">
               {isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin text-imperium-bone" /> : null}

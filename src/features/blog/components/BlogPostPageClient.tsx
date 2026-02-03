@@ -5,12 +5,19 @@ import { useBlogPost } from '../hooks'
 import { BlogPostTemplate } from './BlogPostTemplate'
 import { useParams } from 'next/navigation'
 import type { PostDetail } from '@/actions/blog/query'
+import type { Comment } from '@/generated/prisma/client'
+
+interface CommentWithReplies extends Comment {
+  replies?: CommentWithReplies[]
+}
 
 interface BlogPostPageClientProps {
   initialPost?: PostDetail | null
+  initialComments?: CommentWithReplies[]
+  commentsCount?: number
 }
 
-export function BlogPostPageClient({ initialPost }: BlogPostPageClientProps = {}) {
+export function BlogPostPageClient({ initialPost, initialComments = [], commentsCount = 0 }: BlogPostPageClientProps = {}) {
   const params = useParams()
   const slug = typeof params.slug === 'string' ? params.slug : params.slug?.[0] || ''
 
@@ -30,7 +37,12 @@ export function BlogPostPageClient({ initialPost }: BlogPostPageClientProps = {}
 
   return (
     <article className="w-full max-w-[80%] mx-auto">
-      <BlogPostTemplate post={post} variant="page" />
+      <BlogPostTemplate
+        post={post}
+        initialComments={initialComments}
+        commentsCount={commentsCount}
+        variant="page"
+      />
     </article>
   )
 }

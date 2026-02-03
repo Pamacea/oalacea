@@ -2,7 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, Pencil, Trash2, Eye, Folder, Skull } from 'lucide-react';
 import { getPosts, deletePostWithRevalidate } from '@/actions/blog';
+import { exportBlogs } from '@/actions/blog/export-import';
 import { GlitchText } from '@/components/ui/imperium';
+import { ExportImportButton } from '@/features/admin/components';
 
 function DeleteButton({ slug }: { slug: string }) {
   return (
@@ -41,6 +43,11 @@ export default async function AdminBlogPage() {
           </p>
         </div>
         <div className="flex gap-3">
+          <ExportImportButton
+            type="blog"
+            exportAction={exportBlogs}
+            exportFileName="blogs-export"
+          />
           <Link
             href="/admin/blog/categories"
             className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black-deep hover:border-imperium-gold hover:text-imperium-gold hover:shadow-[4px_4px_0_rgba(212,175,55,0.2)] transition-all"

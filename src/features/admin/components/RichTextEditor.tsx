@@ -3,12 +3,12 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import { common, createLowlight } from 'lowlight';
 
 const lowlight = createLowlight(common);
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { ImperiumLink } from '@/shared/lib/tiptap-extensions';
 import {
   Bold,
   Italic,
@@ -25,18 +25,17 @@ import {
   Pilcrow,
   WrapText,
   Type,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Toggle } from '@/components/ui/toggle';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 // Register all languages from lowlight
 Object.keys(common).forEach((lang) => {
@@ -52,6 +51,23 @@ interface RichTextEditorProps {
   onImageUpload?: (file: File) => Promise<string>;
 }
 
+const defaultImageUpload = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error('Upload failed');
+  }
+
+  const data = await response.json();
+  return data.url;
+};
+
 export function RichTextEditor({
   value = '',
   onChange,
@@ -66,6 +82,7 @@ export function RichTextEditor({
   const [imageAlt, setImageAlt] = useState('');
   const [imageOpen, setImageOpen] = useState(false);
   const [isMarkdownMode, setIsMarkdownMode] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -76,12 +93,7 @@ export function RichTextEditor({
         placeholder,
         emptyEditorClass: 'is-editor-empty',
       }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-imperium-crimson hover:text-imperium-crimson-b underline border-b-2 border-dashed border-imperium-steel-dark',
-        },
-      }),
+      ImperiumLink,
       Image.configure({
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded-none border-2 border-imperium-steel-dark',
@@ -105,7 +117,7 @@ export function RichTextEditor({
           'prose prose-invert prose-sm sm:prose-base max-w-none focus:outline-none min-h-[300px] px-4 py-3',
           'prose-headings:font-display prose-headings:uppercase prose-headings:tracking-wider',
           'prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-headings:text-imperium-bone',
-          'prose-p:text-imperium-steel prose-p:font-terminal prose-p:leading-relaxed',
+          'prose-p:text-imperium-steel prose-p:font-terminal prose-p:leading-relaxed prose-p:whitespace-pre-wrap',
           'prose-strong:text-imperium-bone prose-strong:font-display prose-strong:uppercase',
           'prose-code:text-imperium-crimson prose-code:bg-imperium-crimson/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-none prose-code:font-mono prose-code:text-sm prose-code:border prose-code:border-imperium-crimson/30',
           'prose-pre:bg-imperium-black prose-pre:border-2 prose-pre:border-imperium-steel-dark',
@@ -121,6 +133,22 @@ export function RichTextEditor({
       },
     },
   });
+
+  const insertImage = useCallback(async (file: File) => {
+    const uploadHandler = onImageUpload || defaultImageUpload;
+    try {
+      setIsUploading(true);
+      const url = await uploadHandler(file);
+      if (editor) {
+        editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+      }
+      setImageOpen(false);
+    } catch {
+      console.error('Image upload failed');
+    } finally {
+      setIsUploading(false);
+    }
+  }, [editor, onImageUpload]);
 
   if (!editor) {
     return null;
@@ -148,12 +176,38 @@ export function RichTextEditor({
     setImageOpen(false);
   };
 
-  const insertImage = async (file: File) => {
-    if (onImageUpload) {
-      const url = await onImageUpload(file);
-      editor.chain().focus().setImage({ src: url, alt: file.name }).run();
-    }
-  };
+  // Toolbar button helper - uses button-element for proper styling
+  const ToolbarButton = ({
+    active,
+    onClick,
+    children,
+    label,
+    disabled = false
+  }: {
+    active: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+    label: string;
+    disabled?: boolean;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className={cn(
+        'flex items-center justify-center w-8 h-8 rounded-none border-2 transition-all',
+        'border-imperium-steel-dark hover:border-imperium-steel',
+        active
+          ? 'bg-imperium-crimson/20 text-imperium-crimson border-imperium-crimson'
+          : 'text-imperium-steel hover:text-imperium-bone',
+        'disabled:opacity-50 disabled:cursor-not-allowed'
+      )}
+    >
+      {children}
+    </button>
+  );
 
   const toolbarButtons = [
     {
@@ -242,69 +296,62 @@ export function RichTextEditor({
       )}
     >
       {editable && !isMarkdownMode && (
-        <div className="flex flex-wrap items-center gap-1 border-b-2 border-imperium-steel-dark bg-imperium-black p-2">
-          <div className="flex items-center gap-1 pr-2">
+        <div className="flex flex-wrap items-center gap-2 border-b-2 border-imperium-steel-dark bg-imperium-black/50 p-2">
+          {/* Headings Group */}
+          <div className="flex items-center gap-1 pr-2 border-r border-imperium-steel-dark">
             {toolbarButtons.map((button) => (
-              <Toggle
+              <ToolbarButton
                 key={button.name}
-                size="sm"
-                pressed={button.isActive()}
-                onPressedChange={button.action}
-                aria-label={button.tooltip}
-                title={button.tooltip}
+                active={button.isActive()}
+                onClick={button.action}
+                label={button.tooltip}
               >
                 <button.icon className="h-4 w-4" />
-              </Toggle>
+              </ToolbarButton>
             ))}
           </div>
 
-          <Separator orientation="vertical" className="h-6" />
-
+          {/* Format Group */}
           <div className="flex items-center gap-1 px-2">
             {formatButtons.map((button) => (
-              <Toggle
+              <ToolbarButton
                 key={button.name}
-                size="sm"
-                pressed={button.isActive()}
-                onPressedChange={button.action}
-                aria-label={button.tooltip}
-                title={button.tooltip}
+                active={button.isActive()}
+                onClick={button.action}
+                label={button.tooltip}
               >
                 <button.icon className="h-4 w-4" />
-              </Toggle>
+              </ToolbarButton>
             ))}
           </div>
 
-          <Separator orientation="vertical" className="h-6" />
-
-          <div className="flex items-center gap-1 px-2">
+          {/* Lists Group */}
+          <div className="flex items-center gap-1 px-2 border-l border-imperium-steel-dark/50">
             {listButtons.map((button) => (
-              <Toggle
+              <ToolbarButton
                 key={button.name}
-                size="sm"
-                pressed={button.isActive()}
-                onPressedChange={button.action}
-                aria-label={button.tooltip}
-                title={button.tooltip}
+                active={button.isActive()}
+                onClick={button.action}
+                label={button.tooltip}
               >
                 <button.icon className="h-4 w-4" />
-              </Toggle>
+              </ToolbarButton>
             ))}
           </div>
 
-          <Separator orientation="vertical" className="h-6" />
-
-          <div className="flex items-center gap-1 px-2">
+          {/* Insert Group */}
+          <div className="flex items-center gap-1 pl-2 border-l border-imperium-steel-dark/50">
             <Popover open={linkOpen} onOpenChange={setLinkOpen}>
               <PopoverTrigger asChild>
-                <Toggle
-                  size="sm"
-                  pressed={editor.isActive('link')}
-                  aria-label="Add link"
-                  title="Add link"
-                >
-                  <Link2 className="h-4 w-4" />
-                </Toggle>
+                <div>
+                  <ToolbarButton
+                    active={editor.isActive('link')}
+                    onClick={() => setLinkOpen(!linkOpen)}
+                    label="Add link"
+                  >
+                    <Link2 className="h-4 w-4" />
+                  </ToolbarButton>
+                </div>
               </PopoverTrigger>
               <PopoverContent className="w-64 p-3" align="start">
                 <div className="space-y-2">
@@ -339,14 +386,15 @@ export function RichTextEditor({
 
             <Popover open={imageOpen} onOpenChange={setImageOpen}>
               <PopoverTrigger asChild>
-                <Toggle
-                  size="sm"
-                  aria-label="Add image"
-                  title="Add image"
-                  onClick={() => setImageOpen(true)}
-                >
-                  <ImageIcon className="h-4 w-4" />
-                </Toggle>
+                <div>
+                  <ToolbarButton
+                    active={false}
+                    onClick={() => setImageOpen(true)}
+                    label="Add image"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </ToolbarButton>
+                </div>
               </PopoverTrigger>
               <PopoverContent className="w-72 p-3" align="start">
                 <div className="space-y-3">
@@ -356,32 +404,35 @@ export function RichTextEditor({
                     onChange={(e) => setImageUrl(e.target.value)}
                     placeholder="Image URL"
                     className="h-8"
+                    disabled={isUploading}
                   />
                   <Input
                     value={imageAlt}
                     onChange={(e) => setImageAlt(e.target.value)}
                     placeholder="Alt text"
                     className="h-8"
+                    disabled={isUploading}
                   />
-                  {onImageUpload && (
-                    <div className="space-y-1">
-                      <p className="font-terminal text-imperium-steel-dark text-xs">Or upload a file:</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            insertImage(file);
-                            setImageOpen(false);
-                          }
-                        }}
-                        className="block w-full font-terminal text-xs text-imperium-steel file:mr-2 file:rounded-none file:border-2 file:border-imperium-steel-dark file:bg-imperium-black file:px-2 file:py-1 file:text-xs file:text-imperium-steel hover:file:bg-imperium-iron"
-                      />
-                    </div>
-                  )}
+                  <div className="space-y-1">
+                    <p className="font-terminal text-imperium-steel-dark text-xs flex items-center gap-2">
+                      Or upload a file:
+                      {isUploading && <Loader2 className="h-3 w-3 animate-spin" />}
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={isUploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          insertImage(file);
+                        }
+                      }}
+                      className="block w-full font-terminal text-xs text-imperium-steel file:mr-2 file:rounded-none file:border-2 file:border-imperium-steel-dark file:bg-imperium-black file:px-2 file:py-1 file:text-xs file:text-imperium-steel hover:file:bg-imperium-iron disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </div>
                   <div className="flex justify-end">
-                    <Button size="sm" onClick={addImage} type="button">
+                    <Button size="sm" onClick={addImage} type="button" disabled={isUploading}>
                       Insert
                     </Button>
                   </div>
@@ -390,41 +441,37 @@ export function RichTextEditor({
             </Popover>
           </div>
 
-          <Separator orientation="vertical" className="h-6" />
-
-          <div className="flex items-center gap-1 pl-2">
-            <Toggle
-              size="sm"
-              aria-label="Undo"
-              title="Undo"
-              onPressedChange={() => editor.chain().focus().undo().run()}
+          {/* Undo/Redo Group */}
+          <div className="flex items-center gap-1 pl-2 border-l border-imperium-steel-dark/50 ml-auto">
+            <ToolbarButton
+              active={false}
+              onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().undo()}
+              label="Undo"
             >
               <Undo className="h-4 w-4" />
-            </Toggle>
-            <Toggle
-              size="sm"
-              aria-label="Redo"
-              title="Redo"
-              onPressedChange={() => editor.chain().focus().redo().run()}
+            </ToolbarButton>
+            <ToolbarButton
+              active={false}
+              onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().redo()}
+              label="Redo"
             >
               <Redo className="h-4 w-4" />
-            </Toggle>
+            </ToolbarButton>
           </div>
 
-          <div className="ml-auto">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setIsMarkdownMode(!isMarkdownMode)}
-              className="gap-1.5"
-              type="button"
-            >
-              <Type className="h-4 w-4" />
-              {isMarkdownMode ? 'Rich Text' : 'Markdown'}
-            </Button>
-          </div>
+          {/* Mode Toggle */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsMarkdownMode(!isMarkdownMode)}
+            className="gap-1.5 ml-2 text-imperium-steel hover:text-imperium-bone"
+            type="button"
+          >
+            <Type className="h-4 w-4" />
+            {isMarkdownMode ? 'Rich Text' : 'Markdown'}
+          </Button>
         </div>
       )}
 

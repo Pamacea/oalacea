@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Search, ExternalLink, FileText, Folder, Hash, Loader2, AlertCircle } from 'lucide-react';
 import { type LinkOption } from './types';
+import { usePosts } from '@/features/blog/queries/usePosts';
+import { useProjects } from '@/features/portfolio/queries/useProjects';
 
 interface LinkModalProps {
   isOpen: boolean;
@@ -26,9 +28,20 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
   const [tab, setTab] = useState<'external' | 'blog' | 'project'>('external');
   const [url, setUrl] = useState(initialUrl);
   const [searchQuery, setSearchQuery] = useState('');
-  const [blogs, setBlogs] = useState<Array<{ id: string; title: string; slug: string }>>([]);
-  const [projects, setProjects] = useState<Array<{ id: string; title: string; slug: string }>>([]);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch posts using server action + TanStack Query
+  const { posts: blogPosts, isLoading: isLoadingBlogs } = usePosts({ limit: 20, published: true });
+
+  // Fetch projects using server action + TanStack Query (no limit option in this query)
+  const { projects, isLoading: isLoadingProjects } = useProjects();
+
+  // Transform blog posts to simpler format
+  const blogs = useMemo(() =>
+    blogPosts.map(p => ({ id: p.id, title: p.title, slug: p.slug })),
+    [blogPosts]
+  );
+
+  const isLoading = tab === 'blog' ? isLoadingBlogs : isLoadingProjects;
 
   const urlError = useMemo(() => {
     if (tab === 'external' && url && !isValidUrl(url)) {
@@ -37,58 +50,11 @@ export function LinkModal({ isOpen, onClose, onInsert, initialUrl = '' }: LinkMo
     return null;
   }, [tab, url]);
 
-  const abortControllerRef = useRef<AbortController | null>(null);
-
+  // Reset search query when tab changes
   useEffect(() => {
-    if (isOpen && (tab === 'blog' || tab === 'project')) {
-      // Cancel previous request if exists
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      // Create new AbortController
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
-
-      const loadContent = async () => {
-        setIsLoading(true);
-        try {
-          if (tab === 'blog') {
-            const response = await fetch('/api/blog?limit=20', {
-              signal: abortController.signal,
-            });
-            if (response.ok) {
-              const data = await response.json();
-              setBlogs(data.posts || []);
-            }
-          } else if (tab === 'project') {
-            const response = await fetch('/api/projects?limit=20', {
-              signal: abortController.signal,
-            });
-            if (response.ok) {
-              const data = await response.json();
-              setProjects(data.projects || []);
-            }
-          }
-        } catch (error) {
-          // Ignore abort errors
-          if (error instanceof Error && error.name !== 'AbortError') {
-            // Error silently ignored
-          }
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      loadContent();
-    }
-
-    // Cleanup function
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [isOpen, tab]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchQuery('');
+  }, [tab]);
 
   const handleInsert = () => {
     if (tab === 'external' && url) {

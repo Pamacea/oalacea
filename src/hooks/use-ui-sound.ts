@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { useAudioStore } from '@/features/3d-world/store/3d-audio-store';
 
 /**
@@ -9,7 +9,41 @@ import { useAudioStore } from '@/features/3d-world/store/3d-audio-store';
  * Uses Web Audio API to generate sounds without external files
  */
 
-const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)() : null;
+// Lazy audio context initialization
+let audioContext: AudioContext | null = null;
+let contextInitPromise: Promise<AudioContext> | null = null;
+
+function getAudioContext(): Promise<AudioContext> {
+  if (audioContext && audioContext.state !== 'closed') {
+    // Resume if suspended (autoplay policy)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
+    }
+    return Promise.resolve(audioContext);
+  }
+
+  if (contextInitPromise) {
+    return contextInitPromise;
+  }
+
+  contextInitPromise = (async () => {
+    const ctx = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
+    audioContext = ctx;
+
+    // Resume on first user gesture
+    if (ctx.state === 'suspended') {
+      try {
+        await ctx.resume();
+      } catch {
+        // Ignore resume errors
+      }
+    }
+
+    return ctx;
+  })();
+
+  return contextInitPromise;
+}
 
 type SoundType = 'hover' | 'click' | 'open' | 'close' | 'error' | 'success' | 'typing';
 
@@ -25,34 +59,81 @@ const soundConfigs: Record<SoundType, { frequency: number; duration: number; typ
 
 export function useUISound() {
   const { sfxVolume, masterVolume, isEnabled, isPaused } = useAudioStore();
+  const activeOscillatorsRef = useRef<Set<OscillatorNode>>(new Set());
+
+  // Cleanup all oscillators on unmount
+  useEffect(() => {
+    const activeOscillators = activeOscillatorsRef.current;
+
+    return () => {
+      activeOscillators.forEach((osc) => {
+        try {
+          osc.stop();
+          osc.disconnect();
+        } catch {
+          // Ignore errors during cleanup
+        }
+      });
+      activeOscillators.clear();
+    };
+  }, []);
 
   const play = useCallback((type: SoundType) => {
-    if (!isEnabled || isPaused || !audioContext) return;
+    if (!isEnabled || isPaused) return;
 
     const config = soundConfigs[type];
-    const volume = (sfxVolume * masterVolume * 0.15).toFixed(3);
+    const volume = Math.max(0, Math.min(1, sfxVolume * masterVolume * 0.15));
 
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    getAudioContext().then((ctx) => {
+      if (ctx.state === 'closed') return;
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+      try {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
 
-    oscillator.type = config.type;
-    oscillator.frequency.setValueAtTime(config.frequency, audioContext.currentTime);
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
 
-    if (config.modulate) {
-      oscillator.frequency.exponentialRampToValueAtTime(
-        config.frequency * 0.5,
-        audioContext.currentTime + config.duration
-      );
-    }
+        oscillator.type = config.type;
+        oscillator.frequency.setValueAtTime(config.frequency, ctx.currentTime);
 
-    gainNode.gain.setValueAtTime(parseFloat(volume), audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + config.duration);
+        if (config.modulate) {
+          oscillator.frequency.exponentialRampToValueAtTime(
+            config.frequency * 0.5,
+            ctx.currentTime + config.duration
+          );
+        }
 
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + config.duration);
+        gainNode.gain.setValueAtTime(volume, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + config.duration);
+
+        // Track for cleanup
+        activeOscillatorsRef.current.add(oscillator);
+
+        // Cleanup after sound finishes
+        const cleanup = () => {
+          activeOscillatorsRef.current.delete(oscillator);
+          try {
+            oscillator.disconnect();
+            gainNode.disconnect();
+          } catch {
+            // Ignore errors
+          }
+        };
+
+        oscillator.onended = cleanup;
+
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + config.duration);
+      } catch (err) {
+        // Silently fail on audio errors
+        if ((err as Error).name !== 'AbortError') {
+          // Only log non-abort errors
+        }
+      }
+    }).catch(() => {
+      // Ignore context initialization errors
+    });
   }, [sfxVolume, masterVolume, isEnabled, isPaused]);
 
   return {
@@ -64,4 +145,13 @@ export function useUISound() {
     playSuccess: () => play('success'),
     playTyping: () => play('typing'),
   };
+}
+
+// Export cleanup function for manual cleanup
+export function cleanupUISound(): void {
+  if (audioContext && audioContext.state !== 'closed') {
+    audioContext.close().catch(() => {});
+  }
+  audioContext = null;
+  contextInitPromise = null;
 }

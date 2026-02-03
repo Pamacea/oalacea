@@ -5,17 +5,18 @@ import { Mail, Github, Twitter, Linkedin, Send } from 'lucide-react';
 import { GlitchText } from '@/components/ui/imperium';
 import { BrutalCard } from '@/components/navigation/BrutalBackground';
 import { useState } from 'react';
+import { useForm } from '@tanstack/react-form';
 
 export default function ContactPage() {
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormState('submitting');
-    await new Promise(r => setTimeout(r, 1500));
-    setFormState('success');
-    setTimeout(() => setFormState('idle'), 3000);
-  };
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      email: '',
+      message: '',
+    },
+  });
 
   return (
     <div className="w-full max-w-4/5 mx-auto px-4 py-12">
@@ -35,42 +36,113 @@ export default function ContactPage() {
       <div className="grid gap-8 md:grid-cols-2">
         {/* Contact Form */}
         <BrutalCard hovered className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="font-terminal text-xs text-imperium-gold block mb-2">
-                {'>'} NAME
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Enter your designation"
-                className="w-full bg-imperium-black border border-imperium-steel-dark px-3 py-2 font-terminal text-imperium-bone placeholder:text-imperium-steel-dark focus:border-imperium-gold focus:outline-none"
-              />
-            </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              setFormState('submitting')
+              setTimeout(() => {
+                setFormState('success')
+                form.reset()
+                setTimeout(() => setFormState('idle'), 3000)
+              }, 1500)
+            }}
+            className="space-y-4"
+          >
+            <form.Field
+              name="name"
+              validators={{
+                onChange: ({ value }) => value.length > 0 ? undefined : "Name is required",
+                onChangeAsync: async ({ value }) => {
+                  if (value.length > 100) return "Name too long"
+                  return undefined
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="font-terminal text-xs text-imperium-gold block mb-2">
+                    {'>'} NAME
+                  </label>
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Enter your designation"
+                    className="w-full bg-imperium-black border border-imperium-steel-dark px-3 py-2 font-terminal text-imperium-bone placeholder:text-imperium-steel-dark focus:border-imperium-gold focus:outline-none"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(", ")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
 
-            <div>
-              <label className="font-terminal text-xs text-imperium-gold block mb-2">
-                {'>'} EMAIL
-              </label>
-              <input
-                type="email"
-                required
-                placeholder="your@email.com"
-                className="w-full bg-imperium-black border border-imperium-steel-dark px-3 py-2 font-terminal text-imperium-bone placeholder:text-imperium-steel-dark focus:border-imperium-gold focus:outline-none"
-              />
-            </div>
+            <form.Field
+              name="email"
+              validators={{
+                onChange: ({ value }) => value.length > 0 ? undefined : "Email is required",
+                onChangeAsync: async ({ value }) => {
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    return "Invalid email address"
+                  }
+                  return undefined
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="font-terminal text-xs text-imperium-gold block mb-2">
+                    {'>'} EMAIL
+                  </label>
+                  <input
+                    type="email"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full bg-imperium-black border border-imperium-steel-dark px-3 py-2 font-terminal text-imperium-bone placeholder:text-imperium-steel-dark focus:border-imperium-gold focus:outline-none"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(", ")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
 
-            <div>
-              <label className="font-terminal text-xs text-imperium-gold block mb-2">
-                {'>'} MESSAGE
-              </label>
-              <textarea
-                required
-                rows={6}
-                placeholder="Your transmission..."
-                className="w-full bg-imperium-black border border-imperium-steel-dark px-3 py-2 font-terminal text-imperium-bone placeholder:text-imperium-steel-dark focus:border-imperium-gold focus:outline-none resize-none"
-              />
-            </div>
+            <form.Field
+              name="message"
+              validators={{
+                onChange: ({ value }) => value.length > 0 ? undefined : "Message is required",
+                onChangeAsync: async ({ value }) => {
+                  if (value.length < 10) return "Message must be at least 10 characters"
+                  if (value.length > 5000) return "Message too long"
+                  return undefined
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="font-terminal text-xs text-imperium-gold block mb-2">
+                    {'>'} MESSAGE
+                  </label>
+                  <textarea
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    rows={6}
+                    placeholder="Your transmission..."
+                    className="w-full bg-imperium-black border border-imperium-steel-dark px-3 py-2 font-terminal text-imperium-bone placeholder:text-imperium-steel-dark focus:border-imperium-gold focus:outline-none resize-none"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(", ")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
 
             <motion.button
               type="submit"

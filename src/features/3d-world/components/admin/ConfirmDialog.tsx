@@ -14,7 +14,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
-  variant?: 'danger' | 'default';
+  variant?: 'danger' | 'default' | 'success';
   isLoading?: boolean;
   isSuccess?: boolean;
 }
@@ -64,13 +64,13 @@ export function ConfirmDialog({
         }}
       >
         {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-l-4 border-t-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : '#d4af37' }} />
-        <div className="absolute top-0 right-0 w-4 h-4 border-r-4 border-t-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : '#d4af37' }} />
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-l-4 border-b-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : '#d4af37' }} />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-r-4 border-b-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : '#d4af37' }} />
+        <div className="absolute top-0 left-0 w-4 h-4 border-l-4 border-t-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : variant === 'success' ? '#2dd4bf' : '#d4af37' }} />
+        <div className="absolute top-0 right-0 w-4 h-4 border-r-4 border-t-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : variant === 'success' ? '#2dd4bf' : '#d4af37' }} />
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-l-4 border-b-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : variant === 'success' ? '#2dd4bf' : '#d4af37' }} />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-r-4 border-b-2" style={{ borderColor: variant === 'danger' ? '#9a1115' : variant === 'success' ? '#2dd4bf' : '#d4af37' }} />
 
         {/* Top accent line */}
-        <div className="h-1" style={{ background: variant === 'danger' ? '#9a1115' : '#d4af37' }}>
+        <div className="h-1" style={{ background: variant === 'danger' ? '#9a1115' : variant === 'success' ? '#2dd4bf' : '#d4af37' }}>
           <motion.div
             className="h-full bg-imperium-gold"
             animate={{ x: ['-100%', '100%'] }}
@@ -84,6 +84,10 @@ export function ConfirmDialog({
           {variant === 'danger' ? (
             <div className="flex items-center justify-center mb-4">
               <Skull className="h-12 w-12 text-imperium-crimson" />
+            </div>
+          ) : variant === 'success' ? (
+            <div className="flex items-center justify-center mb-4">
+              <CheckCircle className="h-12 w-12 text-imperium-teal" />
             </div>
           ) : (
             <div className="flex items-center justify-center mb-4">
@@ -125,6 +129,8 @@ export function ConfirmDialog({
             className={`px-6 py-2 font-display text-sm uppercase tracking-wider border-2 transition-all ${
               variant === 'danger'
                 ? 'border-imperium-crimson bg-imperium-crimson/20 text-imperium-crimson hover:bg-imperium-crimson hover:text-imperium-bone'
+                : variant === 'success'
+                ? 'border-imperium-teal bg-imperium-teal/20 text-imperium-teal hover:bg-imperium-teal hover:text-imperium-black'
                 : 'border-imperium-gold bg-imperium-gold/20 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black'
             } disabled:opacity-50`}
           >

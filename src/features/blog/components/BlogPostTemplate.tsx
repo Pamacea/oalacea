@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Tag, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { GlitchText } from '@/components/ui/imperium';
-import { sanitizeInlineHtml } from '@/lib/sanitize';
+import { TipTapContent } from './TipTapContent';
+import { Comments } from './Comments';
 
 interface BlogPostTemplateProps {
   post: {
@@ -25,6 +26,8 @@ interface BlogPostTemplateProps {
     } | null;
     createdAt: Date;
   };
+  initialComments?: any[];
+  commentsCount?: number;
   onClose?: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
@@ -40,162 +43,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   'thoughts': 'THOUGHTS',
 };
 
-function MarkdownContent({ content }: { content: string }) {
-  const parsedElements = useMemo(() => {
-    if (!content) return [];
-
-    const lines = content.split('\n');
-    const elements: React.ReactNode[] = [];
-    let inCodeBlock = false;
-    let inList = false;
-    let codeContent = '';
-    let listItems: React.ReactNode[] = [];
-    let listIndex = 0;
-
-    const processInline = (text: string): React.ReactNode => {
-      let processed = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      processed = processed.replace(/__(.+?)__/g, '<strong>$1</strong>');
-      processed = processed.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
-      processed = processed.replace(/(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/g, '<em>$1</em>');
-      processed = processed.replace(/`(.+?)`/g, '<code class="inline-code">$1</code>');
-      processed = processed.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="markdown-link" target="_blank" rel="noopener noreferrer">$1</a>');
-      const sanitized = sanitizeInlineHtml(processed);
-      return <span dangerouslySetInnerHTML={{ __html: sanitized }} />;
-    };
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-
-      if (line.startsWith('```')) {
-        if (inList) {
-          elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-          listItems = [];
-          inList = false;
-        }
-        if (inCodeBlock) {
-          const currentCodeContent = codeContent;
-          elements.push(
-            <pre key={`code-${i}`} className="code-block">
-              <button
-                className="copy-button"
-                onClick={(e) => {
-                  const btn = e.currentTarget as HTMLButtonElement;
-                  navigator.clipboard.writeText(currentCodeContent);
-                  btn.textContent = 'COPIED!';
-                  setTimeout(() => btn.textContent = 'COPY', 2000);
-                }}
-              >COPY</button>
-              <code>{currentCodeContent}</code>
-            </pre>
-          );
-          codeContent = '';
-          inCodeBlock = false;
-        } else {
-          inCodeBlock = true;
-        }
-        continue;
-      }
-
-      if (inCodeBlock) {
-        codeContent += line + '\n';
-        continue;
-      }
-
-      if (line.startsWith('# ')) {
-        if (inList) {
-          elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-          listItems = [];
-          inList = false;
-        }
-        elements.push(<h1 key={`h1-${i}`} className="markdown-h1">{processInline(line.substring(2))}</h1>);
-        continue;
-      }
-      if (line.startsWith('## ')) {
-        if (inList) {
-          elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-          listItems = [];
-          inList = false;
-        }
-        elements.push(<h2 key={`h2-${i}`} className="markdown-h2">{processInline(line.substring(3))}</h2>);
-        continue;
-      }
-      if (line.startsWith('### ')) {
-        if (inList) {
-          elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-          listItems = [];
-          inList = false;
-        }
-        elements.push(<h3 key={`h3-${i}`} className="markdown-h3">{processInline(line.substring(4))}</h3>);
-        continue;
-      }
-      if (line.startsWith('#### ')) {
-        if (inList) {
-          elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-          listItems = [];
-          inList = false;
-        }
-        elements.push(<h4 key={`h4-${i}`} className="markdown-h4">{processInline(line.substring(5))}</h4>);
-        continue;
-      }
-      if (line.match(/^---+$|^===+$/)) {
-        if (inList) {
-          elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-          listItems = [];
-          inList = false;
-        }
-        elements.push(<hr key={`hr-${i}`} className="markdown-hr" />);
-        continue;
-      }
-      if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-        if (!inList) {
-          inList = true;
-          listIndex = 0;
-        }
-        listItems.push(<li key={`li-${i}-${listIndex++}`}>{processInline(line.trim().substring(2))}</li>);
-        continue;
-      }
-      if (/^\d+\.\s/.test(line.trim())) {
-        if (inList && listItems.length > 0) {
-          elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-          listItems = [];
-        }
-        if (!inList) {
-          inList = true;
-          listIndex = 0;
-        }
-        listItems.push(<li key={`li-${i}-${listIndex++}`}>{processInline(line.trim().replace(/^\d+\.\s/, ''))}</li>);
-        continue;
-      }
-      if (inList && listItems.length > 0) {
-        elements.push(<ul key={`ul-${i}`} className="markdown-ul">{listItems}</ul>);
-        listItems = [];
-        inList = false;
-      }
-      if (line.startsWith('> ')) {
-        elements.push(<blockquote key={`blockquote-${i}`} className="markdown-blockquote">{processInline(line.substring(2))}</blockquote>);
-        continue;
-      }
-      if (line.trim() === '') {
-        elements.push(<br key={`br-${i}`} />);
-        continue;
-      }
-      if (line.trim() !== '') {
-        elements.push(<p key={`p-${i}`} className="markdown-p">{processInline(line)}</p>);
-      }
-    }
-
-    if (inList && listItems.length > 0) {
-      elements.push(<ul key={'ul-final'} className="markdown-ul">{listItems}</ul>);
-    }
-
-    return elements;
-  }, [content]);
-
-  return <div className="markdown-content">{parsedElements}</div>;
-}
-
 export function BlogPostTemplate({
   post,
+  initialComments = [],
+  commentsCount = 0,
   onClose,
   onNext,
   onPrevious,
@@ -429,8 +280,15 @@ export function BlogPostTemplate({
             </div>
           )}
 
-          <MarkdownContent content={post.content || ''} />
+          <TipTapContent content={post.content || ''} />
         </article>
+
+        {/* Comments Section */}
+        {variant === 'page' && (
+          <div className="max-w-3xl mx-auto mt-12 relative z-10">
+            <Comments postId={post.id} initialComments={initialComments} count={commentsCount} />
+          </div>
+        )}
 
         <div className="h-20" />
       </div>

@@ -1,34 +1,17 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useState, useActionState, useRef } from 'react'
 import { formatDistanceToNow } from 'date-fns'
+import { motion } from 'framer-motion'
 import {
   MessageSquare as MessageSquareIcon,
   Reply as ReplyIcon,
   Send as SendIcon,
   AlertCircle as AlertCircleIcon,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Checkbox } from '@/components/ui/checkbox'
-import { createComment } from '@/actions/comments'
-import { commentSchema, type CommentInput } from '@/lib/validations'
+import { createCommentAction } from '@/actions/comments'
 import { cn } from '@/shared/utils'
 import type { Comment } from '@/generated/prisma/client'
 
@@ -50,46 +33,23 @@ export function Comments({
   count = 0,
 }: CommentsProps) {
   const [replyTo, setReplyTo] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [lastSuccess, setLastSuccess] = useState<string | null>(null)
+  const [state, formAction, isPending] = useActionState(createCommentAction, undefined)
+  const formRef = useRef<HTMLFormElement>(null)
 
-  const form = useForm<CommentInput>({
-    resolver: zodResolver(commentSchema),
-    defaultValues: {
-      authorName: '',
-      authorEmail: '',
-      content: '',
-      postId,
-      projectId,
-      consent: false,
-    },
-  })
+  // Show success toast only once per submission
+  if (state?.success && !isPending && lastSuccess !== 'shown') {
+    toast.success('Transmission initiated successfully')
+    formRef.current?.reset()
+    setReplyTo(null)
+    setLastSuccess('shown')
+    // Clear success state after a delay
+    setTimeout(() => setLastSuccess(null), 2000)
+  }
 
-  const onSubmit = async (data: CommentInput) => {
-    startTransition(async () => {
-      const result = await createComment({
-        ...data,
-        postId,
-        projectId,
-        parentId: replyTo || undefined,
-      })
-
-      if (result.success) {
-        toast.success('Comment submitted for moderation')
-        form.reset()
-        setReplyTo(null)
-      } else {
-        if (result.error) {
-          toast.error(result.error)
-        } else if (result.errors) {
-          Object.entries(result.errors).forEach(([field, errors]) => {
-            form.setError(field as keyof CommentInput, {
-              type: 'manual',
-              message: errors?.[0],
-            })
-          })
-        }
-      }
-    })
+  // Show error toast
+  if (state?.error && !isPending) {
+    toast.error(state.error)
   }
 
   const handleReply = (commentId: string) => {
@@ -107,154 +67,202 @@ export function Comments({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 border-b-2 border-imperium-steel-dark pb-4">
-        <MessageSquareIcon className="size-5 text-imperium-gold" />
-        <h2 className="font-display text-xl uppercase tracking-wider text-imperium-bone">
-          Comments {count > 0 && `(${count})`}
-        </h2>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="relative border-b-2 border-imperium-crimson pb-4">
+        <motion.div
+          className="absolute bottom-0 left-0 h-0.5 bg-imperium-crimson shadow-[0_0_10px_rgba(154,17,21,0.8)]"
+          animate={{ width: ['0%', '30%', '20%'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div className="flex items-center gap-3">
+          <div className="border-2 border-imperium-crimson bg-imperium-crimson/10 p-2 relative">
+            <motion.div
+              className="absolute inset-0 bg-imperium-crimson/20"
+              animate={{ opacity: [0, 0.5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <MessageSquareIcon className="h-5 w-5 text-imperium-crimson relative z-10" />
+          </div>
+          <div>
+            <h2 className="font-display text-xl uppercase tracking-wider text-imperium-bone">
+              Transmission Log
+            </h2>
+            <p className="font-terminal text-xs text-imperium-steel">
+              {'>'} {count} transmission{count !== 1 ? 's' : ''} recorded
+            </p>
+          </div>
+        </div>
       </div>
 
-      <Card variant="steel">
-        <CardHeader>
-          <CardTitle className="font-display uppercase tracking-wider text-imperium-crimson">
-            [ Leave a Comment ]
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              id="comment-form"
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
-              {replyTo && (
-                <div className="flex items-center justify-between rounded-none bg-imperium-crimson/10 border-2 border-imperium-crimson px-3 py-2 font-terminal text-sm text-imperium-crimson">
-                  <span>{'> Replying to comment'}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-none font-terminal uppercase text-xs"
-                    onClick={() => setReplyTo(null)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
+      {/* Comment Form */}
+      <div className="border-2 border-imperium-steel-dark bg-imperium-black-deep/50 relative overflow-hidden">
+        {/* Glowing top border */}
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-imperium-crimson to-transparent opacity-60" />
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="authorName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-display text-imperium-bone">Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Your name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+        {/* Corner accents */}
+        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-imperium-crimson" />
+        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-imperium-crimson" />
+        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-imperium-crimson" />
+        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-imperium-crimson" />
+
+        <div className="p-6">
+          <h3 className="font-display text-sm uppercase tracking-wider text-imperium-crimson mb-6 flex items-center gap-2">
+            <span className="text-imperium-gold">{'>'}</span>
+            Initialize New Transmission
+          </h3>
+
+          <form
+            ref={formRef}
+            id="comment-form"
+            action={formAction}
+            className="space-y-5"
+          >
+            {/* Hidden inputs for context */}
+            {postId && <input type="hidden" name="postId" value={postId} />}
+            {projectId && <input type="hidden" name="projectId" value={projectId} />}
+            {replyTo && <input type="hidden" name="parentId" value={replyTo} />}
+
+
+            {/* Server errors */}
+            {state?.errors && Object.keys(state.errors).length > 0 && (
+              <div className="bg-imperium-crimson/10 border-2 border-imperium-crimson px-4 py-3">
+                {Object.entries(state.errors).map(([field, errors]) => (
+                  <p key={field} className="font-terminal text-xs text-imperium-crimson border-l-2 border-imperium-crimson pl-2 mb-1 last:mb-0">
+                    {Array.isArray(errors) ? errors.join(', ') : errors}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {replyTo && (
+              <div className="flex items-center justify-between bg-imperium-crimson/10 border-2 border-imperium-crimson px-4 py-3 relative overflow-hidden">
+                <motion.div
+                  className="absolute inset-0 bg-imperium-crimson/5"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 />
+                <div className="flex items-center gap-2 relative z-10">
+                  <ReplyIcon className="h-4 w-4 text-imperium-crimson" />
+                  <span className="font-terminal text-sm text-imperium-crimson">
+                    Replying to transmission #{replyTo.slice(0, 8)}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyTo(null)}
+                  className="relative z-10 font-terminal uppercase text-xs text-imperium-crimson hover:text-imperium-bone hover:bg-imperium-crimson/20 px-2 py-1"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
 
-                <FormField
-                  control={form.control}
-                  name="authorEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-display text-imperium-bone">Email (optional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="your@email.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription className="font-terminal text-imperium-steel-dark">
-                        {'>'} Only used for Gravatar
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label htmlFor="authorName" className="font-display text-sm text-imperium-steel uppercase tracking-wide">
+                  Designation
+                </label>
+                <input
+                  id="authorName"
+                  name="authorName"
+                  required
+                  minLength={1}
+                  maxLength={100}
+                  className="w-full bg-imperium-black/50 border-2 border-imperium-steel-dark text-imperium-bone placeholder:text-imperium-steel-dark font-terminal px-3 py-2 focus:border-imperium-crimson focus:outline-none"
+                  placeholder="Enter your name..."
                 />
               </div>
 
-              <FormField
-                control={form.control}
+              <div className="space-y-1">
+                <label htmlFor="authorEmail" className="font-display text-sm text-imperium-steel uppercase tracking-wide">
+                  Frequency <span className="text-imperium-steel-dark text-xs">(optional)</span>
+                </label>
+                <input
+                  id="authorEmail"
+                  name="authorEmail"
+                  type="email"
+                  className="w-full bg-imperium-black/50 border-2 border-imperium-steel-dark text-imperium-bone placeholder:text-imperium-steel-dark font-terminal px-3 py-2 focus:border-imperium-crimson focus:outline-none"
+                  placeholder="your@email.com"
+                />
+                <p className="font-terminal text-xs text-imperium-steel-dark flex items-center gap-1">
+                  <span>{'>'}</span> Only for avatar manifest
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="content" className="font-display text-sm text-imperium-steel uppercase tracking-wide">
+                Message Content
+              </label>
+              <textarea
+                id="content"
                 name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-display text-imperium-bone">Comment</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Share your thoughts..."
-                        className="min-h-24"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                required
+                minLength={3}
+                maxLength={2000}
+                className="w-full min-h-32 bg-imperium-black/50 border-2 border-imperium-steel-dark text-imperium-bone placeholder:text-imperium-steel-dark font-terminal px-3 py-2 focus:border-imperium-crimson focus:outline-none resize-none"
+                placeholder="Transmit your thoughts..."
               />
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="flex flex-row items-start gap-3 py-1">
+              <input
+                id="consent"
                 name="consent"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="font-display text-imperium-bone">
-                        I agree to the comment policy
-                      </FormLabel>
-                      <FormDescription className="font-terminal text-imperium-steel-dark">
-                        {'>'} Comments are moderated and may be edited for clarity.
-                      </FormDescription>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                type="checkbox"
+                required
+                value="on"
+                className="size-4 shrink-0 rounded-none border-2 border-imperium-steel-dark bg-imperium-black transition-all outline-none focus-visible:border-imperium-crimson focus-visible:shadow-[0_0_0_2px_rgba(154,17,21,0.2)] checked:border-imperium-crimson checked:bg-imperium-crimson accent-imperium-crimson mt-0.5"
               />
+              <div className="space-y-1">
+                <label htmlFor="consent" className="font-display text-sm text-imperium-bone cursor-pointer">
+                  I comply with transmission protocols
+                </label>
+                <p className="font-terminal text-xs text-imperium-steel-dark">
+                  {'>'} Messages subject to Imperial screening
+                </p>
+              </div>
+            </div>
 
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="w-full sm:w-auto"
-                variant="primary"
-              >
-                {isPending ? (
-                  <>
-                    <AlertCircleIcon className="mr-2 size-4 animate-spin text-imperium-bone" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <SendIcon className="mr-2 size-4 text-imperium-bone" />
-                    Submit Comment
-                  </>
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-imperium-crimson text-imperium-bone border-2 border-imperium-crimson-dark hover:bg-imperium-crimson-bright disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {isPending ? (
+                <>
+                  <AlertCircleIcon className="h-4 w-4 animate-spin" />
+                  <span>TRANSMITTING...</span>
+                </>
+              ) : (
+                <>
+                  <SendIcon className="h-4 w-4" />
+                  <span>INITIATE TRANSMISSION</span>
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
 
+      {/* Comments List */}
       <div className="space-y-4">
         {initialComments.length === 0 ? (
-          <Card variant="iron">
-            <CardContent className="py-8 text-center">
-              <MessageSquareIcon className="mx-auto mb-2 size-8 text-imperium-steel-dark opacity-50" />
-              <p className="font-terminal text-imperium-steel-dark">
-                {'>'} No comments yet. Be the first to share your thoughts!
-              </p>
-            </CardContent>
-          </Card>
+          <div className="border-2 border-imperium-steel-dark/50 bg-imperium-black-deep/30 py-12 text-center relative overflow-hidden">
+            <div className="absolute inset-0 opacity-5">
+              <div
+                className="w-full h-full"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                }}
+              />
+            </div>
+            <MessageSquareIcon className="mx-auto mb-4 h-12 w-12 text-imperium-steel-dark opacity-40" />
+            <p className="font-terminal text-imperium-steel-dark relative z-10">
+              {'>'} No transmissions recorded. Initiate the first signal.
+            </p>
+          </div>
         ) : (
           initialComments.map((comment) => (
             <CommentItem
@@ -289,68 +297,97 @@ function CommentItem({
   return (
     <div
       className={cn(
-        'rounded-none border-2 border-imperium-steel-dark bg-imperium-black p-4',
-        isReply && 'ml-4 border-l-2 border-l-imperium-gold/30'
+        'relative border border-imperium-steel-dark bg-imperium-black-deep/40 overflow-hidden',
+        !isReply && 'border-2',
+        isReply && 'ml-6 border-l-2 border-l-imperium-gold/40'
       )}
     >
-      <div className="flex gap-3">
-        <Avatar size="sm" className="border-2 border-imperium-steel-dark">
-          <AvatarImage src={`https://www.gravatar.com/avatar/${comment.authorEmail}?d=mp&s=40`} />
-          <AvatarFallback className="font-display bg-imperium-crimson text-imperium-bone">
-            {getInitials(comment.authorName)}
-          </AvatarFallback>
-        </Avatar>
+      {/* Accent bar for main comments */}
+      {!isReply && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-imperium-crimson shadow-[0_0_8px_rgba(154,17,21,0.6)]" />
+      )}
 
-        <div className="flex-1 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-display text-sm uppercase tracking-wider text-imperium-bone">
-              {comment.authorName}
-            </span>
-            <span className="font-terminal text-xs text-imperium-steel-dark">
-              {formatDistanceToNow(new Date(comment.createdAt), {
-                addSuffix: true,
-              })}
-            </span>
+      {/* Subtle corner glow for replies */}
+      {isReply && (
+        <div className="absolute top-0 right-0 w-4 h-4 bg-imperium-gold/10 blur-sm" />
+      )}
+
+      <div className="p-5">
+        <div className="flex gap-4">
+          {/* Avatar */}
+          <div className="shrink-0">
+            <div className="h-10 w-10 border-2 border-imperium-steel-dark bg-imperium-black relative">
+              <img
+                src={`https://www.gravatar.com/avatar/${comment.authorEmail}?d=mp&s=80`}
+                alt={comment.authorName}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-imperium-crimson/20 text-imperium-crimson font-display text-sm border border-imperium-crimson/30">
+                {getInitials(comment.authorName)}
+              </div>
+            </div>
           </div>
 
-          <p className="font-terminal text-sm leading-relaxed text-imperium-steel">
-            {comment.content}
-          </p>
+          {/* Content */}
+          <div className="flex-1 min-w-0 space-y-3">
+            {/* Header */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-display text-sm uppercase tracking-wider text-imperium-bone">
+                {comment.authorName}
+              </span>
+              <span className="h-1 w-1 bg-imperium-steel-dark rounded-full" />
+              <span className="font-terminal text-xs text-imperium-steel-dark">
+                {formatDistanceToNow(new Date(comment.createdAt), {
+                  addSuffix: true,
+                })}
+              </span>
+              {comment.status === 'PENDING' && (
+                <>
+                  <span className="h-1 w-1 bg-imperium-steel-dark rounded-full" />
+                  <span className="inline-flex items-center gap-1.5 border border-imperium-gold/50 bg-imperium-gold/10 px-2 py-0.5 text-xs text-imperium-gold font-terminal uppercase">
+                    <AlertCircleIcon className="h-3 w-3" />
+                    Awaiting moderation
+                  </span>
+                </>
+              )}
+            </div>
 
-          {comment.status === 'PENDING' && (
-            <span className="inline-flex items-center gap-1 rounded-none border-2 border-imperium-gold bg-imperium-gold/10 px-2 py-0.5 text-xs text-imperium-gold">
-              <AlertCircleIcon className="size-3" />
-              Awaiting moderation
-            </span>
-          )}
+            {/* Message */}
+            <p className="font-terminal text-sm leading-relaxed text-imperium-steel whitespace-pre-wrap">
+              {comment.content}
+            </p>
 
-          {depth < maxDepth && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onReply(comment.id)}
-              className="gap-1 rounded-none font-terminal uppercase text-xs"
-            >
-              <ReplyIcon className="size-3" />
-              Reply
-            </Button>
-          )}
+            {/* Actions */}
+            {depth < maxDepth && (
+              <button
+                onClick={() => onReply(comment.id)}
+                className="gap-1.5 rounded-none font-terminal uppercase text-xs text-imperium-steel-dark hover:text-imperium-crimson hover:bg-imperium-crimson/10 px-0 h-auto py-0"
+              >
+                <ReplyIcon className="h-3 w-3" />
+                Reply to transmission
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-5 space-y-4">
+            {comment.replies.map((reply) => (
+              <CommentItem
+                key={reply.id}
+                comment={reply}
+                onReply={onReply}
+                getInitials={getInitials}
+                depth={depth + 1}
+              />
+            ))}
+          </div>
+        )}
       </div>
-
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-4 space-y-3">
-          {comment.replies.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              onReply={onReply}
-              getInitials={getInitials}
-              depth={depth + 1}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 }

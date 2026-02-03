@@ -10,6 +10,7 @@ import { useInWorldAdminStore } from '@/features/admin/store';
 import { TagInput } from '@/components/ui/tag-input';
 import { GlitchText } from '@/components/ui/imperium';
 import { useUISound } from '@/hooks/use-ui-sound';
+import { useForm } from '@tanstack/react-form';
 import { useProjectCategories } from './queries/use-project-categories';
 import dynamic from 'next/dynamic';
 
@@ -18,39 +19,26 @@ const MarkdownEditor = dynamic(
   { ssr: false }
 );
 
-type FormData = {
-  title: string;
-  slug: string;
-  description: string;
-  longDescription: string;
-  techStack: string[];
-  githubUrl: string;
-  liveUrl: string;
-  thumbnail: string;
-  featured: boolean;
-  sortOrder: number;
-  year: number;
-  categoryId: string;
-};
-
 export function ProjectForm({ projectId }: { projectId?: string }) {
   const { setView } = useInWorldAdminStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { playHover, playClick } = useUISound();
 
-  const [formData, setFormData] = useState<FormData>({
-    title: '',
-    slug: '',
-    description: '',
-    longDescription: '',
-    techStack: [],
-    githubUrl: '',
-    liveUrl: '',
-    thumbnail: '',
-    featured: false,
-    sortOrder: 0,
-    year: new Date().getFullYear(),
-    categoryId: '',
+  const form = useForm({
+    defaultValues: {
+      title: '',
+      slug: '',
+      description: '',
+      longDescription: '',
+      techStack: [] as string[],
+      githubUrl: '',
+      liveUrl: '',
+      thumbnail: '',
+      featured: false,
+      sortOrder: 0,
+      year: new Date().getFullYear(),
+      categoryId: '',
+    },
   });
 
   const { categories, isLoading: categoriesLoading } = useProjectCategories();
@@ -61,7 +49,7 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
   const createMutation = useCreateProject();
   const updateMutation = useUpdateProject();
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const isLoading = categoriesLoading || (projectId && !formData.title);
+  const isLoading = categoriesLoading || (projectId && !form.state.values.title);
 
   // Load project data when editing
   useEffect(() => {
@@ -71,38 +59,33 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
       try {
         const project = await getProjectById(projectId);
         if (project) {
-          setFormData({
-            title: project.title,
-            slug: project.slug,
-            description: project.description,
-            longDescription: project.longDescription || '',
-            techStack: project.techStack || [],
-            githubUrl: project.githubUrl || '',
-            liveUrl: project.liveUrl || '',
-            thumbnail: project.thumbnail || '',
-            featured: project.featured,
-            sortOrder: project.sortOrder,
-            year: project.year,
-            categoryId: project.categoryId || '',
-          });
+          form.setFieldValue('title', project.title);
+          form.setFieldValue('slug', project.slug);
+          form.setFieldValue('description', project.description);
+          form.setFieldValue('longDescription', project.longDescription || '');
+          form.setFieldValue('techStack', project.techStack || []);
+          form.setFieldValue('githubUrl', project.githubUrl || '');
+          form.setFieldValue('liveUrl', project.liveUrl || '');
+          form.setFieldValue('thumbnail', project.thumbnail || '');
+          form.setFieldValue('featured', project.featured);
+          form.setFieldValue('sortOrder', project.sortOrder);
+          form.setFieldValue('year', project.year);
+          form.setFieldValue('categoryId', project.categoryId || '');
         }
       } catch {
         // Error silently ignored
       }
     }
     loadProject();
-  }, [projectId]);
+  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Set default category when categories are loaded
   useEffect(() => {
-    if (categories.length > 0 && !formData.categoryId) {
-      setFormData((prev) => ({
-        ...prev,
-        categoryId: categories[0].id,
-      }));
+    if (categories.length > 0 && !form.state.values.categoryId) {
+      form.setFieldValue('categoryId', categories[0].id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories.length, categories[0]?.id]);
+  }, [categories.length]);
 
   const generateSlug = (title: string) => {
     return title
@@ -111,15 +94,6 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-  };
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTitle = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      title: newTitle,
-      slug: projectId ? prev.slug : generateSlug(newTitle),
-    }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +145,7 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
         ctx.drawImage(img, 0, 0, width, height);
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        setFormData((prev) => ({ ...prev, thumbnail: compressedDataUrl }));
+        form.setFieldValue('thumbnail', compressedDataUrl);
         setUploadProgress(100);
         setIsUploading(false);
         setTimeout(() => setUploadProgress(0), 500);
@@ -190,25 +164,26 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.categoryId && categories.length > 0) {
+    if (!form.state.values.categoryId && categories.length > 0) {
       alert('Veuillez sélectionner une catégorie');
       return;
     }
 
     setSaveStatus('idle');
+    const values = form.state.values;
     const data: CreateProjectInput = {
-      title: formData.title,
-      slug: formData.slug || generateSlug(formData.title),
-      description: formData.description,
-      longDescription: formData.longDescription || undefined,
-      techStack: formData.techStack,
-      githubUrl: formData.githubUrl || undefined,
-      liveUrl: formData.liveUrl || undefined,
-      thumbnail: formData.thumbnail || undefined,
-      featured: formData.featured,
-      sortOrder: formData.sortOrder,
-      year: formData.year,
-      categoryId: formData.categoryId,
+      title: values.title,
+      slug: values.slug || generateSlug(values.title),
+      description: values.description,
+      longDescription: values.longDescription || undefined,
+      techStack: values.techStack,
+      githubUrl: values.githubUrl || undefined,
+      liveUrl: values.liveUrl || undefined,
+      thumbnail: values.thumbnail || undefined,
+      featured: values.featured,
+      sortOrder: values.sortOrder,
+      year: values.year,
+      categoryId: values.categoryId,
     };
 
     try {
@@ -222,21 +197,6 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
     } catch {
       setSaveStatus('error');
     }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === 'checkbox'
-          ? (e.target as HTMLInputElement).checked
-          : type === 'number'
-          ? parseFloat(value) || 0
-          : value,
-    }));
   };
 
   if (isLoading) {
@@ -283,13 +243,13 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
       </div>
 
       {/* Thumbnail Preview */}
-      {formData.thumbnail && (
+      {form.state.values.thumbnail && (
         <div className="relative aspect-video border-2 border-imperium-steel-dark overflow-hidden bg-imperium-black">
-          <Image src={formData.thumbnail} alt="Thumbnail preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
+          <Image src={form.state.values.thumbnail} alt="Thumbnail preview" width={800} height={450} className="w-full h-full object-cover" unoptimized />
           <motion.button
             type="button"
             onMouseEnter={playHover}
-            onClick={() => setFormData((prev) => ({ ...prev, thumbnail: '' }))}
+            onClick={() => form.setFieldValue('thumbnail', '')}
             className="absolute top-3 right-3 border-2 border-imperium-gold bg-imperium-gold/10 p-2 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
           >
             <XIcon className="h-4 w-4" />
@@ -299,17 +259,42 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
 
       {/* Title and Slug */}
       <div className="space-y-2">
-        <input
-          type="text"
+        <form.Field
           name="title"
-          value={formData.title}
-          onChange={handleTitleChange}
-          required
-          placeholder="ENTER BLUEPRINT DESIGNATION..."
-          className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold transition-colors"
-        />
+          validators={{
+            onChange: ({ value }) => value.length > 0 ? undefined : "Title is required",
+            onChangeAsync: async ({ value }) => {
+              if (value.length > 200) return "Title too long";
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <div>
+              <input
+                type="text"
+                name={field.name}
+                value={field.state.value}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (!projectId) {
+                    form.setFieldValue('slug', generateSlug(e.target.value));
+                  }
+                }}
+                required
+                placeholder="ENTER BLUEPRINT DESIGNATION..."
+                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-display text-xl uppercase tracking-wider text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold transition-colors"
+              />
+              {field.state.meta.errors && (
+                <p className="font-terminal text-xs text-imperium-crimson mt-1">
+                  {field.state.meta.errors.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
         <p className="font-terminal text-xs text-imperium-steel-dark pl-1">
-          /{formData.slug || 'SLUG-AUTO-GENERATED'}
+          /{form.state.values.slug || 'SLUG-AUTO-GENERATED'}
         </p>
       </div>
 
@@ -319,115 +304,209 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
         <div className="col-span-2 space-y-4">
           {/* Category and Year */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-                {'>'} CATEGORY
-              </label>
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
-                required
-              >
-                <option value="">-- SELECT CATEGORY --</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              {categories.length === 0 && (
-                <p className="mt-1 font-terminal text-xs text-imperium-crimson">No categories available. Create one first.</p>
+            <form.Field
+              name="categoryId"
+              validators={{
+                onChange: (value) => value ? undefined : "Category is required",
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                    {'>'} CATEGORY
+                  </label>
+                  <select
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                    required
+                  >
+                    <option value="">-- SELECT CATEGORY --</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+                  {categories.length === 0 && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">No categories available. Create one first.</p>
+                  )}
+                </div>
               )}
-            </div>
-            <div>
-              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-                {'>'} YEAR
-              </label>
-              <input
-                type="number"
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                required
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
-              />
-            </div>
+            </form.Field>
+
+            <form.Field
+              name="year"
+              validators={{
+                onChange: ({ value }) => value > 1900 && value <= 2100 ? undefined : "Invalid year",
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                    {'>'} YEAR
+                  </label>
+                  <input
+                    type="number"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value as unknown as number)}
+                    required
+                    className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
           </div>
 
           {/* Description */}
-          <div>
-            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-              {'>'} BRIEF DESCRIPTION *
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={2}
-              required
-              placeholder="Brief project description..."
-              className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold resize-none"
-            />
-          </div>
+          <form.Field
+            name="description"
+            validators={{
+              onChange: ({ value }) => value.length > 0 ? undefined : "Description is required",
+              onChangeAsync: async ({ value }) => {
+                if (value.length > 1000) return "Description too long";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <div>
+                <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                  {'>'} BRIEF DESCRIPTION *
+                </label>
+                <textarea
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  rows={2}
+                  required
+                  placeholder="Brief project description..."
+                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-gold resize-none"
+                />
+                {field.state.meta.errors && (
+                  <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                    {field.state.meta.errors.join(', ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
 
           {/* Long Description */}
-          <div>
-            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-              {'>'} FULL SPECIFICATIONS
-            </label>
-            <MarkdownEditor
-              content={formData.longDescription}
-              onChange={(content) => setFormData(prev => ({ ...prev, longDescription: content }))}
-              placeholder="# Project Blueprint
+          <form.Field name="longDescription">
+            {(field) => (
+              <div>
+                <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                  {'>'} FULL SPECIFICATIONS
+                </label>
+                <MarkdownEditor
+                  content={field.state.value}
+                  onChange={(content) => field.handleChange(content)}
+                  placeholder="# Project Blueprint
 
 Describe the **context**, **challenges**, and **solutions**..."
-              editable
-            />
-          </div>
+                  editable
+                />
+              </div>
+            )}
+          </form.Field>
 
           {/* Tech Stack */}
-          <div>
-            <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-              {'>'} TECH STACK
-            </label>
-            <TagInput
-              value={formData.techStack}
-              onChange={(tags) => setFormData((prev) => ({ ...prev, techStack: tags }))}
-              placeholder="React, TypeScript, Tailwind..."
-              className="w-full"
-            />
-          </div>
+          <form.Field name="techStack">
+            {(field) => (
+              <div>
+                <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                  {'>'} TECH STACK
+                </label>
+                <TagInput
+                  value={field.state.value}
+                  onChange={(tags) => field.handleChange(tags)}
+                  placeholder="React, TypeScript, Tailwind..."
+                  className="w-full"
+                />
+              </div>
+            )}
+          </form.Field>
 
           {/* Links */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-                {'>'} SOURCE CODE
-              </label>
-              <input
-                type="url"
-                name="githubUrl"
-                value={formData.githubUrl}
-                onChange={handleChange}
-                placeholder="https://github.com/..."
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
-                {'>'} DEPLOYED UNIT
-              </label>
-              <input
-                type="url"
-                name="liveUrl"
-                value={formData.liveUrl}
-                onChange={handleChange}
-                placeholder="https://..."
-                className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
-              />
-            </div>
+            <form.Field
+              name="githubUrl"
+              validators={{
+                onChangeAsync: async ({ value }) => {
+                  if (value && !/^https?:\/\/.+/.test(value)) {
+                    return "Invalid URL";
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                    {'>'} SOURCE CODE
+                  </label>
+                  <input
+                    type="url"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="https://github.com/..."
+                    className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field
+              name="liveUrl"
+              validators={{
+                onChangeAsync: async ({ value }) => {
+                  if (value && !/^https?:\/\/.+/.test(value)) {
+                    return "Invalid URL";
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <div>
+                  <label className="mb-2 block font-display text-sm uppercase tracking-wider text-imperium-steel">
+                    {'>'} DEPLOYED UNIT
+                  </label>
+                  <input
+                    type="url"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                  />
+                  {field.state.meta.errors && (
+                    <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                      {field.state.meta.errors.join(', ')}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form.Field>
           </div>
         </div>
 
@@ -471,14 +550,18 @@ Describe the **context**, **challenges**, and **solutions**..."
                 </div>
               )}
             </motion.button>
-            <input
-              type="url"
-              name="thumbnail"
-              value={formData.thumbnail}
-              onChange={handleChange}
-              placeholder="https://..."
-              className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-gold"
-            />
+            <form.Field name="thumbnail">
+              {(field) => (
+                <input
+                  type="url"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="https://..."
+                  className="mt-3 w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-xs text-imperium-bone focus:outline-none focus:border-imperium-gold"
+                />
+              )}
+            </form.Field>
           </div>
 
           {/* Display Options */}
@@ -489,36 +572,44 @@ Describe the **context**, **challenges**, and **solutions**..."
             </h3>
 
             <div className="space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="featured"
-                  checked={formData.featured}
-                  onChange={handleChange}
-                  className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black checked:bg-imperium-gold checked:border-imperium-gold focus:ring-imperium-gold"
-                />
-                <span className="font-terminal text-sm text-imperium-bone">Featured blueprint</span>
-              </label>
+              <form.Field name="featured">
+                {(field) => (
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name={field.name}
+                      checked={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.checked)}
+                      className="h-4 w-4 border-2 border-imperium-steel-dark bg-imperium-black checked:bg-imperium-gold checked:border-imperium-gold focus:ring-imperium-gold"
+                    />
+                    <span className="font-terminal text-sm text-imperium-bone">Featured blueprint</span>
+                  </label>
+                )}
+              </form.Field>
 
-              <div>
-                <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">DISPLAY PRIORITY</label>
-                <input
-                  type="number"
-                  name="sortOrder"
-                  value={formData.sortOrder}
-                  onChange={handleChange}
-                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
-                />
-                <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">Lower = shown first</p>
-              </div>
+              <form.Field name="sortOrder">
+                {(field) => (
+                  <div>
+                    <label className="mb-1 block font-terminal text-xs text-imperium-steel-dark">DISPLAY PRIORITY</label>
+                    <input
+                      type="number"
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value as unknown as number)}
+                      className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
+                    />
+                    <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">Lower = shown first</p>
+                  </div>
+                )}
+              </form.Field>
             </div>
           </div>
 
           {/* Preview Link */}
-          {formData.slug && (
+          {form.state.values.slug && (
             <div className="border-2 border-imperium-steel-dark bg-imperium-black p-4">
               <a
-                href={`/portfolio#${formData.slug}`}
+                href={`/portfolio#${form.state.values.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 font-terminal text-sm text-imperium-bone hover:text-imperium-gold transition-colors"
@@ -557,7 +648,7 @@ Describe the **context**, **challenges**, and **solutions**..."
             type="button"
             onMouseEnter={playHover}
             onClick={handleSubmit}
-            disabled={isPending || !formData.title || !formData.description || !formData.categoryId}
+            disabled={isPending || !form.state.values.title || !form.state.values.description || !form.state.values.categoryId}
             className="border-2 border-imperium-gold bg-imperium-gold/20 px-6 py-3 font-display text-sm uppercase tracking-wider text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Hammer className="h-4 w-4" />

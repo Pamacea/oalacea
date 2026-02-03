@@ -2,6 +2,7 @@ import { BlogPostPageClient } from '@/features/blog/components/BlogPostPageClien
 import { getPostBySlugUncached } from '@/actions/blog/query'
 import { ArticleSchema } from '@/shared/components/seo'
 import { siteConfig } from '@/config/site'
+import { getComments, getCommentsCount } from '@/actions/comments'
 import type { Metadata } from 'next'
 
 interface BlogPostPageProps {
@@ -72,10 +73,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     return (
       <div className="w-full max-w-[80%] mx-auto px-4 py-12 text-center">
         <h1 className="text-2xl font-bold">Article non trouvé</h1>
-        <p className="mt-4 text-slate-500">Cet article n'existe pas ou n'est pas disponible.</p>
+        <p className="mt-4 text-slate-500">Cet article n&apos;existe pas ou n&apos;est pas disponible.</p>
       </div>
     )
   }
+
+  const [initialComments, commentsCount] = await Promise.all([
+    getComments({ postId: initialPost.id, status: 'APPROVED', includeReplies: true }),
+    getCommentsCount({ postId: initialPost.id, status: 'APPROVED' }),
+  ])
 
   const imageUrl = initialPost.coverImage
     ? initialPost.coverImage.startsWith('http')
@@ -94,7 +100,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         category={initialPost.category?.name}
         tags={initialPost.tags || undefined}
       />
-      <BlogPostPageClient initialPost={initialPost} />
+      <BlogPostPageClient initialPost={initialPost} initialComments={initialComments} commentsCount={commentsCount} />
     </>
   )
 }

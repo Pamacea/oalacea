@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { Plus, Trash2, Folder, Edit2, X, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GlitchText } from '@/components/ui/imperium';
 import { getAllCategories, createCategory, updateCategory, deleteCategory } from '@/actions/blog';
+import { useForm } from '@tanstack/react-form';
 
 interface Category {
   id: string;
@@ -33,9 +34,15 @@ interface EditState {
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newCategoryName, setNewCategoryName] = useState('');
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialog>({ open: false, id: '', name: '', count: 0 });
   const [editState, setEditState] = useState<EditState | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const addCategoryForm = useForm({
+    defaultValues: {
+      name: '',
+    },
+  });
 
   const refreshCategories = async () => {
     const cats = await getAllCategories({ type: 'BLOG' });
@@ -58,24 +65,6 @@ export default function AdminCategoriesPage() {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-  };
-
-  const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
-
-    const slug = generateSlug(newCategoryName);
-    if (categories.find(c => c.slug === slug)) {
-      alert('Cette catégorie existe déjà');
-      return;
-    }
-
-    try {
-      await createCategory({ name: newCategoryName, slug, type: 'BLOG' });
-      setNewCategoryName('');
-      await refreshCategories();
-    } catch {
-      // Error silently ignored
-    }
   };
 
   const handleStartEdit = (cat: Category) => {
@@ -147,14 +136,57 @@ export default function AdminCategoriesPage() {
           </div>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleAddCategory(); }} className="flex gap-3">
-          <input
-            type="text"
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            placeholder="NEW CATEGORY NAME..."
-            className="flex-1 border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson"
-          />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            const name = addCategoryForm.state.values.name
+            if (!name.trim()) return
+
+            const slug = generateSlug(name)
+            if (categories.find(c => c.slug === slug)) {
+              alert('Cette catégorie existe déjà')
+              return
+            }
+
+            startTransition(async () => {
+              try {
+                await createCategory({ name, slug, type: 'BLOG' })
+                addCategoryForm.reset()
+                await refreshCategories()
+              } catch {
+                // Error silently ignored
+              }
+            })
+          }}
+          className="flex gap-3"
+        >
+          <addCategoryForm.Field
+            name="name"
+            validators={{
+              onChange: ({ value }) => value.length > 0 ? undefined : "Category name is required",
+              onChangeAsync: async ({ value }) => {
+                if (value.length > 50) return "Name too long"
+                return undefined
+              },
+            }}
+          >
+            {(field) => (
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="NEW CATEGORY NAME..."
+                  className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone placeholder:text-imperium-steel-dark focus:outline-none focus:border-imperium-crimson"
+                />
+                {field.state.meta.errors && (
+                  <p className="mt-1 font-terminal text-xs text-imperium-crimson">
+                    {field.state.meta.errors.join(", ")}
+                  </p>
+                )}
+              </div>
+            )}
+          </addCategoryForm.Field>
           <button
             type="submit"
             className="inline-flex items-center gap-2 px-6 py-3 font-terminal text-sm font-medium text-imperium-bone border-2 border-imperium-crimson bg-imperium-crimson hover:bg-imperium-crimson/90 hover:shadow-[4px_4px_0_rgba(154,17,21,0.3)] transition-all"
@@ -185,27 +217,35 @@ export default function AdminCategoriesPage() {
                     <Folder className="h-5 w-5 text-imperium-steel group-hover:text-imperium-crimson" />
                   </div>
                   {editState?.id === cat.id ? (
-                    <div className="flex items-center gap-2">
+                    <form
+                      className="flex items-center gap-2"
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        handleSaveEdit()
+                      }}
+                    >
                       <input
                         type="text"
                         value={editState.name}
                         onChange={(e) => setEditState({ ...editState, name: e.target.value })}
                         className="border-2 border-imperium-steel-dark bg-imperium-black px-3 py-1 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
                         autoFocus
+                        required
                       />
                       <button
-                        onClick={handleSaveEdit}
+                        type="submit"
                         className="p-1.5 border-2 border-imperium-gold bg-imperium-gold/20 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
                       >
                         <Check className="h-4 w-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={handleCancelEdit}
                         className="p-1.5 border-2 border-imperium-maroon bg-imperium-maroon/20 text-imperium-maroon hover:bg-imperium-maroon hover:text-imperium-bone transition-all"
                       >
                         <X className="h-4 w-4" />
                       </button>
-                    </div>
+                    </form>
                   ) : (
                     <div>
                       <p className="font-display text-sm uppercase tracking-wider text-imperium-bone">{cat.name}</p>

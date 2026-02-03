@@ -13,6 +13,7 @@ import { useSettingsStore, selectQualitySettings } from '@/store/settings-store'
 import { Character } from '@/core/3d/character';
 import { FollowCamera } from '@/core/3d/camera';
 import { OcclusionManager } from '@/core/3d/camera/OcclusionManager';
+import { AudioInitializer } from '@/core/3d/audio';
 
 const INITIAL_POSITION = [0, 0.5, 0] as [number, number, number];
 
@@ -105,6 +106,8 @@ export function TopDownScene({ worldType, cameraMode: externalCameraMode, onCame
 
   return (
     <>
+      <AudioInitializer />
+
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -0.1, 0]}

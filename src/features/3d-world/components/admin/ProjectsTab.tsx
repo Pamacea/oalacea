@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { Plus, Pencil, Trash2, Star, Globe, Hammer } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, Globe, Hammer, Download, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProjects } from '@/features/portfolio/queries/useProjects';
 import { useDeleteProject } from './queries/use-project-mutations';
@@ -10,6 +10,11 @@ import { useInWorldAdminStore } from '@/features/admin/store';
 import { ConfirmDialog } from './ConfirmDialog';
 import { GlitchText } from '@/components/ui/imperium';
 import { useUISound } from '@/hooks/use-ui-sound';
+import { exportProjects, importProjects } from '@/actions/projects-export-import';
+import { MAX_IMPORT_SIZE } from '@/actions/projects-export-import.config';
+import { useQueryClient } from '@tanstack/react-query';
+
+type ImportResult = { imported: number; skipped: number; errors: string[] };
 
 const worldFilters = [
   { value: 'all' as const, label: 'ALL WORLDS', icon: Globe },
@@ -24,6 +29,7 @@ export function ProjectsTab() {
   const { projects, isLoading } = useProjects();
   const deleteMutation = useDeleteProject();
   const { playHover, playClick } = useUISound();
+  const queryClient = useQueryClient();
 
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; title: string }>({
     open: false,
@@ -32,6 +38,13 @@ export function ProjectsTab() {
   });
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [worldFilter, setWorldFilter] = useState<WorldFilter>('all');
+  const [importDialog, setImportDialog] = useState<{ open: boolean; result: ImportResult | null }>({
+    open: false,
+    result: null,
+  });
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredProjects = projects?.filter((p) => {
     if (worldFilter === 'all') return true;
@@ -48,6 +61,74 @@ export function ProjectsTab() {
     }
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const data = await exportProjects();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `projects-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    playClick();
+    fileInputRef.current?.click();
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (10MB limit)
+    if (file.size > MAX_IMPORT_SIZE) {
+      alert(`File too large. Maximum size is ${Math.round(MAX_IMPORT_SIZE / 1024 / 1024)}MB.`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const rawData = JSON.parse(text);
+
+      // Show confirm dialog with import options
+      const shouldSkipExisting = confirm('Skip existing projects? Click OK to skip, Cancel to overwrite.');
+      const result = await importProjects(rawData, {
+        skipExisting: shouldSkipExisting,
+        overwrite: !shouldSkipExisting,
+      });
+
+      setImportDialog({ open: true, result });
+
+      // Refresh queries
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    } catch (error) {
+      console.error('Import failed:', error);
+      const errorMessage = error instanceof Error && error.message.includes('AuthorizationError')
+        ? 'You do not have permission to import'
+        : `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      alert(errorMessage);
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <>
       <div className="space-y-8">
@@ -58,17 +139,44 @@ export function ProjectsTab() {
               Forge Database
             </GlitchText>
           </h2>
-          <motion.button
-            onMouseEnter={playHover}
-            onClick={() => {
-              setView('create-project');
-              playClick();
-            }}
-            className="flex items-center gap-2 px-4 py-2 font-display text-sm uppercase tracking-wider border-2 border-imperium-gold bg-imperium-gold/20 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
-          >
-            <Plus className="h-4 w-4" />
-            New Blueprint
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <motion.button
+              onMouseEnter={playHover}
+              onClick={handleExport}
+              disabled={isExporting}
+              className="flex items-center gap-2 px-3 py-2 font-terminal text-xs uppercase tracking-wider border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-gold hover:text-imperium-gold transition-all disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </motion.button>
+            <motion.button
+              onMouseEnter={playHover}
+              onClick={handleImportClick}
+              disabled={isImporting}
+              className="flex items-center gap-2 px-3 py-2 font-terminal text-xs uppercase tracking-wider border-2 border-imperium-steel-dark text-imperium-steel hover:border-imperium-teal hover:text-imperium-teal transition-all disabled:opacity-50"
+            >
+              <Upload className="h-4 w-4" />
+              Import
+            </motion.button>
+            <motion.button
+              onMouseEnter={playHover}
+              onClick={() => {
+                setView('create-project');
+                playClick();
+              }}
+              className="flex items-center gap-2 px-4 py-2 font-display text-sm uppercase tracking-wider border-2 border-imperium-gold bg-imperium-gold/20 text-imperium-gold hover:bg-imperium-gold hover:text-imperium-black transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              New Blueprint
+            </motion.button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+          </div>
         </div>
 
         {/* World filter */}
@@ -207,6 +315,27 @@ export function ProjectsTab() {
         onConfirm={handleDelete}
         isLoading={deleteMutation.isPending}
         isSuccess={deleteSuccess}
+      />
+
+      <ConfirmDialog
+        open={importDialog.open}
+        onOpenChange={(open) => setImportDialog({ ...importDialog, open, result: null })}
+        title="IMPORT COMPLETE"
+        description={
+          importDialog.result
+            ? `Imported: ${importDialog.result.imported} | Skipped: ${importDialog.result.skipped}${
+                importDialog.result.errors.length > 0
+                  ? ` | Errors: ${importDialog.result.errors.length}`
+                  : ''
+              }`
+            : ''
+        }
+        confirmLabel="CLOSE"
+        cancelLabel={undefined}
+        variant="success"
+        onConfirm={() => setImportDialog({ open: false, result: null })}
+        isLoading={false}
+        isSuccess={true}
       />
     </>
   );

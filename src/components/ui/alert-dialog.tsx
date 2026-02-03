@@ -5,6 +5,7 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useAudioStore } from "@/features/3d-world/store/3d-audio-store"
 
 function AlertDialog({
   ...props
@@ -51,6 +52,44 @@ function AlertDialogContent({
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content> & {
   size?: "default" | "sm"
 }) {
+  const hasPlayedOpenSound = React.useRef(false);
+  const { playDoorOpen, playDoorClose, isEnabled } = useAudioStore();
+
+  React.useEffect(() => {
+    const handleOpen = () => {
+      if (!hasPlayedOpenSound.current && isEnabled) {
+        playDoorOpen();
+        hasPlayedOpenSound.current = true;
+      }
+    };
+
+    const handleClose = () => {
+      if (isEnabled) playDoorClose();
+      hasPlayedOpenSound.current = false;
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-state') {
+          const target = mutation.target as HTMLElement;
+          const state = target.getAttribute('data-state');
+          if (state === 'open') {
+            handleOpen();
+          } else if (state === 'closed') {
+            handleClose();
+          }
+        }
+      });
+    });
+
+    const alertDialogContent = document.querySelector('[role="alertdialog"]');
+    if (alertDialogContent) {
+      observer.observe(alertDialogContent, { attributes: true });
+    }
+
+    return () => observer.disconnect();
+  }, [isEnabled, playDoorClose, playDoorOpen]);
+
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, LayoutDashboard, FileText, FolderKanban, Folder, Shield, Skull } from 'lucide-react';
+import { X, LayoutDashboard, FileText, FolderKanban, Folder, Shield, Skull, MessageSquare } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { useModalStore } from '@/store/modal-store';
@@ -12,6 +12,7 @@ import { DashboardTab } from './DashboardTab';
 import { PostsTab } from './PostsTab';
 import { ProjectsTab } from './ProjectsTab';
 import { CategoriesTab } from './CategoriesTab';
+import { CommentsTab } from './CommentsTab';
 import { BlogPostForm } from './BlogPostForm';
 import { ProjectForm } from './ProjectForm';
 import { BlogPostReader } from './BlogPostReader';
@@ -21,6 +22,7 @@ const tabs = [
   { id: 'posts' as const, label: 'Archives', icon: FileText },
   { id: 'projects' as const, label: 'Forge', icon: FolderKanban },
   { id: 'categories' as const, label: 'Index', icon: Folder },
+  { id: 'comments' as const, label: 'Comments', icon: MessageSquare },
 ];
 
 export function InWorldAdminModal() {
@@ -193,6 +195,7 @@ export function InWorldAdminModal() {
                 {view === 'posts' && <PostsTab />}
                 {view === 'projects' && <ProjectsTab />}
                 {view === 'categories' && <CategoriesTab />}
+                {view === 'comments' && <CommentsTab />}
                 {view === 'edit-post' && <BlogPostForm postId={selectedId ?? undefined} />}
                 {view === 'create-post' && <BlogPostForm />}
                 {view === 'edit-project' && <ProjectForm projectId={selectedId ?? undefined} />}

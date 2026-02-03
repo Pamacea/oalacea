@@ -2,7 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, Pencil, Trash2, Eye, Star, Globe, Skull } from 'lucide-react';
 import { getProjects, deleteProjectWithRevalidate } from '@/actions/projects';
+import { exportProjects } from '@/actions/projects-export-import';
 import { GlitchText } from '@/components/ui/imperium';
+import { ExportImportButton } from '@/features/admin/components';
 
 function DeleteButton({ id }: { id: string }) {
   return (
@@ -55,13 +57,20 @@ export default async function AdminProjectsPage({ searchParams }: AdminProjectsP
             </p>
           </div>
         </div>
-        <Link
-          href="/admin/projects/new"
-          className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-bone border-2 border-imperium-gold bg-imperium-gold text-imperium-black hover:bg-imperium-gold/90 hover:shadow-[4px_4px_0_rgba(212,175,55,0.4)] transition-all"
-        >
-          <Plus className="h-4 w-4" />
-          FORGE NEW
-        </Link>
+        <div className="flex items-center gap-3">
+          <ExportImportButton
+            type="project"
+            exportAction={exportProjects}
+            exportFileName="projects-export"
+          />
+          <Link
+            href="/admin/projects/new"
+            className="inline-flex items-center gap-2 px-4 py-2 font-terminal text-sm font-medium text-imperium-bone border-2 border-imperium-gold bg-imperium-gold text-imperium-black hover:bg-imperium-gold/90 hover:shadow-[4px_4px_0_rgba(212,175,55,0.4)] transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            FORGE NEW
+          </Link>
+        </div>
       </div>
 
       {projects.length === 0 ? (

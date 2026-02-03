@@ -11,6 +11,7 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useAudioStore } from "@/features/3d-world/store/3d-audio-store"
 
 function Dialog({
   ...props
@@ -60,29 +61,69 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const hasPlayedOpenSound = React.useRef(false);
+  const { playDoorOpen, playDoorClose, isEnabled } = useAudioStore();
+
+  React.useEffect(() => {
+    const handleOpen = () => {
+      if (!hasPlayedOpenSound.current && isEnabled) {
+        playDoorOpen();
+        hasPlayedOpenSound.current = true;
+      }
+    };
+
+    const handleClose = () => {
+      if (isEnabled) playDoorClose();
+      hasPlayedOpenSound.current = false;
+    };
+
+    const element = document.querySelector('[data-state="open"][data-slot="dialog-content"]');
+    if (element) {
+      handleOpen();
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-state') {
+          const target = mutation.target as HTMLElement;
+          const state = target.getAttribute('data-state');
+          if (state === 'open') {
+            handleOpen();
+          } else if (state === 'closed') {
+            handleClose();
+          }
+        }
+      });
+    });
+
+    const dialogContent = document.querySelector('[role="dialog"]');
+    if (dialogContent) {
+      observer.observe(dialogContent, { attributes: true });
+    }
+
+    return () => observer.disconnect();
+  }, [isEnabled, playDoorClose, playDoorOpen]);
+
   return (
-    <DialogPortal data-slot="dialog-portal">
-      <DialogOverlay />
-      <DialogPrimitive.Content
-        data-slot="dialog-content"
-        className={cn(
-          "bg-imperium-black border-2 border-imperium-crimson data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-none p-6 shadow-[8px_8px_0_rgba(90,10,10,0.4)] duration-200 outline-none sm:max-w-lg",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            className="absolute top-4 right-4 rounded-none bg-imperium-iron text-imperium-bone border-2 border-imperium-steel-dark hover:bg-imperium-crimson hover:border-imperium-crimson-dark transition-colors p-2 focus:outline-none"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
-      </DialogPrimitive.Content>
-    </DialogPortal>
+    <DialogPrimitive.Content
+      data-slot="dialog-content"
+      className={cn(
+        "bg-imperium-black border-2 border-imperium-crimson data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-none p-6 shadow-[8px_8px_0_rgba(90,10,10,0.4)] duration-200 outline-none sm:max-w-lg",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      {showCloseButton && (
+        <DialogPrimitive.Close
+          data-slot="dialog-close"
+          className="absolute top-4 right-4 rounded-none bg-imperium-iron text-imperium-bone border-2 border-imperium-steel-dark hover:bg-imperium-crimson hover:border-imperium-crimson-dark transition-colors p-2 focus:outline-none"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      )}
+    </DialogPrimitive.Content>
   )
 }
 

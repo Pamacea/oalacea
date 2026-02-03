@@ -386,7 +386,7 @@ export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentInd
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t-2 border-imperium-steel-dark bg-imperium-black-deep/50 shrink-0">
           <motion.button
-            onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
+            onClick={() => window.open(`/blogs/${post.slug}`, '_blank')}
             className="flex items-center gap-2 font-terminal text-sm text-imperium-steel hover:text-imperium-crimson transition-colors"
           >
             <Eye className="h-4 w-4" />
