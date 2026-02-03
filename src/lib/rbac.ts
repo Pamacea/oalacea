@@ -22,7 +22,6 @@ export type Permission =
   | "projects:delete"
   | "comments:moderate"
   | "settings:manage"
-  | "analytics:read"
   | "activity:read"
 
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
@@ -39,7 +38,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "projects:delete",
     "comments:moderate",
     "settings:manage",
-    "analytics:read",
     "activity:read",
   ],
   EDITOR: [
@@ -51,7 +49,6 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "projects:write",
     "projects:delete",
     "comments:moderate",
-    "analytics:read",
     "activity:read",
   ],
   AUTHOR: [
@@ -90,7 +87,6 @@ export function getProtectedPaths(): Record<string, UserRole[]> {
     "/admin/users": ["ADMIN"],
     "/admin/settings": ["ADMIN"],
     "/admin/activity": ["ADMIN", "EDITOR"],
-    "/admin/analytics": ["ADMIN", "EDITOR"],
     "/admin/posts": ["ADMIN", "EDITOR", "AUTHOR"],
     "/admin/projects": ["ADMIN", "EDITOR", "AUTHOR"],
     "/admin/comments": ["ADMIN", "EDITOR"],

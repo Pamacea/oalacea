@@ -36,7 +36,7 @@ export default function AdminCategoriesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialog>({ open: false, id: '', name: '', count: 0 });
   const [editState, setEditState] = useState<EditState | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const addCategoryForm = useForm({
     defaultValues: {

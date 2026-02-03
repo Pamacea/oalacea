@@ -177,7 +177,7 @@ export function AboutListingModal() {
                 </h4>
                 <div className="flex items-center justify-center gap-4">
                   <motion.a
-                    href="https://github.com/oalacea"
+                    href="https://github.com/Pamacea"
                     target="_blank"
                     rel="noopener noreferrer"
                     onMouseEnter={playHover}

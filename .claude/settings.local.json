@@ -4,7 +4,13 @@
       "Bash(npm run build:*)",
       "Bash(mgrep:*)",
       "Bash(grep:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm build:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)"
     ]
   }
 }

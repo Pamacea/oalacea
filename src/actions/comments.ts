@@ -9,6 +9,7 @@ import { auth } from '@/core/auth';
 import { requirePermission, AuthorizationError } from '@/lib/rbac';
 import { headers } from 'next/headers';
 import { RateLimitError } from '@/core/errors';
+import { sendCommentNotificationEmail, sendReplyNotificationEmail } from '@/features/comments';
 import type { Comment, CommentStatus, Prisma } from '@/generated/prisma/client';
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -179,6 +180,13 @@ export async function createCommentAction(
   prevState: { success?: boolean; error?: string; errors?: Record<string, string[]> } | undefined,
   formData: FormData
 ) {
+  // Check honeypot field - if filled, it's a bot (silent rejection)
+  const honeypot = formData.get('website') as string;
+  if (honeypot && honeypot.trim().length > 0) {
+    // Silent rejection - pretend it was successful to waste bot time
+    return { success: true, comment: null, message: 'Comment submitted for review' } as { success: boolean; error?: string; errors?: Record<string, string[]> };
+  }
+
   // Helper: FormData.get() returns null for missing fields, convert to undefined
   const nullToUndefined = <T,>(value: T | null): T | undefined =>
     value === null ? undefined : value
@@ -212,7 +220,7 @@ export async function createComment(data: CommentInput & { userAgent?: string })
     };
   }
 
-  const { postId, projectId, parentId, content, consent, authorEmail, ...commentData } = validationResult.data;
+  const { postId, projectId, parentId, content, consent: _consent, authorEmail: _authorEmail, ...commentData } = validationResult.data;
 
   if (!postId && !projectId) {
     return {
@@ -222,11 +230,13 @@ export async function createComment(data: CommentInput & { userAgent?: string })
   }
 
   // SECURITY: Validate parent comment belongs to same post/project
+  let parentCommentData: { postId: string | null; projectId: string | null; parentId: string | null; authorEmail?: string | null; authorName: string; content: string } | null = null;
   if (parentId) {
     const parentComment = await prisma.comment.findUnique({
       where: { id: parentId },
-      select: { postId: true, projectId: true, parentId: true },
+      select: { postId: true, projectId: true, parentId: true, authorEmail: true, authorName: true, content: true },
     });
+    parentCommentData = parentComment;
 
     if (!parentComment) {
       return {
@@ -297,23 +307,52 @@ export async function createComment(data: CommentInput & { userAgent?: string })
     },
   });
 
-  // Fetch post/project slug for proper revalidation
+  // Fetch post/project for revalidation and email notifications
+  let post: { slug: string; title: string } | null = null;
+  let project: { slug: string; title: string } | null = null;
   let revalidatePathValue = '/';
+
   if (postId) {
-    const post = await prisma.post.findUnique({
+    post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { slug: true },
+      select: { slug: true, title: true },
     });
     if (post) revalidatePathValue = `/blog/${post.slug}`;
   } else if (projectId) {
-    const project = await prisma.project.findUnique({
+    project = await prisma.project.findUnique({
       where: { id: projectId },
-      select: { slug: true },
+      select: { slug: true, title: true },
     });
     if (project) revalidatePathValue = `/projects/${project.slug}`;
   }
 
   revalidatePath(revalidatePathValue);
+
+  // Send email notifications (don't wait/block on this)
+  if (comment.status === 'PENDING') {
+    // Send notification to admin for moderation
+    if (post || project) {
+      sendCommentNotificationEmail(comment, post, project).catch((error) => {
+        console.error('Failed to send comment notification email:', error);
+      });
+    }
+
+    // Send reply notification to parent comment author
+    if (parentId && parentCommentData?.authorEmail) {
+      sendReplyNotificationEmail(
+        comment,
+        {
+          authorEmail: parentCommentData.authorEmail,
+          authorName: parentCommentData.authorName,
+          content: parentCommentData.content,
+        },
+        post,
+        project
+      ).catch((error) => {
+        console.error('Failed to send reply notification email:', error);
+      });
+    }
+  }
 
   return {
     success: true,

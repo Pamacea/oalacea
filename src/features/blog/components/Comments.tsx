@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useActionState, useRef } from 'react'
+import { useState, useActionState, useRef, useEffect, useTransition } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { motion } from 'framer-motion'
 import {
@@ -35,22 +35,29 @@ export function Comments({
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [lastSuccess, setLastSuccess] = useState<string | null>(null)
   const [state, formAction, isPending] = useActionState(createCommentAction, undefined)
+  const [, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
 
   // Show success toast only once per submission
-  if (state?.success && !isPending && lastSuccess !== 'shown') {
-    toast.success('Transmission initiated successfully')
-    formRef.current?.reset()
-    setReplyTo(null)
-    setLastSuccess('shown')
-    // Clear success state after a delay
-    setTimeout(() => setLastSuccess(null), 2000)
-  }
+  useEffect(() => {
+    if (state?.success && !isPending && lastSuccess !== 'shown') {
+      toast.success('Transmission initiated successfully')
+      formRef.current?.reset()
+      startTransition(() => {
+        setReplyTo(null)
+        setLastSuccess('shown')
+      })
+      // Clear success state after a delay
+      setTimeout(() => setLastSuccess(null), 2000)
+    }
+  }, [state?.success, isPending, lastSuccess])
 
   // Show error toast
-  if (state?.error && !isPending) {
-    toast.error(state.error)
-  }
+  useEffect(() => {
+    if (state?.error && !isPending) {
+      toast.error(state.error)
+    }
+  }, [state?.error, isPending])
 
   const handleReply = (commentId: string) => {
     setReplyTo(commentId)
@@ -122,6 +129,17 @@ export function Comments({
             {postId && <input type="hidden" name="postId" value={postId} />}
             {projectId && <input type="hidden" name="projectId" value={projectId} />}
             {replyTo && <input type="hidden" name="parentId" value={replyTo} />}
+
+            {/* Honeypot field for bot protection - hidden from users but visible to bots */}
+            <input
+              type="text"
+              name="website"
+              className="sr-only"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              placeholder="Leave blank if human"
+            />
 
 
             {/* Server errors */}

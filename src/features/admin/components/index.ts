@@ -4,8 +4,6 @@ export { MediaLibrary } from './MediaLibrary';
 export { VersionHistory } from './VersionHistory';
 export { ActivityLog } from './ActivityLog';
 export { CollaborationStatus, LockIndicator, MentionAutocomplete } from './CollaborationStatus';
-export { Notifications } from './Notifications';
-export { AnalyticsDashboard } from './AnalyticsDashboard';
 export { ShareCardPreview } from './ShareCardPreview';
 export { UsersTable } from './UsersTable';
 export { ProfileForm } from './ProfileForm';

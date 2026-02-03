@@ -25,15 +25,6 @@ export {
 // Onboarding
 export { useFirstVisit } from '@/features/onboarding';
 
-// Analytics
-export {
-  useAnalytics,
-  useScrollTracking,
-  useTimeTracking,
-  usePerformanceMonitor,
-  useDetailedPerformanceMonitor,
-} from '@/features/analytics';
-
 // AI Chat - feature removed
 // export { useAIChat } from '@/features/ai-chat';
 

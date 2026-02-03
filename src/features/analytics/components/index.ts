@@ -1,1 +1,0 @@
-export { HeatmapVisualization } from './HeatmapVisualization';

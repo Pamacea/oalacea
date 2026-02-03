@@ -20,15 +20,17 @@ export function sanitizeHtml(html: string): string {
 }
 
 // DOMPurify lazy-loaded for rich content features
-let DOMPurify: any = null;
+let DOMPurify: {
+  sanitize: (html: string, config: unknown) => string;
+} | null = null;
 
 function getDOMPurify() {
   if (!DOMPurify) {
     // Dynamic import that works with Turbopack
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const module = require('dompurify');
-      DOMPurify = module.default || module;
+      const dompurifyModule = require('dompurify');
+      DOMPurify = dompurifyModule.default || dompurifyModule;
     } catch {
       // Fallback if require fails, try ESM import
       // This shouldn't happen but provides a safety net

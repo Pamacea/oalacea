@@ -50,7 +50,7 @@ export const commonExtensions = {
 };
 
 // Get base extensions for TipTap
-export function getBaseExtensions(placeholder = 'Start writing...') {
+export function getBaseExtensions(_placeholder = 'Start writing...') {
   return [
     StarterKit.configure({
       codeBlock: false,

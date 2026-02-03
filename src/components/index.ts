@@ -13,7 +13,6 @@ export * from "@/features/admin";
 export * from "@/features/onboarding";
 // newsletter feature removed
 // export * from "@/features/newsletter";
-export * from "@/features/analytics";
 
 // Shared
 export * from "@/shared/components";

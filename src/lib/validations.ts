@@ -73,16 +73,6 @@ export const commentSchema = z.object({
 
 export type CommentInput = z.infer<typeof commentSchema>
 
-export const newsletterSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  firstName: z.string().max(50).optional(),
-  consent: z.boolean().refine((val) => val === true, {
-    message: "You must consent to receive emails",
-  }),
-})
-
-export type NewsletterInput = z.infer<typeof newsletterSchema>
-
 export const shareCardSchema = z.object({
   type: z.enum(["blog", "project", "profile"]),
   title: z.string().max(100),

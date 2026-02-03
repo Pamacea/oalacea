@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckCircle2, X, AlertCircle, Trash2, MessageSquare, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle2, X, Trash2, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePendingComments, useApproveComment, useRejectComment, useDeleteComment } from '@/features/blog/queries';
 import { ConfirmDialog } from './ConfirmDialog';

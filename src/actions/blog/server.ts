@@ -4,7 +4,7 @@
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@/generated/prisma/client';
-import type { Category, PostVersion } from '@/generated/prisma/client';
+// import type { Category, PostVersion } from '@/generated/prisma/client'; // Unused: remove type-only imports
 
 // Re-export types from query.ts
 export type { PostListItem, PostDetail, GetPostsResult } from './query';

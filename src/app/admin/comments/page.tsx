@@ -1,7 +1,7 @@
 import { getPendingComments } from '@/actions/comments'
 import { approveComment, rejectComment, markCommentAsSpam, deleteComment } from '@/actions/comments'
 import { GlitchText } from '@/components/ui/imperium'
-import { revalidatePath } from 'next/cache'
+// import { revalidatePath } from 'next/cache' // Unused: actions handle revalidation
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Skull, Check, X, AlertTriangle, Trash2, Eye, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react'

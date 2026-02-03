@@ -4,6 +4,7 @@ import "./globals.css"
 import { siteConfig } from "@/config/site"
 import { Providers } from "@/components/providers"
 import { WebSiteSchema, PersonSchema } from "@/shared/components/seo"
+import { Analytics } from "@vercel/analytics/react"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -82,6 +83,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   )

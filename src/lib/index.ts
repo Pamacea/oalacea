@@ -2,8 +2,6 @@
 export { cn } from "@/shared/utils"
 export * from "./validations"
 export * from "./constants"
-export * from "./analytics"
-export * from "./contentMetrics"
 export * from "./rbac"
 export * from "./activity-log"
 export * from "./contentLock"

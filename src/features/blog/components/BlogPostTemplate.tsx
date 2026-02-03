@@ -8,6 +8,11 @@ import Image from 'next/image';
 import { GlitchText } from '@/components/ui/imperium';
 import { TipTapContent } from './TipTapContent';
 import { Comments } from './Comments';
+import type { Comment } from '@/generated/prisma/client';
+
+interface CommentWithReplies extends Comment {
+  replies?: CommentWithReplies[];
+}
 
 interface BlogPostTemplateProps {
   post: {
@@ -26,7 +31,7 @@ interface BlogPostTemplateProps {
     } | null;
     createdAt: Date;
   };
-  initialComments?: any[];
+  initialComments?: CommentWithReplies[];
   commentsCount?: number;
   onClose?: () => void;
   onNext?: () => void;
