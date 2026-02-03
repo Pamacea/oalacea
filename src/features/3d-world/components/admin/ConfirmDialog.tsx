@@ -110,17 +110,19 @@ export function ConfirmDialog({
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t-2 border-imperium-steel-dark bg-imperium-black-deep/30">
-          <motion.button
-            onMouseEnter={playHover}
-            onClick={() => {
-              onOpenChange(false);
-              playClick();
-            }}
-            disabled={isLoading || isSuccess}
-            className="px-4 py-2 font-display text-sm uppercase tracking-wider text-imperium-steel border-2 border-imperium-steel-dark hover:border-imperium-steel hover:text-imperium-bone transition-all disabled:opacity-50"
-          >
-            {cancelLabel}
-          </motion.button>
+          {cancelLabel !== undefined && (
+            <motion.button
+              onMouseEnter={playHover}
+              onClick={() => {
+                onOpenChange(false);
+                playClick();
+              }}
+              disabled={isLoading || isSuccess}
+              className="px-4 py-2 font-display text-sm uppercase tracking-wider text-imperium-steel border-2 border-imperium-steel-dark hover:border-imperium-steel hover:text-imperium-bone transition-all disabled:opacity-50"
+            >
+              {cancelLabel}
+            </motion.button>
+          )}
 
           <motion.button
             onMouseEnter={playHover}

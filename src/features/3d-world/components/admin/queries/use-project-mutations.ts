@@ -27,8 +27,7 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: (data: CreateProjectInput) => createProject(data),
     onSuccess: async () => {
-      // Use precise invalidation - only active queries
-      await queryClient.invalidateQueries({ queryKey: portfolioKeys.projects(), refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: portfolioKeys.projects() });
     },
   });
 }
@@ -40,7 +39,7 @@ export function useUpdateProject() {
     mutationFn: ({ id, data }: { id: string; data: UpdateProjectInput }) => updateProject(id, data),
     onSuccess: async (_, variables) => {
       // Invalidate projects list and specific project
-      await queryClient.invalidateQueries({ queryKey: portfolioKeys.projects(), refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: portfolioKeys.projects() });
       if (variables.data.slug) {
         await queryClient.invalidateQueries({ queryKey: portfolioKeys.project(variables.data.slug) });
       }

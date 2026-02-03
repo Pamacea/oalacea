@@ -79,13 +79,13 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
     loadProject();
   }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Set default category when categories are loaded
+  // Set default category when categories are loaded (only for new projects)
   useEffect(() => {
-    if (categories.length > 0 && !form.state.values.categoryId) {
+    if (!projectId && categories.length > 0 && !form.state.values.categoryId) {
       form.setFieldValue('categoryId', categories[0].id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories.length]);
+  }, [categories.length, projectId]);
 
   const generateSlug = (title: string) => {
     return title
@@ -356,7 +356,7 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                     type="number"
                     name={field.name}
                     value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value as unknown as number)}
+                    onChange={(e) => field.handleChange(Number(e.target.value))}
                     required
                     className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-4 py-3 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-gold"
                   />
@@ -595,7 +595,7 @@ Describe the **context**, **challenges**, and **solutions**..."
                       type="number"
                       name={field.name}
                       value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value as unknown as number)}
+                      onChange={(e) => field.handleChange(Number(e.target.value))}
                       className="w-full border-2 border-imperium-steel-dark bg-imperium-black px-3 py-2 font-terminal text-sm text-imperium-bone focus:outline-none focus:border-imperium-crimson"
                     />
                     <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">Lower = shown first</p>

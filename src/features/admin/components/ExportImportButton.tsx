@@ -8,6 +8,8 @@ import { MAX_IMPORT_SIZE as BLOG_MAX_SIZE } from '@/actions/blog/export-import.c
 import { MAX_IMPORT_SIZE as PROJECT_MAX_SIZE } from '@/actions/projects-export-import.config';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUISound } from '@/hooks/use-ui-sound';
+import { ConfirmDialog } from '@/features/3d-world/components/admin/ConfirmDialog';
+import { portfolioKeys, blogKeys } from '@/shared/lib/query-keys';
 
 type ExportImportButtonProps = {
   type: 'blog' | 'project';
@@ -24,6 +26,10 @@ export function ExportImportButton({
 }: ExportImportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [importDialog, setImportDialog] = useState<{ open: boolean; result: ImportResult | null }>({
+    open: false,
+    result: null,
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { playHover, playClick } = useUISound();
@@ -95,21 +101,14 @@ export function ExportImportButton({
         });
       }
 
-      // Show result
-      const message =
-        `Import Complete!\n\n` +
-        `Imported: ${result.imported}\n` +
-        `Skipped: ${result.skipped}${
-          result.errors.length > 0 ? `\nErrors: ${result.errors.length}` : ''
-        }`;
+      // Show result dialog
+      setImportDialog({ open: true, result });
 
-      alert(message);
-
-      // Refresh queries
+      // Refresh queries - use proper query keys
       if (type === 'blog') {
-        queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
+        queryClient.invalidateQueries({ queryKey: blogKeys.posts() });
       } else {
-        queryClient.invalidateQueries({ queryKey: ['projects'] });
+        queryClient.invalidateQueries({ queryKey: portfolioKeys.projects() });
       }
     } catch (error) {
       console.error('Import failed:', error);
@@ -126,34 +125,57 @@ export function ExportImportButton({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        onMouseEnter={playHover}
-        onClick={handleExport}
-        disabled={isExporting}
-        className="inline-flex items-center gap-2 px-3 py-2 font-terminal text-sm font-medium text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black-deep hover:border-imperium-gold hover:text-imperium-gold hover:shadow-[4px_4px_0_rgba(212,175,55,0.2)] transition-all disabled:opacity-50"
-        title={`Export all ${type}s to JSON`}
-      >
-        <Download className="h-4 w-4" />
-        <span className="hidden sm:inline">EXPORT</span>
-      </button>
-      <button
-        onMouseEnter={playHover}
-        onClick={handleImportClick}
-        disabled={isImporting}
-        className="inline-flex items-center gap-2 px-3 py-2 font-terminal text-sm font-medium text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black-deep hover:border-imperium-teal hover:text-imperium-teal hover:shadow-[4px_4px_0_rgba(45,212,191,0.2)] transition-all disabled:opacity-50"
-        title={`Import ${type}s from JSON`}
-      >
-        <Upload className="h-4 w-4" />
-        <span className="hidden sm:inline">IMPORT</span>
-      </button>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".json"
-        onChange={handleImport}
-        className="hidden"
+    <>
+      <div className="flex items-center gap-2">
+        <button
+          onMouseEnter={playHover}
+          onClick={handleExport}
+          disabled={isExporting}
+          className="inline-flex items-center gap-2 px-3 py-2 font-terminal text-sm font-medium text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black-deep hover:border-imperium-gold hover:text-imperium-gold hover:shadow-[4px_4px_0_rgba(212,175,55,0.2)] transition-all disabled:opacity-50"
+          title={`Export all ${type}s to JSON`}
+        >
+          <Download className="h-4 w-4" />
+          <span className="hidden sm:inline">EXPORT</span>
+        </button>
+        <button
+          onMouseEnter={playHover}
+          onClick={handleImportClick}
+          disabled={isImporting}
+          className="inline-flex items-center gap-2 px-3 py-2 font-terminal text-sm font-medium text-imperium-steel border-2 border-imperium-steel-dark bg-imperium-black-deep hover:border-imperium-teal hover:text-imperium-teal hover:shadow-[4px_4px_0_rgba(45,212,191,0.2)] transition-all disabled:opacity-50"
+          title={`Import ${type}s from JSON`}
+        >
+          <Upload className="h-4 w-4" />
+          <span className="hidden sm:inline">IMPORT</span>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleImport}
+          className="hidden"
+        />
+      </div>
+
+      <ConfirmDialog
+        open={importDialog.open}
+        onOpenChange={(open) => setImportDialog({ ...importDialog, open, result: null })}
+        title="IMPORT COMPLETE"
+        description={
+          importDialog.result
+            ? `Imported: ${importDialog.result.imported} | Skipped: ${importDialog.result.skipped}${
+                importDialog.result.errors.length > 0
+                  ? ` | Errors: ${importDialog.result.errors.length}`
+                  : ''
+              }`
+            : ''
+        }
+        confirmLabel="CLOSE"
+        cancelLabel={undefined}
+        variant="success"
+        onConfirm={() => setImportDialog({ open: false, result: null })}
+        isLoading={false}
+        isSuccess={true}
       />
-    </div>
+    </>
   );
 }

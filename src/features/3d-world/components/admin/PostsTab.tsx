@@ -11,6 +11,7 @@ import { useUISound } from '@/hooks/use-ui-sound';
 import { exportBlogs, importBlogs } from '@/actions/blog/export-import';
 import { MAX_IMPORT_SIZE } from '@/actions/blog/export-import.config';
 import { useQueryClient } from '@tanstack/react-query';
+import { blogKeys } from '@/shared/lib/query-keys';
 
 type ImportResult = { imported: number; skipped: number; errors: string[] };
 
@@ -100,7 +101,7 @@ export function PostsTab() {
       setImportDialog({ open: true, result });
 
       // Refresh queries
-      queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
+      queryClient.invalidateQueries({ queryKey: blogKeys.posts() });
     } catch (error) {
       console.error('Import failed:', error);
       const errorMessage = error instanceof Error && error.message.includes('AuthorizationError')

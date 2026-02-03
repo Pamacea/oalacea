@@ -11,7 +11,7 @@ export function useCreatePost() {
     mutationFn: (data: Parameters<typeof createPost>[0]) => createPost(data),
     onSuccess: async () => {
       // Invalidate all blog-posts queries with any options - use precise invalidation
-      await queryClient.invalidateQueries({ queryKey: blogKeys.posts(), refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: blogKeys.posts() });
     },
   });
 }
@@ -24,7 +24,7 @@ export function useUpdatePost() {
       updatePost(slug, data),
     onSuccess: async (_, variables) => {
       // Invalidate posts list and specific post
-      await queryClient.invalidateQueries({ queryKey: blogKeys.posts(), refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: blogKeys.posts() });
       await queryClient.invalidateQueries({ queryKey: blogKeys.post(variables.slug) });
     },
   });
@@ -36,7 +36,7 @@ export function useDeletePost() {
   return useMutation({
     mutationFn: (slug: string) => deletePost(slug),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: blogKeys.posts(), refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: blogKeys.posts() });
     },
   });
 }

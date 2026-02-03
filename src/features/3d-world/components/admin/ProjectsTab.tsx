@@ -13,6 +13,7 @@ import { useUISound } from '@/hooks/use-ui-sound';
 import { exportProjects, importProjects } from '@/actions/projects-export-import';
 import { MAX_IMPORT_SIZE } from '@/actions/projects-export-import.config';
 import { useQueryClient } from '@tanstack/react-query';
+import { portfolioKeys } from '@/shared/lib/query-keys';
 
 type ImportResult = { imported: number; skipped: number; errors: string[] };
 
@@ -25,7 +26,7 @@ const worldFilters = [
 type WorldFilter = 'all' | 'DEV' | 'ART';
 
 export function ProjectsTab() {
-  const { setView } = useInWorldAdminStore();
+  const { setView, setSelectedId } = useInWorldAdminStore();
   const { projects, isLoading } = useProjects();
   const deleteMutation = useDeleteProject();
   const { playHover, playClick } = useUISound();
@@ -114,7 +115,7 @@ export function ProjectsTab() {
       setImportDialog({ open: true, result });
 
       // Refresh queries
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: portfolioKeys.projects() });
     } catch (error) {
       console.error('Import failed:', error);
       const errorMessage = error instanceof Error && error.message.includes('AuthorizationError')
@@ -264,8 +265,8 @@ export function ProjectsTab() {
                     <motion.button
                       onMouseEnter={playHover}
                       onClick={() => {
+                        setSelectedId(project.id);
                         setView('edit-project');
-                        sessionStorage.setItem('editProjectId', project.id);
                         playClick();
                       }}
                       aria-label={`Edit ${project.title}`}

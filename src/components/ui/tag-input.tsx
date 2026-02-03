@@ -8,7 +8,6 @@ const PREDEFINED_TAGS = [
   'Nextjs',
   'Solidjs',
   'Threejs',
-  'R3F',
   'WASM',
   'Rust',
   'Nunjuck',
@@ -66,6 +65,13 @@ const PREDEFINED_TAGS = [
   'Kotlin',
   'Dart',
   'Flutter',
+  'WebAssembly',
+  'Gsap',
+  'MotionOne',
+  'R3F',
+  'Motion',
+  'Rapier',
+  'Supabase',
 ];
 
 interface TagInputProps {
