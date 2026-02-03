@@ -14,7 +14,7 @@ export const WORLD_AUDIO_CONFIGS: Record<WorldType, AudioTrack[]> = {
       path: `/3d/audio/music/acidic.mp3?v=${AUDIO_VERSION}`,
       type: 'music',
       volume: 0.5,
-      loop: true,
+      loop: false,
     },
   ],
   art: [
@@ -22,7 +22,7 @@ export const WORLD_AUDIO_CONFIGS: Record<WorldType, AudioTrack[]> = {
       path: `/3d/audio/music/acidic.mp3?v=${AUDIO_VERSION}`,
       type: 'music',
       volume: 0.5,
-      loop: true,
+      loop: false,
     },
   ],
 };

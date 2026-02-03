@@ -126,7 +126,7 @@ export default async function AdminBlogPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
                         <Link
-                          href={`/blog/${post.slug}`}
+                          href={`/blogs/${post.slug}`}
                           target="_blank"
                           className="p-2 text-imperium-steel hover:text-imperium-crimson border-2 border-transparent hover:border-imperium-crimson/30 transition-all"
                           title="Voir"

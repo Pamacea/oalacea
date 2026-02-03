@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { getProjects } from "@/actions/projects"
+import { portfolioKeys } from "@/shared/lib/query-keys"
 
 // Single hook for projects - query function directly from server action
 export function useProjects(options?: {
@@ -10,9 +11,8 @@ export function useProjects(options?: {
   world?: 'DEV' | 'ART'
 }) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["projects", options],
+    queryKey: [...portfolioKeys.projects(), options],
     queryFn: () => getProjects(options ?? {}),
-    refetchOnWindowFocus: false,
   })
 
   return {

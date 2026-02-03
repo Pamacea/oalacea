@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { memo } from 'react'
 import { Calendar, Clock, Eye } from 'lucide-react'
 import type { Post } from '@/generated/prisma/client'
 
@@ -9,7 +10,7 @@ interface PostCardProps {
   post: Post & { category?: { name: string } | null }
 }
 
-export function PostCard({ post }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post }: PostCardProps) {
   return (
     <article className="group relative overflow-hidden rounded-none border-2 border-imperium-steel-dark bg-imperium-black transition-all hover:border-imperium-crimson hover:shadow-[4px_4px_0_rgba(154,17,21,0.3)]">
       {/* Cover Image */}
@@ -87,4 +88,4 @@ export function PostCard({ post }: PostCardProps) {
       )}
     </article>
   )
-}
+})

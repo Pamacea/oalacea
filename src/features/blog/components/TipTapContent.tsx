@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { sanitizeRichContent } from '@/lib/sanitize';
 
 interface TipTapContentProps {
@@ -10,9 +10,11 @@ interface TipTapContentProps {
 export function TipTapContent({ content }: TipTapContentProps) {
   const [highlightedContent, setHighlightedContent] = useState(content);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    const highlightCode = async () => {
+    // Defer code highlighting to non-blocking transition
+    startTransition(() => {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = content;
 
@@ -29,12 +31,11 @@ export function TipTapContent({ content }: TipTapContentProps) {
 
       setHighlightedContent(tempDiv.innerHTML);
       setIsLoaded(true);
-    };
-
-    highlightCode();
+    });
   }, [content]);
 
-  if (!isLoaded) {
+  // Show placeholder during initial load or transition
+  if (!isLoaded || isPending) {
     return <div className="animate-pulse h-64 bg-imperium-black/50" />;
   }
 

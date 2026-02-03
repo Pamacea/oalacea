@@ -229,7 +229,6 @@
 | Issue | Priority | File |
 |-------|----------|------|
 | Missing 3D model assets | High | `/public/3d/models/` |
-| Comments enhancements | Low | Markdown, notifications, spam filtering |
 | Theme system oversimplified | Low | `src/config/theme/world-themes.ts` |
 | Mobile touch controls untested | Medium | `src/features/3d-world/components/` |
 

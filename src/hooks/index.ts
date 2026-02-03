@@ -3,8 +3,9 @@
 // Auth
 export { useAuth, usePermissions, useContentLock } from '@/features/auth';
 
-// Blog
-export { useBlogPosts, useBlogPost, useBlogPostSuspense, usePostsClient, useBlogDocuments } from '@/features/blog/hooks';
+// Blog - query hooks migrated to queries/ folder
+export { usePosts, usePost } from '@/features/blog/queries';
+export { usePostsClient, useBlogDocuments } from '@/features/blog/hooks';
 
 // Portfolio
 export { useProjects, useProject } from '@/features/portfolio/hooks';

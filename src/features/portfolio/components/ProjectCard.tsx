@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ExternalLink, Github, Star } from 'lucide-react'
-import { CATEGORY_LABELS } from '@/features/portfolio/constants'
 
 interface Category {
   id: string
@@ -51,7 +50,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <div className="flex-1">
             {/* Category Badge */}
             <span className="inline-flex items-center px-3 py-1 text-xs font-display uppercase tracking-wider rounded-none bg-imperium-gold text-imperium-black border-2 border-imperium-gold-dark mb-2">
-              {CATEGORY_LABELS[project.category.slug] || project.category.name}
+              {project.category?.name ?? 'Projet'}
             </span>
 
             {/* Title */}

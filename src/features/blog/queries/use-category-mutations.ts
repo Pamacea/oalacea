@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createCategory, deleteCategory } from '@/actions/blog/crud';
+import { blogKeys, portfolioKeys } from '@/shared/lib/query-keys';
 
 export type CreateCategoryInput = {
   name: string;
@@ -20,15 +21,17 @@ export type CategoryListItem = {
 
 export function useCreateCategory(defaultType: 'BLOG' | 'PROJECT' = 'BLOG') {
   const queryClient = useQueryClient();
+  const categoriesKey = defaultType === 'BLOG' ? blogKeys.categories() : portfolioKeys.categories();
+  const allCategoriesKeys = [blogKeys.categories(), portfolioKeys.categories()];
 
   return useMutation({
     mutationFn: (data: Omit<CreateCategoryInput, 'type'>) => createCategory({ ...data, type: defaultType }),
     onMutate: async (newCategory) => {
-      await queryClient.cancelQueries({ queryKey: ['categories'] });
+      await queryClient.cancelQueries({ queryKey: categoriesKey });
 
-      const previousCategories = queryClient.getQueryData<CategoryListItem[]>(['categories']);
+      const previousCategories = queryClient.getQueryData<CategoryListItem[]>(categoriesKey);
 
-      queryClient.setQueryData<CategoryListItem[]>(['categories'], (old = []) => {
+      queryClient.setQueryData<CategoryListItem[]>(categoriesKey, (old = []) => {
         const slug = newCategory.slug;
         if (old.some(c => c.slug === slug)) return old;
         return [...old, {
@@ -44,10 +47,12 @@ export function useCreateCategory(defaultType: 'BLOG' | 'PROJECT' = 'BLOG') {
       return { previousCategories };
     },
     onError: (_err, _variables, context) => {
-      queryClient.setQueryData(['categories'], context?.previousCategories);
+      queryClient.setQueryData(categoriesKey, context?.previousCategories);
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['categories'] });
+      for (const key of allCategoriesKeys) {
+        await queryClient.invalidateQueries({ queryKey: key, refetchType: 'active' });
+      }
     },
   });
 }
@@ -58,21 +63,29 @@ export function useDeleteCategory() {
   return useMutation({
     mutationFn: (id: string) => deleteCategory(id),
     onMutate: async (deletedId) => {
-      await queryClient.cancelQueries({ queryKey: ['categories'] });
+      // Invalidate both blog and portfolio categories
+      await queryClient.cancelQueries({ queryKey: blogKeys.categories() });
+      await queryClient.cancelQueries({ queryKey: portfolioKeys.categories() });
 
-      const previousCategories = queryClient.getQueryData<CategoryListItem[]>(['categories']);
+      const previousBlogCategories = queryClient.getQueryData<CategoryListItem[]>(blogKeys.categories());
+      const previousPortfolioCategories = queryClient.getQueryData<CategoryListItem[]>(portfolioKeys.categories());
 
-      queryClient.setQueryData<CategoryListItem[]>(['categories'], (old = []) =>
+      queryClient.setQueryData<CategoryListItem[]>(blogKeys.categories(), (old = []) =>
+        old.filter(c => c.id !== deletedId)
+      );
+      queryClient.setQueryData<CategoryListItem[]>(portfolioKeys.categories(), (old = []) =>
         old.filter(c => c.id !== deletedId)
       );
 
-      return { previousCategories };
+      return { previousBlogCategories, previousPortfolioCategories };
     },
     onError: (_err, _variables, context) => {
-      queryClient.setQueryData(['categories'], context?.previousCategories);
+      queryClient.setQueryData(blogKeys.categories(), context?.previousBlogCategories);
+      queryClient.setQueryData(portfolioKeys.categories(), context?.previousPortfolioCategories);
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['categories'] });
+      await queryClient.invalidateQueries({ queryKey: blogKeys.categories(), refetchType: 'active' });
+      await queryClient.invalidateQueries({ queryKey: portfolioKeys.categories(), refetchType: 'active' });
     },
   });
 }

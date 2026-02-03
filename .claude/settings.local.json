@@ -10,7 +10,9 @@
       "Bash(pnpm lint:*)",
       "Bash(pnpm build:*)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }

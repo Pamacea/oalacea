@@ -123,10 +123,10 @@ export function AboutListingModal() {
               <div className="border-2 border-imperium-steel-dark bg-imperium-black/50 p-5">
                 <h4 className="font-display text-sm uppercase tracking-wider text-imperium-gold mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-imperium-gold" />
-                  Arsenal Technologique
+                  Technology Stack
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {['Next.js 15', 'React 19', 'Three.js', 'Prisma', 'Tailwind CSS', 'Framer Motion', 'Zustand', 'TanStack Query', 'TypeScript'].map((tech, i) => (
+                  {['Next.js 15', 'Node.js', 'Solidjs', 'Nunjuck', 'Vitejs', 'React 19', 'Three.js', 'Rapier', 'R3F', 'Motion', 'Prisma', 'Tailwind CSS', 'Framer Motion', 'Zustand', 'TanStack Query', 'TypeScript', 'Rust', 'WebAssembly', 'Gsap', 'MotionOne'].map((tech, i) => (
                     <motion.span
                       key={tech}
                       initial={{ opacity: 0, scale: 0.8 }}

@@ -1,8 +1,8 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueries } from '@tanstack/react-query'
 import { getComments, getCommentsCount, getPendingComments } from '@/actions/comments'
-import { commentKeys } from './keys'
+import { commentKeys } from '@/shared/lib/query-keys'
 import type { CommentStatus } from '@/generated/prisma/client'
 
 interface UseCommentsOptions {
@@ -13,6 +13,7 @@ interface UseCommentsOptions {
   enabled?: boolean
 }
 
+// Optimized: Fetches comments and count in parallel with proper cache keys
 export function useComments({
   postId,
   projectId,
@@ -20,26 +21,33 @@ export function useComments({
   includeReplies = true,
   enabled = true,
 }: UseCommentsOptions = {}) {
-  const commentsQuery = useQuery({
-    queryKey: commentKeys.list({ postId, projectId, status: status === 'ALL' ? undefined : status }),
-    queryFn: () => getComments({ postId, projectId, status, includeReplies }),
-    enabled: enabled && Boolean(postId || projectId),
-    staleTime: 60 * 1000, // 1 minute
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: commentKeys.list({ postId, projectId, status: status === 'ALL' ? undefined : status }),
+        queryFn: () => getComments({ postId, projectId, status, includeReplies }),
+        enabled: enabled && Boolean(postId || projectId),
+      },
+      {
+        queryKey: commentKeys.count({ postId, projectId }),
+        queryFn: () => getCommentsCount({ postId, projectId, status: status === 'ALL' ? 'APPROVED' : status }),
+        enabled: enabled && Boolean(postId || projectId),
+      },
+    ],
   })
 
-  const countQuery = useQuery({
-    queryKey: commentKeys.count({ postId, projectId }),
-    queryFn: () => getCommentsCount({ postId, projectId, status: status === 'ALL' ? 'APPROVED' : status }),
-    enabled: enabled && Boolean(postId || projectId),
-    staleTime: 60 * 1000,
-  })
+  const commentsQuery = results[0]
+  const countQuery = results[1]
 
   return {
     comments: commentsQuery.data ?? [],
     count: countQuery.data ?? 0,
     isLoading: commentsQuery.isLoading || countQuery.isLoading,
     error: commentsQuery.error || countQuery.error,
-    refetch: () => Promise.all([commentsQuery.refetch(), countQuery.refetch()]),
+    refetch: () => Promise.all([
+      commentsQuery.refetch(),
+      countQuery.refetch(),
+    ]),
   }
 }
 
@@ -48,7 +56,6 @@ export function usePendingComments(page = 1, limit = 20, enabled = true) {
     queryKey: commentKeys.pending(page, limit),
     queryFn: () => getPendingComments({ page, limit }),
     enabled,
-    staleTime: 30 * 1000, // 30 seconds
   })
 }
 
@@ -57,6 +64,5 @@ export function useCommentById(id: string, enabled = true) {
     queryKey: commentKeys.detail(id),
     queryFn: () => getComments({ postId: id }).then((comments) => comments[0] ?? null),
     enabled: enabled && Boolean(id),
-    staleTime: 60 * 1000,
   })
 }

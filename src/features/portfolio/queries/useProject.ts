@@ -2,10 +2,11 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { getProjectBySlug } from "@/actions/projects"
+import { portfolioKeys } from "@/shared/lib/query-keys"
 
 export function useProject(slug: string) {
   const { data: project, isLoading, error } = useQuery({
-    queryKey: ["project", slug],
+    queryKey: portfolioKeys.project(slug),
     queryFn: () => getProjectBySlug(slug),
     enabled: !!slug,
   })

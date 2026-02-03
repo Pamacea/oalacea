@@ -12,7 +12,7 @@ import { useForm } from '@tanstack/react-form';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
-  () => import('@/features/3d-world/components/admin/markdown-editor').then(mod => ({ default: mod.MarkdownEditor })),
+  () => import('@/shared/components/editor').then(mod => ({ default: mod.MarkdownEditor })),
   { ssr: false, loading: () => <div className="w-full h-64 border-2 border-imperium-steel-dark bg-imperium-black animate-pulse" /> }
 );
 

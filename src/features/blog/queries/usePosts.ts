@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { getPosts } from "@/actions/blog"
 import type { PostListItem, PostDetail, GetPostsResult } from "@/actions/blog/query"
+import { blogKeys } from "@/shared/lib/query-keys"
 
 // Single hook for posts - query function directly from server action
 export function usePosts(options?: {
@@ -13,9 +14,8 @@ export function usePosts(options?: {
   published?: boolean
 }) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["blog-posts", options],
+    queryKey: [...blogKeys.posts(), options],
     queryFn: () => getPosts({ published: options?.published ?? true, ...options }),
-    refetchOnWindowFocus: false,
   })
 
   return {

@@ -15,7 +15,7 @@ import { useProjectCategories } from './queries/use-project-categories';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
-  () => import('./markdown-editor').then(mod => ({ default: mod.MarkdownEditor })),
+  () => import('@/shared/components/editor').then(mod => ({ default: mod.MarkdownEditor })),
   { ssr: false }
 );
 

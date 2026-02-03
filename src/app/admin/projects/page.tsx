@@ -31,11 +31,12 @@ const categoryLabels: Record<string, string> = {
 export const dynamic = 'force-dynamic';
 
 interface AdminProjectsPageProps {
-  searchParams: { world?: 'all' | 'DEV' | 'ART' };
+  searchParams: Promise<{ world?: 'all' | 'DEV' | 'ART' }>;
 }
 
 export default async function AdminProjectsPage({ searchParams }: AdminProjectsPageProps) {
-  const worldFilter = searchParams.world || 'all';
+  const params = await searchParams;
+  const worldFilter = params.world || 'all';
   const projects = await getProjects(worldFilter === 'all' ? {} : { world: worldFilter });
 
   return (

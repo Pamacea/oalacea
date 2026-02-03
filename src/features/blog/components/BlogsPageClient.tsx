@@ -1,16 +1,15 @@
 'use client'
 
-import { useBlogPosts } from '../hooks'
-import type { PostListItem, GetPostsResult } from '@/actions/blog'
+import { usePosts } from '@/features/blog/queries'
+import type { PostListItem } from '@/actions/blog'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Calendar, Clock } from 'lucide-react'
 import { GlitchText } from '@/components/ui/imperium'
 import { BrutalCard } from '@/components/navigation/BrutalBackground'
 
-export function BlogsPageClient({ initialData }: { initialData?: GetPostsResult } = {}) {
-  const { data: postsData, isLoading } = useBlogPosts({ limit: 100, initialData })
-  const posts = postsData?.posts ?? []
+export function BlogsPageClient({ initialData }: { initialData?: { posts: PostListItem[] } } = {}) {
+  const { posts, isLoading } = usePosts({ limit: 100 })
 
   if (isLoading && posts.length === 0) {
     return (

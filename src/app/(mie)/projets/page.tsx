@@ -1,6 +1,5 @@
 import { getProjectsForServer } from "@/actions/projects-server"
 import type { ProjectListItem } from "@/actions/projects"
-import { CATEGORY_LABELS } from "@/features/portfolio/constants"
 import Link from "next/link"
 import Image from "next/image"
 import { GlitchText } from "@/components/ui/imperium"
@@ -83,7 +82,7 @@ function ProjectCard({
             <div className="flex-1">
               {/* Category Badge */}
               <span className="inline-flex items-center px-2 py-0.5 font-terminal text-xs font-semibold border border-imperium-gold bg-imperium-gold/20 text-imperium-gold mb-2">
-                {CATEGORY_LABELS[project.category.slug] || project.category.name}
+                {project.category.name}
               </span>
 
               {/* Title */}

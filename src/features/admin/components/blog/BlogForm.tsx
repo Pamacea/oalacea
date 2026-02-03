@@ -7,13 +7,13 @@ import Image from 'next/image';
 import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { createPost, updatePost } from '@/actions/blog';
-import { getAllCategories } from '@/actions/blog';
+import { useCategories, usePost } from '@/features/blog/queries';
 import { GlitchText } from '@/components/ui/imperium';
 import { useForm } from '@tanstack/react-form';
 import dynamic from 'next/dynamic';
 
-const RichTextEditor = dynamic(
-  () => import('@/features/admin/components/RichTextEditor').then(mod => ({ default: mod.RichTextEditor })),
+const MarkdownEditor = dynamic(
+  () => import('@/shared/components/editor').then(mod => ({ default: mod.MarkdownEditor })),
   { ssr: false, loading: () => <div className="w-full h-64 border-2 border-imperium-steel-dark bg-imperium-black animate-pulse" /> }
 );
 
@@ -25,8 +25,8 @@ export function BlogForm({ postId }: BlogFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
-  const [isLoading, setIsLoading] = useState(!!postId);
+  const { categories, isLoading: categoriesLoading } = useCategories({ uncached: true });
+  const { post, isLoading: postLoading } = usePost(postId || '');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -47,30 +47,19 @@ export function BlogForm({ postId }: BlogFormProps) {
   });
 
   useEffect(() => {
-    async function loadData() {
-      const cats = await getAllCategories().catch(() => []);
-      setCategories(cats);
-
-      if (postId) {
-        const res = await fetch(`/api/blog/post/${postId}`);
-        if (res.ok) {
-          const post = await res.json();
-          const catId = cats?.find((c) => c.slug === post.category?.slug)?.id || '';
-          form.setFieldValue('title', post.title);
-          form.setFieldValue('slug', post.slug);
-          form.setFieldValue('excerpt', post.excerpt || '');
-          form.setFieldValue('content', post.content || '');
-          form.setFieldValue('categoryId', catId);
-          form.setFieldValue('coverImage', post.coverImage || '');
-          form.setFieldValue('tags', post.tags?.join(', ') || '');
-          form.setFieldValue('featured', post.featured);
-          form.setFieldValue('published', post.published);
-        }
-      }
-      setIsLoading(false);
+    if (post) {
+      const catId = categories?.find((c) => c.slug === post.category?.slug)?.id || '';
+      form.setFieldValue('title', post.title);
+      form.setFieldValue('slug', post.slug);
+      form.setFieldValue('excerpt', post.excerpt || '');
+      form.setFieldValue('content', post.content || '');
+      form.setFieldValue('categoryId', catId);
+      form.setFieldValue('coverImage', post.coverImage || '');
+      form.setFieldValue('tags', post.tags?.join(', ') || '');
+      form.setFieldValue('featured', post.featured);
+      form.setFieldValue('published', post.published);
     }
-    loadData();
-  }, [postId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [post, categories]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generateSlug = (title: string) => {
     return title
@@ -180,6 +169,8 @@ export function BlogForm({ postId }: BlogFormProps) {
       setIsSaving(false);
     }
   };
+
+  const isLoading = categoriesLoading || postLoading || (postId && !form.state.values.title);
 
   if (isLoading) {
     return (
@@ -311,7 +302,7 @@ export function BlogForm({ postId }: BlogFormProps) {
                   {'>'} CONTENT *
                 </label>
                 <Suspense fallback={<div className="w-full h-64 border-2 border-imperium-steel-dark bg-imperium-black animate-pulse" />}>
-                  <RichTextEditor
+                  <MarkdownEditor
                     value={field.state.value}
                     onChange={(content) => field.handleChange(content)}
                     placeholder="# Archive Title
@@ -348,6 +339,11 @@ Write your content here using **bold**, *italic*, headings, and more..."
                     </option>
                   ))}
                 </select>
+                {categories.length === 0 && (
+                  <p className="mt-1 font-terminal text-xs text-imperium-steel-dark">
+                    No categories available. Create some in the <Link href="/admin/blog/categories" className="text-imperium-crimson hover:underline">Index System</Link>.
+                  </p>
+                )}
               </div>
             )}
           </form.Field>

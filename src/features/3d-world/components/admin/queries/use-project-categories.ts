@@ -1,7 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getProjectCategories } from '@/actions/projects';
+import { getAllCategoriesUncached } from '@/actions/blog';
+import { blogKeys } from '@/shared/lib/query-keys';
 
 export type ProjectCategory = {
   id: string;
@@ -11,12 +12,11 @@ export type ProjectCategory = {
 
 export function useProjectCategories() {
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ['project-categories'],
+    queryKey: blogKeys.categories(),
     queryFn: async () => {
-      const result = await getProjectCategories();
+      const result = await getAllCategoriesUncached();
       return result || [];
     },
-    refetchOnWindowFocus: false,
   });
 
   return {

@@ -11,7 +11,7 @@ import {
   deleteComment,
   updateComment,
 } from '@/actions/comments'
-import { commentKeys } from './keys'
+import { commentKeys } from '@/shared/lib/query-keys'
 import type { CommentInput } from '@/lib/validations'
 import type { CommentStatus } from '@/generated/prisma/client'
 
@@ -23,7 +23,7 @@ export function useCreateComment() {
     onSuccess: async (result, input) => {
       if (result.success) {
         toast.success(result.message ?? 'Comment submitted for moderation')
-        // Invalidate comments count and list
+        // Invalidate comments count and list - use precise invalidation
         const invalidateKeys = input.postId
           ? [commentKeys.list({ postId: input.postId }), commentKeys.count({ postId: input.postId })]
           : input.projectId
@@ -51,7 +51,8 @@ export function useUpdateCommentStatus() {
       updateCommentStatus(id, status),
     onSuccess: async () => {
       toast.success('Comment status updated')
-      await queryClient.invalidateQueries({ queryKey: commentKeys.lists() })
+      // Only invalidate active queries, not all
+      await queryClient.invalidateQueries({ queryKey: commentKeys.lists(), refetchType: 'active' })
       await queryClient.invalidateQueries({ queryKey: commentKeys.pending(1, 20) })
     },
     onError: (error) => {
@@ -67,7 +68,7 @@ export function useApproveComment() {
     mutationFn: (id: string) => approveComment(id),
     onSuccess: async () => {
       toast.success('Comment approved')
-      await queryClient.invalidateQueries({ queryKey: commentKeys.lists() })
+      await queryClient.invalidateQueries({ queryKey: commentKeys.lists(), refetchType: 'active' })
       await queryClient.invalidateQueries({ queryKey: commentKeys.pending(1, 20) })
     },
     onError: (error) => {
@@ -83,7 +84,7 @@ export function useRejectComment() {
     mutationFn: (id: string) => rejectComment(id),
     onSuccess: async () => {
       toast.success('Comment rejected')
-      await queryClient.invalidateQueries({ queryKey: commentKeys.lists() })
+      await queryClient.invalidateQueries({ queryKey: commentKeys.lists(), refetchType: 'active' })
       await queryClient.invalidateQueries({ queryKey: commentKeys.pending(1, 20) })
     },
     onError: (error) => {
@@ -99,7 +100,7 @@ export function useMarkCommentAsSpam() {
     mutationFn: (id: string) => markCommentAsSpam(id),
     onSuccess: async () => {
       toast.success('Comment marked as spam')
-      await queryClient.invalidateQueries({ queryKey: commentKeys.lists() })
+      await queryClient.invalidateQueries({ queryKey: commentKeys.lists(), refetchType: 'active' })
       await queryClient.invalidateQueries({ queryKey: commentKeys.pending(1, 20) })
     },
     onError: (error) => {
@@ -115,7 +116,7 @@ export function useDeleteComment() {
     mutationFn: (id: string) => deleteComment(id),
     onSuccess: async () => {
       toast.success('Comment deleted')
-      await queryClient.invalidateQueries({ queryKey: commentKeys.lists() })
+      await queryClient.invalidateQueries({ queryKey: commentKeys.lists(), refetchType: 'active' })
       await queryClient.invalidateQueries({ queryKey: commentKeys.pending(1, 20) })
     },
     onError: (error) => {
@@ -132,7 +133,7 @@ export function useUpdateComment() {
       updateComment(id, { content }),
     onSuccess: async () => {
       toast.success('Comment updated')
-      await queryClient.invalidateQueries({ queryKey: commentKeys.lists() })
+      await queryClient.invalidateQueries({ queryKey: commentKeys.lists(), refetchType: 'active' })
       await queryClient.invalidateQueries({ queryKey: commentKeys.pending(1, 20) })
     },
     onError: (error) => {

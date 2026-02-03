@@ -1,14 +1,14 @@
 // Portfolio feature types
 import type { Project } from '@/generated/prisma/client'
+import type { Category } from '@/generated/prisma/client'
 
 export type ProjectWithPosition = Project & {
   worldPosition?: { x: number; y: number; z: number } | null
+  category?: Category | null
 }
 
-export type ProjectCategory = 'WEB' | 'MOBILE' | 'THREE_D' | 'AI' | 'OTHER'
-
 export type PortfolioFilters = {
-  category?: ProjectCategory
+  categoryId?: string
   search?: string
   featured?: boolean
   year?: number

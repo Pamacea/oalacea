@@ -4,7 +4,7 @@ import { useEffect, useRef, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, Clock, Eye, Scroll, Tag } from 'lucide-react';
 import Image from 'next/image';
-import { useBlogPost } from '@/features/blog/hooks';
+import { usePost } from '@/features/blog/queries';
 import { sanitizeInlineHtml } from '@/lib/sanitize';
 import { GlitchText, ChaoticOverlay } from '@/components/ui/imperium';
 
@@ -174,7 +174,7 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 export function BlogReadingModal({ slug, onClose, onNext, onPrevious, currentIndex = 0, total = 0 }: BlogReadingModalProps) {
-  const { data: post, isLoading } = useBlogPost(slug);
+  const { post, isLoading } = usePost(slug);
   const scrollProgressRef = useRef(0);
   const [scrollProgress, setScrollProgress] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);

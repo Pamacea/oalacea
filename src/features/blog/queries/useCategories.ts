@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { getAllCategories, getAllCategoriesUncached } from "@/actions/blog"
+import { blogKeys } from "@/shared/lib/query-keys"
 
 export type CategoryListItem = {
   id: string
@@ -17,9 +18,8 @@ export function useCategories(options?: {
   uncached?: boolean
 }) {
   const { data: categories, isLoading, error } = useQuery({
-    queryKey: ["categories", options],
+    queryKey: [...blogKeys.categories(), options],
     queryFn: () => (options?.uncached ? getAllCategoriesUncached(options) : getAllCategories(options)),
-    refetchOnWindowFocus: false,
   })
 
   return {

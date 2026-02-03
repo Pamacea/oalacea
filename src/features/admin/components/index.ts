@@ -1,4 +1,4 @@
-export { RichTextEditor } from './RichTextEditor';
+export { MarkdownEditor } from '@/shared/components/editor';
 export { ImageUpload } from './ImageUpload';
 export { MediaLibrary } from './MediaLibrary';
 export { VersionHistory } from './VersionHistory';

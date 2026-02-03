@@ -45,6 +45,10 @@ interface AudioState {
   fadingTo: WorldType | null;
   setIsFading: (fading: boolean, from?: WorldType | null, to?: WorldType | null) => void;
   crossfadeWorlds: (fromWorld: WorldType, toWorld: WorldType, duration: number) => Promise<void>;
+  currentWorld: WorldType | null;
+  setCurrentWorld: (world: WorldType) => void;
+  scheduleNextTrack: () => void;
+  cancelScheduledTrack: () => void;
   // Ambient SFX
   ambientSfx: HTMLAudioElement | null;
   playAmbient: () => Promise<void>;
@@ -60,6 +64,14 @@ interface AudioState {
 
 // Store active RAF IDs for cleanup
 const activeRafIds = new Set<number>();
+
+// Store scheduled timeout for next track
+let nextTrackTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+// Random delay between tracks (in ms): between 30s and 120s
+function getRandomDelay(): number {
+  return 30000 + Math.random() * 90000;
+}
 
 // Safe requestAnimationFrame that tracks IDs
 function safeRaf(callback: FrameRequestCallback): number {
@@ -118,6 +130,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
         }
       }));
     } else {
+      get().cancelScheduledTrack();
       loadedTracks.forEach((audio) => audio.pause());
     }
   },
@@ -128,6 +141,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const { loadedTracks, isEnabled } = get();
     if (!isEnabled) return;
     if (paused) {
+      get().cancelScheduledTrack();
       loadedTracks.forEach((audio) => audio.pause());
     } else {
       loadedTracks.forEach((audio) => audio.play().catch((err) => {
@@ -149,15 +163,50 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
   loadedTracks: new Map(),
   loadedWorlds: new Set<WorldType>(),
+  currentWorld: null,
+  setCurrentWorld: (world: WorldType) => set({ currentWorld: world }),
+
+  scheduleNextTrack: () => {
+    const { isEnabled, isPaused } = get();
+    if (!isEnabled || isPaused) return;
+
+    get().cancelScheduledTrack();
+
+    const delay = getRandomDelay();
+    nextTrackTimeoutId = setTimeout(() => {
+      const state = get();
+      if (!state.isEnabled || state.isPaused || !state.currentWorld) return;
+
+      const { loadedTracks } = get();
+      const trackKey = `${state.currentWorld}-/3d/audio/music/acidic.mp3?v=2`;
+      const audio = loadedTracks.get(trackKey);
+
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch((err) => {
+          if (err.name !== 'NotAllowedError') {
+            console.warn('[Audio] Failed to play next track:', err);
+          }
+        });
+      }
+
+      get().scheduleNextTrack();
+    }, delay);
+  },
+
+  cancelScheduledTrack: () => {
+    if (nextTrackTimeoutId) {
+      clearTimeout(nextTrackTimeoutId);
+      nextTrackTimeoutId = null;
+    }
+  },
 
   loadWorldTracks: async (world: WorldType) => {
     const { loadedTracks, loadedWorlds, masterVolume, musicVolume, isEnabled } = get();
 
-    // Prevent duplicate loading
-    if (loadedWorlds.has(world)) {
-      return;
-    }
+    get().setCurrentWorld(world);
 
+    const isFirstLoad = !loadedWorlds.has(world);
     const config = WORLD_AUDIO_CONFIGS[world];
     const FADE_IN_DURATION = 3000;
 
@@ -166,7 +215,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       const existing = loadedTracks.get(trackKey);
 
       if (existing) {
-        // Already loaded, just make sure it's playing
         if (isEnabled && existing.paused) {
           existing.play().catch(() => {});
         }
@@ -175,15 +223,11 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
       const audio = new Audio(track.path);
       audio.volume = 0;
-      audio.loop = true;
+      audio.loop = false;
       audio.preload = 'auto';
 
-      // Handle loop manually for better control - store reference for cleanup
       const handleEnded = () => {
-        if (audio.loop) {
-          audio.currentTime = 0;
-          audio.play().catch(() => {});
-        }
+        get().scheduleNextTrack();
       };
 
       audio._onEndedHandler = handleEnded;
@@ -227,7 +271,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
           }
         });
 
-        // Fade in with proper cleanup
         const fadeInStart = Date.now();
         const fadeIn = () => {
           if (audio.paused) {
@@ -247,9 +290,12 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       }
     }
 
-    // Mark world as loaded
     loadedWorlds.add(world);
     set({ loadedTracks: new Map(loadedTracks), loadedWorlds: new Set(loadedWorlds) });
+
+    if (isEnabled && isFirstLoad) {
+      get().scheduleNextTrack();
+    }
   },
 
   unloadWorldTracks: (world: WorldType) => {
@@ -515,13 +561,11 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   },
 
   cleanup: () => {
-    // Clean up all resources
     const { loadedTracks, ambientSfx } = get();
 
-    // Cancel all active RAFs
     cancelAllActiveRafs();
+    get().cancelScheduledTrack();
 
-    // Clean up all loaded tracks
     loadedTracks.forEach((audio) => {
       if (audio._rafId) {
         safeCancelRaf(audio._rafId);
@@ -530,7 +574,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       cleanupAudioElement(audio);
     });
 
-    // Clean up ambient
     if (ambientSfx) {
       cleanupAudioElement(ambientSfx);
     }
@@ -539,6 +582,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       loadedTracks: new Map(),
       loadedWorlds: new Set(),
       ambientSfx: null,
+      currentWorld: null,
     });
   },
 }));

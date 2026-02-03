@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, Scroll, Skull } from 'lucide-react';
-import { useBlogPosts } from '@/features/blog/hooks';
+import { usePosts } from '@/features/blog/queries';
 import { useModalStore } from '@/store/modal-store';
 import { BlogReadingModal } from './BlogReadingModal';
 import { GlitchText, ChaoticOverlay, ScanlineBeam } from '@/components/ui/imperium';
@@ -11,12 +11,11 @@ import { useUISound } from '@/hooks/use-ui-sound';
 
 export function BlogListingModal() {
   const { close } = useModalStore();
-  const { data: postsData, isLoading } = useBlogPosts({ published: true, limit: 100 });
+  const { posts, isLoading } = usePosts({ published: true, limit: 100 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedBlog, setSelectedBlog] = useState<string | null>(null);
   const { playClick } = useUISound();
 
-  const posts = useMemo(() => postsData?.posts || [], [postsData?.posts]);
   const hasPrev = useMemo(() => selectedIndex > 0, [selectedIndex]);
   const hasNext = useMemo(() => selectedIndex < posts.length - 1, [selectedIndex, posts.length]);
 

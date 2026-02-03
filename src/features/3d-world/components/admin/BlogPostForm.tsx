@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Save, FileText, Upload, X as XIcon, Eye, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { getPostBySlug } from '@/actions/blog';
-import { getAllCategories } from '@/actions/blog';
+import { useCategories, usePost } from '@/features/blog/queries';
 import { useCreatePost, useUpdatePost } from '@/features/blog/queries';
 import { useInWorldAdminStore } from '@/features/admin/store';
 import { GlitchText } from '@/components/ui/imperium';
@@ -14,7 +13,7 @@ import { useForm } from '@tanstack/react-form';
 import dynamic from 'next/dynamic';
 
 const MarkdownEditor = dynamic(
-  () => import('./markdown-editor').then(mod => ({ default: mod.MarkdownEditor })),
+  () => import('@/shared/components/editor').then(mod => ({ default: mod.MarkdownEditor })),
   { ssr: false }
 );
 
@@ -36,8 +35,8 @@ export function BlogPostForm({ postId }: { postId?: string }) {
     },
   });
 
-  const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([]);
-  const [isLoading, setIsLoading] = useState(!!postId);
+  const { categories, isLoading: categoriesLoading } = useCategories({ uncached: true });
+  const { post, isLoading: postLoading } = usePost(postId || '');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -46,41 +45,19 @@ export function BlogPostForm({ postId }: { postId?: string }) {
   const updateMutation = useUpdatePost();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  // Load categories and post data
   useEffect(() => {
-    async function loadData() {
-      if (!postId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const [cats, post] = await Promise.all([
-          getAllCategories().catch(() => []),
-          getPostBySlug(postId),
-        ]);
-
-        if (cats) setCategories(cats);
-
-        if (post) {
-          const catId = cats?.find((c) => c.slug === post.category?.slug)?.id || '';
-          form.setFieldValue('title', post.title);
-          form.setFieldValue('slug', post.slug);
-          form.setFieldValue('excerpt', post.excerpt || '');
-          form.setFieldValue('content', post.content || '');
-          form.setFieldValue('categoryId', catId);
-          form.setFieldValue('coverImage', post.coverImage || '');
-          form.setFieldValue('tags', post.tags?.join(', ') || '');
-          form.setFieldValue('featured', post.featured);
-        }
-      } catch {
-        // Error silently ignored
-      } finally {
-        setIsLoading(false);
-      }
+    if (post) {
+      const catId = categories?.find((c) => c.slug === post.category?.slug)?.id || '';
+      form.setFieldValue('title', post.title);
+      form.setFieldValue('slug', post.slug);
+      form.setFieldValue('excerpt', post.excerpt || '');
+      form.setFieldValue('content', post.content || '');
+      form.setFieldValue('categoryId', catId);
+      form.setFieldValue('coverImage', post.coverImage || '');
+      form.setFieldValue('tags', post.tags?.join(', ') || '');
+      form.setFieldValue('featured', post.featured);
     }
-    loadData();
-  }, [postId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [post, categories]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generateSlug = (title: string) => {
     return title
@@ -185,6 +162,8 @@ export function BlogPostForm({ postId }: { postId?: string }) {
       setSaveStatus('error');
     }
   };
+
+  const isLoading = categoriesLoading || postLoading || (postId && !form.state.values.title);
 
   if (isLoading) {
     return (

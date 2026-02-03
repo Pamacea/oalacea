@@ -18,6 +18,15 @@ const colors = {
   concrete: '#2a2a3a',
 };
 
+const categoryNeonColors: Record<string, string> = {
+  'web': colors.neonTeal,
+  'mobile': colors.neonPink,
+  'ai': colors.neonRed,
+  '3d': colors.glow,
+  'three-d': colors.glow,
+  'three_d': colors.glow,
+};
+
 type ProjectCategory = {
   id: string;
   name: string;
@@ -67,13 +76,7 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
   });
 
   const getNeonColor = (categorySlug: string) => {
-    switch (categorySlug) {
-      case 'web': return colors.neonTeal;
-      case 'mobile': return colors.neonPink;
-      case 'ai': return colors.neonRed;
-      case '3d': return colors.glow;
-      default: return colors.neonTeal;
-    }
+    return categoryNeonColors[categorySlug] ?? colors.neonTeal;
   };
 
   const categorySlug = typeof project.category === 'string' ? project.category : project.category?.slug || 'web';
