@@ -8,13 +8,12 @@ import { useProximity, type ProximityObject } from '@/features/3d-world/hooks';
 
 export function useInteractionsRegistry(world: WorldType) {
   // Récupère les interactions pour le monde courant
-  const interactions = useMemo(() => {
-    return getInteractionsForWorld(world);
-  }, [world]);
+  const interactions = getInteractionsForWorld(world);
 
-  // Convertit les interactions en ProximityObjects pour useProximity
-  const proximityObjects: ProximityObject[] = useMemo(() => {
-    return interactions
+  // IMPORTANT: useMemo to stabilize the array reference and prevent useProximity from recreating intervals
+  // (React Compiler exception #1: stable dependencies for useEffect)
+  const proximityObjects: ProximityObject[] = useMemo(() =>
+    interactions
       .filter(interaction => !interaction.disabled)
       .map(interaction => ({
         id: interaction.id,
@@ -26,23 +25,27 @@ export function useInteractionsRegistry(world: WorldType) {
           type: interaction.type,
           targetWorld: interaction.targetWorld,
         },
-      }));
-  }, [interactions]);
+      })),
+    [interactions]
+  );
+
+  // Interactions à afficher visuellement (zones qui ne sont pas des portails)
+  // useMemo car stable depuis React Compiler
+  const visualInteractions = useMemo(() =>
+    interactions.filter(
+      interaction => !interaction.disabled && interaction.type !== 'portal'
+    ),
+    [interactions]
+  );
+
+  // Toutes les interactions pour l'affichage (inclut les zones de portails pour les labels)
+  const allVisualInteractions = useMemo(() =>
+    interactions.filter(interaction => !interaction.disabled),
+    [interactions]
+  );
 
   // Appelle useProximity pour activer la détection
   useProximity(proximityObjects);
-
-  // Interactions à afficher visuellement (zones qui ne sont pas des portails)
-  const visualInteractions = useMemo(() => {
-    return interactions.filter(
-      interaction => !interaction.disabled && interaction.type !== 'portal'
-    );
-  }, [interactions]);
-
-  // Toutes les interactions pour l'affichage (inclut les zones de portails pour les labels)
-  const allVisualInteractions = useMemo(() => {
-    return interactions.filter(interaction => !interaction.disabled);
-  }, [interactions]);
 
   return {
     interactions,

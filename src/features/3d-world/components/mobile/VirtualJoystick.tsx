@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useMobileDetection } from '@/shared/hooks';
 import { useCharacterStore } from '@/features/3d-world/store';
@@ -19,14 +19,14 @@ export function VirtualJoystick() {
   const [containerCenter, setContainerCenter] = useState({ x: 0, y: 0 });
   const setInput = useCharacterStore((s) => s.setInput);
 
-  const resetInputs = useCallback(() => {
+  const resetInputs = () => {
     setInput('forward', false);
     setInput('backward', false);
     setInput('left', false);
     setInput('right', false);
-  }, [setInput]);
+  };
 
-  const updateInputs = useCallback((x: number, y: number) => {
+  const updateInputs = (x: number, y: number) => {
     const forward = y < -DEADZONE;
     const backward = y > DEADZONE;
     const left = x < -DEADZONE;
@@ -36,9 +36,9 @@ export function VirtualJoystick() {
     setInput('backward', backward);
     setInput('left', left);
     setInput('right', right);
-  }, [setInput]);
+  };
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -53,9 +53,9 @@ export function VirtualJoystick() {
     if (e.target instanceof HTMLElement) {
       e.target.setPointerCapture(e.pointerId);
     }
-  }, []);
+  };
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (!isActive) return;
 
     const dx = e.clientX - containerCenter.x;
@@ -73,9 +73,9 @@ export function VirtualJoystick() {
     if (distance > DEADZONE && 'vibrate' in navigator) {
       navigator.vibrate(5);
     }
-  }, [isActive, containerCenter, updateInputs]);
+  };
 
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     setIsActive(false);
     setPosition({ x: 0, y: 0 });
     resetInputs();
@@ -84,7 +84,7 @@ export function VirtualJoystick() {
     if (e.target instanceof HTMLElement) {
       e.target.releasePointerCapture(e.pointerId);
     }
-  }, [resetInputs]);
+  };
 
   useEffect(() => {
     return () => {

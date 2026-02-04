@@ -39,19 +39,16 @@ export function BrutalCard({
   const [isHovered, setIsHovered] = React.useState(false)
   const fragments = fragmentColors[variant]
 
-  // Pre-generate random values using useMemo to avoid impure render
-  const debrisProps = React.useMemo(() =>
-    Array.from({ length: intensity === "severe" ? 8 : 4 }, (_, i) => ({
-      key: i,
-      left: 20 + ((i * 17) % 60),
-      top: 20 + ((i * 23) % 60),
-      x: ((i * 31) % 100) / 100 * 50 - 25,
-      duration: 0.5 + ((i * 7) % 100) / 200,
-      delay: ((i * 11) % 100) / 500,
-      repeatDelay: 1 + ((i * 13) % 100) / 50,
-    })),
-  [intensity]
-  )
+  // Pre-generate random values (compiler handles memoization)
+  const debrisProps = Array.from({ length: intensity === "severe" ? 8 : 4 }, (_, i) => ({
+    key: i,
+    left: 20 + ((i * 17) % 60),
+    top: 20 + ((i * 23) % 60),
+    x: ((i * 31) % 100) / 100 * 50 - 25,
+    duration: 0.5 + ((i * 7) % 100) / 200,
+    delay: ((i * 11) % 100) / 500,
+    repeatDelay: 1 + ((i * 13) % 100) / 50,
+  }))
 
   return (
     <motion.div

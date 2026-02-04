@@ -1,7 +1,7 @@
 // TutorialOverlay - Main tutorial overlay component with spotlight effect
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOnboardingStore } from '@/features/onboarding/store';
 import { tutorialSteps, getNextStep, getPrevStep, getStepProgress } from './tutorialSteps';
@@ -93,14 +93,14 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
     return () => window.removeEventListener('resize', updateSpotlight);
   }, [currentStepId]);
 
-  const handleComplete = useCallback(() => {
+  const handleComplete = () => {
     setSeenTutorial(true);
     dismissTutorial();
     setCurrentStep(null);
     onComplete?.();
-  }, [setSeenTutorial, dismissTutorial, setCurrentStep, onComplete]);
+  };
 
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     if (!currentStepId) return;
 
     completeStep(currentStepId);
@@ -111,20 +111,20 @@ export function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
     } else {
       handleComplete();
     }
-  }, [currentStepId, completeStep, setCurrentStep, handleComplete]);
+  };
 
-  const handlePrevious = useCallback(() => {
+  const handlePrevious = () => {
     if (!currentStepId) return;
 
     const prevStep = getPrevStep(currentStepId);
     if (prevStep) {
       setCurrentStep(prevStep);
     }
-  }, [currentStepId, setCurrentStep]);
+  };
 
-  const handleSkip = useCallback(() => {
+  const handleSkip = () => {
     handleComplete();
-  }, [handleComplete]);
+  };
 
   if (!currentStepId) return null;
 

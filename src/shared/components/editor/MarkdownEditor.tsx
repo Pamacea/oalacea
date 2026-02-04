@@ -32,7 +32,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
-import { useState, useCallback, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
+import { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 
 const lowlight = createLowlight(common);
 
@@ -222,7 +222,7 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
       }
     }, [currentValue, editor]);
 
-    const insertImage = useCallback(async (file: File) => {
+    const insertImage = async (file: File) => {
       const uploadHandler = onImageUpload || defaultImageUpload;
       try {
         setIsUploading(true);
@@ -236,7 +236,7 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
       } finally {
         setIsUploading(false);
       }
-    }, [editor, onImageUpload]);
+    };
 
     if (!editor) {
       return (

@@ -2,7 +2,7 @@
 // Right-side tap zone for E key interaction, long-press for context menu
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useCharacterStore } from '@/features/3d-world/store';
@@ -38,7 +38,7 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
   const isPortal = !!interactTarget?.targetWorld;
   const actionText = isPortal ? 'enter' : 'view';
 
-  const handleInteraction = useCallback(() => {
+  const handleInteraction = () => {
     if (isAdminModalOpen) return;
 
     if (canInteract && interactTarget) {
@@ -62,9 +62,9 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
         navigator.vibrate(50);
       }
     }
-  }, [canInteract, interactTarget, openBlogListing, openProjectListing, openAboutListing, openAdminListing, switchWorld, isAdminModalOpen, isAdmin, showToast]);
+  };
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     if (isAdminModalOpen) return;
 
     setIsPressed(true);
@@ -78,22 +78,22 @@ export function TouchInteraction({ className = '' }: TouchInteractionProps) {
         navigator.vibrate([50, 100, 50]);
       }
     }, 500);
-  }, [isAdminModalOpen]);
+  };
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = () => {
     setIsPressed(false);
     if (touchTimeoutRef.current) {
       clearTimeout(touchTimeoutRef.current);
       touchTimeoutRef.current = null;
     }
-  }, []);
+  };
 
-  const handleTap = useCallback(() => {
+  const handleTap = () => {
     if (!showContextMenu) {
       handleInteraction();
     }
     setShowContextMenu(false);
-  }, [showContextMenu, handleInteraction]);
+  };
 
   useEffect(() => {
     return () => {

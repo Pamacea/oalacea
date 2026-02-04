@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, MeshStandardMaterial, PointLight } from 'three';
 import { Text } from '@react-three/drei';
@@ -84,20 +84,20 @@ export function ArtDisplay({ project, position, isActive = false, onInteract }: 
 
   const neonColor = getNeonColor(categorySlug);
 
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     openProjectListing();
     onInteract?.();
-  }, [openProjectListing, onInteract]);
+  };
 
-  const handlePointerOver = useCallback(() => {
+  const handlePointerOver = () => {
     setHovered(true);
     document.body.style.cursor = 'pointer';
-  }, []);
+  };
 
-  const handlePointerOut = useCallback(() => {
+  const handlePointerOut = () => {
     setHovered(false);
     document.body.style.cursor = 'auto';
-  }, []);
+  };
 
   return (
     <group ref={frameRef} position={position}>

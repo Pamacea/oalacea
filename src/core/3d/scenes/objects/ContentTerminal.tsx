@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, MeshStandardMaterial } from 'three';
 import { Text } from '@react-three/drei';
@@ -64,31 +64,31 @@ export function ContentTerminal({
     (currentPage + 1) * ITEMS_PER_PAGE
   );
 
-  const handleNextPage = useCallback(() => {
+  const handleNextPage = () => {
     if (currentPage < totalPages - 1) {
       setCurrentPage((p) => p + 1);
     }
-  }, [currentPage, totalPages]);
+  };
 
-  const handlePrevPage = useCallback(() => {
+  const handlePrevPage = () => {
     if (currentPage > 0) {
       setCurrentPage((p) => p - 1);
     }
-  }, [currentPage]);
+  };
 
-  const handleToggleMode = useCallback(() => {
+  const handleToggleMode = () => {
     setMode((m) => (m === 'blog' ? 'project' : 'blog'));
     setCurrentPage(0);
     setHoveredIndex(null);
-  }, [setHoveredIndex]);
+  };
 
-  const handleItemSelect = useCallback(() => {
+  const handleItemSelect = () => {
     if (mode === 'blog') {
       openBlogListing();
     } else if (mode === 'project') {
       openProjectListing();
     }
-  }, [mode, openBlogListing, openProjectListing]);
+  };
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;

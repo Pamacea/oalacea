@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -62,7 +62,7 @@ export function CollaborationStatus({
   const [mentions, setMentions] = useState<string[]>([])
   const [versionHistory, setVersionHistory] = useState<VersionChange[]>([])
 
-  const fetchComments = useCallback(async () => {
+  const fetchComments = async () => {
     try {
       const response = await fetch(`/api/comments?entityType=${entityType}&entityId=${entityId}`)
       if (response.ok) {
@@ -82,9 +82,9 @@ export function CollaborationStatus({
     } catch {
       // Error silently ignored
     }
-  }, [entityType, entityId])
+  }
 
-  const fetchVersionHistory = useCallback(async () => {
+  const fetchVersionHistory = async () => {
     try {
       const response = await fetch(`/api/${entityType}/${entityId}/versions`)
       if (response.ok) {
@@ -94,7 +94,7 @@ export function CollaborationStatus({
     } catch {
       // Error silently ignored
     }
-  }, [entityType, entityId])
+  }
 
   const contentLockData = useContentLock({
     entityType,

@@ -1,7 +1,7 @@
 // OcclusionManager - Makes objects transparent when blocking view of character
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Raycaster, Vector3, Object3D, Mesh, PerspectiveCamera as PerspectiveCameraType, Material } from 'three';
 
@@ -30,7 +30,7 @@ export function OcclusionManager({
   const occluderStates = useRef<Map<string, OccluderState>>(new Map());
   const isOccluded = useRef(false);
 
-  const restoreOccluder = useCallback((state: OccluderState) => {
+  const restoreOccluder = (state: OccluderState) => {
     const material = state.mesh.material as Material;
     if (material) {
       if ('opacity' in material && state.originalOpacity !== undefined) {
@@ -41,16 +41,16 @@ export function OcclusionManager({
       }
       material.needsUpdate = true;
     }
-  }, []);
+  };
 
-  const restoreAllOccluders = useCallback(() => {
+  const restoreAllOccluders = () => {
     occluderStates.current.forEach((state) => {
       restoreOccluder(state);
     });
     occluderStates.current.clear();
-  }, [restoreOccluder]);
+  };
 
-  const applyOcclusion = useCallback((occludingMeshes: Mesh[]) => {
+  const applyOcclusion = (occludingMeshes: Mesh[]) => {
     const currentOccluders = new Set(occludingMeshes);
 
     // Restore previous occluders that are no longer blocking
@@ -85,7 +85,7 @@ export function OcclusionManager({
         }
       }
     });
-  }, [transparency, restoreOccluder]);
+  };
 
   useFrame(() => {
     if (!characterRef.current || !cameraRef.current) {

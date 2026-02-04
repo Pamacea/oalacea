@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 
 type ShortcutHandler = () => void;
 type ShortcutCondition = () => boolean;
@@ -13,25 +13,25 @@ interface Shortcut {
 }
 
 export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    for (const shortcut of shortcuts) {
-      const keyMatch = e.key.toLowerCase() === shortcut.key.toLowerCase() ||
-                       e.code === shortcut.key;
-
-      if (keyMatch && (!shortcut.condition || shortcut.condition())) {
-        if (shortcut.preventDefault !== false) {
-          e.preventDefault();
-        }
-        shortcut.handler();
-        break;
-      }
-    }
-  }, [shortcuts]);
-
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      for (const shortcut of shortcuts) {
+        const keyMatch = e.key.toLowerCase() === shortcut.key.toLowerCase() ||
+                         e.code === shortcut.key;
+
+        if (keyMatch && (!shortcut.condition || shortcut.condition())) {
+          if (shortcut.preventDefault !== false) {
+            e.preventDefault();
+          }
+          shortcut.handler();
+          break;
+        }
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, [shortcuts]);
 }
 
 export function useHelpModal(open: boolean, onOpenChange: (open: boolean) => void) {

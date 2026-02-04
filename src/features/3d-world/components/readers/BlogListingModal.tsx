@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, Scroll, Skull } from 'lucide-react';
 import { usePosts } from '@/features/blog/queries';
@@ -16,8 +16,8 @@ export function BlogListingModal() {
   const [selectedBlog, setSelectedBlog] = useState<string | null>(null);
   const { playClick } = useUISound();
 
-  const hasPrev = useMemo(() => selectedIndex > 0, [selectedIndex]);
-  const hasNext = useMemo(() => selectedIndex < posts.length - 1, [selectedIndex, posts.length]);
+  const hasPrev = selectedIndex > 0;
+  const hasNext = selectedIndex < posts.length - 1;
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -34,35 +34,35 @@ export function BlogListingModal() {
     return () => window.removeEventListener('keydown', handleEscape, true);
   }, [selectedBlog, close]);
 
-  const handleSelectBlog = useCallback((slug: string, index: number) => {
+  const handleSelectBlog = (slug: string, index: number) => {
     setSelectedIndex(index);
     setSelectedBlog(slug);
     playClick();
-  }, [playClick, setSelectedIndex, setSelectedBlog]);
+  };
 
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     if (selectedBlog) {
       setSelectedBlog(null);
     } else {
       close();
     }
-  }, [selectedBlog, close]);
+  };
 
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     const nextIndex = selectedIndex + 1;
     if (nextIndex < posts.length && posts[nextIndex]) {
       setSelectedIndex(nextIndex);
       setSelectedBlog(posts[nextIndex].slug);
     }
-  }, [selectedIndex, posts]);
+  };
 
-  const handlePrevious = useCallback(() => {
+  const handlePrevious = () => {
     const prevIndex = selectedIndex - 1;
     if (prevIndex >= 0 && posts[prevIndex]) {
       setSelectedIndex(prevIndex);
       setSelectedBlog(posts[prevIndex].slug);
     }
-  }, [selectedIndex, posts]);
+  };
 
   if (selectedBlog) {
     return (

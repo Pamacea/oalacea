@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize';
 
 interface MarkdownRendererProps {
@@ -10,7 +9,7 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content, className = '', isTerminal = true }: MarkdownRendererProps) {
-  const renderedContent = useMemo(() => {
+  const renderedContent = (() => {
     let html = content;
 
     html = html
@@ -41,7 +40,7 @@ export function MarkdownRenderer({ content, className = '', isTerminal = true }:
 
     // Sanitize HTML to prevent XSS attacks
     return sanitizeHtml(html);
-  }, [content]);
+  })();
 
   const baseClasses = isTerminal
     ? 'font-mono text-sm'

@@ -1,7 +1,7 @@
 // SceneContainer - Container 3D principal avec Canvas R3F
 'use client';
 
-import { Suspense, useMemo, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Environment, Preload } from '@react-three/drei';
 import * as THREE from 'three';
@@ -19,10 +19,7 @@ function SceneContent({ children, currentWorld }: SceneContainerProps) {
   const worldConfig = currentWorld === 'art' ? ART_WORLD : DEV_WORLD;
   const qualitySettings = useSettingsStore(selectQualitySettings);
 
-  const fog = useMemo(
-    () => new THREE.FogExp2(worldConfig.colors.fog, 0.02),
-    [worldConfig.colors.fog]
-  );
+  const fog = new THREE.FogExp2(worldConfig.colors.fog, 0.02);
 
   return (
     <>

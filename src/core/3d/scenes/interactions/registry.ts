@@ -135,13 +135,38 @@ export const INTERACTIONS_REGISTRY: InteractionConfig[] = [
   },
 ];
 
+// Cache stable des interactions par monde pour éviter les recréations de tableaux
+// IMPORTANT: Les références sont stables, donc useProximity ne recréera pas l'intervalle
+const INTERACTIONS_BY_WORLD = new Map<WorldType, InteractionConfig[]>();
+
+function buildInteractionsCache() {
+  if (INTERACTIONS_BY_WORLD.size > 0) return;
+
+  const devInteractions: InteractionConfig[] = [];
+  const artInteractions: InteractionConfig[] = [];
+
+  for (const interaction of INTERACTIONS_REGISTRY) {
+    if (interaction.world === 'dev' || interaction.world === 'both') {
+      devInteractions.push(interaction);
+    }
+    if (interaction.world === 'art' || interaction.world === 'both') {
+      artInteractions.push(interaction);
+    }
+  }
+
+  INTERACTIONS_BY_WORLD.set('dev', devInteractions);
+  INTERACTIONS_BY_WORLD.set('art', artInteractions);
+}
+
+// Initialiser le cache au chargement du module
+buildInteractionsCache();
+
 /**
  * Récupère les interactions pour un monde donné
+ * @returns Référence stable (toujours le même tableau pour un même monde)
  */
 export function getInteractionsForWorld(world: WorldType): InteractionConfig[] {
-  return INTERACTIONS_REGISTRY.filter(
-    interaction => interaction.world === world || interaction.world === 'both'
-  );
+  return INTERACTIONS_BY_WORLD.get(world) ?? [];
 }
 
 /**

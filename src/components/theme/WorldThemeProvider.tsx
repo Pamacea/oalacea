@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useMemo, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 
 interface Colors {
   background: string;
@@ -41,13 +41,10 @@ interface WorldThemeProviderProps {
 
 export function WorldThemeProvider({ children }: WorldThemeProviderProps) {
   // Always dark mode - unified zinc theme
-  const value = useMemo<WorldThemeContextValue>(
-    () => ({
-      isDark: true,
-      colors: darkColors,
-    }),
-    []
-  );
+  const value: WorldThemeContextValue = {
+    isDark: true,
+    colors: darkColors,
+  };
 
   // Apply dark class to html - client side only
   useEffect(() => {

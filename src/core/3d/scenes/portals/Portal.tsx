@@ -1,7 +1,7 @@
 // Portal - Base portal component with animated vortex
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { WorldType } from '../types';
@@ -55,16 +55,14 @@ export function Portal({
   const innerVortexRef = useRef<THREE.Mesh>(null);
   const particlesRef = useRef<THREE.InstancedMesh>(null);
 
-  const colorObjects = useMemo(() => {
-    const resolvedColors = vortexColor && frameColor && glowColor
-      ? { vortex: vortexColor, frame: frameColor, glow: glowColor }
-      : WORLD_COLORS[targetWorld === 'dev' ? 'art' : 'dev'];
-    return {
-      vortex: new THREE.Color(resolvedColors.vortex),
-      frame: new THREE.Color(resolvedColors.frame),
-      glow: new THREE.Color(resolvedColors.glow),
-    };
-  }, [vortexColor, frameColor, glowColor, targetWorld]);
+  const resolvedColors = vortexColor && frameColor && glowColor
+    ? { vortex: vortexColor, frame: frameColor, glow: glowColor }
+    : WORLD_COLORS[targetWorld === 'dev' ? 'art' : 'dev'];
+  const colorObjects = {
+    vortex: new THREE.Color(resolvedColors.vortex),
+    frame: new THREE.Color(resolvedColors.frame),
+    glow: new THREE.Color(resolvedColors.glow),
+  };
 
   const particleCount = 100;
   const particlesData = useRef(

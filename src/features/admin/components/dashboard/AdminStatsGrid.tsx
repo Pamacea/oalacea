@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { memo } from 'react';
 import { PenTool, FolderOpen, BarChart3, Users, Activity } from 'lucide-react';
 import { MineralCard, MineralCardTitle, MineralCardContent } from '@/components/ui/imperium';
 import { motion } from 'framer-motion';
@@ -25,7 +24,7 @@ const variantMap = {
   'text-imperium-teal': 'brutal' as const,
 };
 
-export const AdminStatsGrid = memo(function AdminStatsGrid({ stats }: AdminStatsGridProps) {
+export function AdminStatsGrid({ stats }: AdminStatsGridProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
       {stats.map((stat, index) => {
@@ -66,4 +65,4 @@ export const AdminStatsGrid = memo(function AdminStatsGrid({ stats }: AdminStats
       })}
     </div>
   );
-});
+}

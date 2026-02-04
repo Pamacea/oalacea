@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, memo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Tag, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -48,7 +48,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'thoughts': 'THOUGHTS',
 };
 
-export const BlogPostTemplate = memo(function BlogPostTemplate({
+export function BlogPostTemplate({
   post,
   initialComments = [],
   commentsCount = 0,
@@ -339,4 +339,4 @@ export const BlogPostTemplate = memo(function BlogPostTemplate({
       </div>
     </div>
   );
-})
+}

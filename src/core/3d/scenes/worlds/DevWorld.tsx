@@ -1,7 +1,6 @@
 // DevWorld - Imperium Warhammer 40k style
 'use client';
 
-import { useMemo } from 'react';
 import { ImperialPillar, GothicArch, DevTerminal, DustParticles } from './dev/DevComponents';
 import { ImperiumPortal } from '../portals';
 import { DevProjectPedestals } from '../objects/ProjectPedestal';
@@ -16,13 +15,11 @@ interface DevWorldProps {
 export function DevWorld({ position = [0, 0, 0] }: DevWorldProps) {
   const [x, y, z] = position;
 
-  const pillarPositions = useMemo(() => {
-    return Array.from({ length: 16 }, (_, i) => {
-      const angle = (i / 16) * Math.PI * 2;
-      const radius = 25;
-      return { id: i, x: Math.cos(angle) * radius, z: Math.sin(angle) * radius };
-    });
-  }, []);
+  const pillarPositions = Array.from({ length: 16 }, (_, i) => {
+    const angle = (i / 16) * Math.PI * 2;
+    const radius = 25;
+    return { id: i, x: Math.cos(angle) * radius, z: Math.sin(angle) * radius };
+  });
 
   return (
     <group position={[x, y, z]}>

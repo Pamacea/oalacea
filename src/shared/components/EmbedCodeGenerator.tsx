@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import {
   Code as CodeIcon,
   Copy as CopyIcon,
@@ -80,7 +80,7 @@ export function EmbedCodeGenerator({
     height: 600,
   })
 
-  const embedUrl = useMemo(() => {
+  const embedUrl = (() => {
     if (typeof window === "undefined") return ""
     const url = new URL(window.location.origin + `/embed/${slug}`)
     if (options.world) url.searchParams.set("world", options.world)
@@ -88,10 +88,9 @@ export function EmbedCodeGenerator({
     if (!options.branding) url.searchParams.set("branding", "false")
     if (!options.controls) url.searchParams.set("controls", "false")
     return url.toString()
-  }, [slug, options])
+  })()
 
-  const iframeCode = useMemo(() => {
-    return `<iframe
+  const iframeCode = `<iframe
   src="${embedUrl}"
   width="${options.width}"
   height="${options.height}"
@@ -99,7 +98,6 @@ export function EmbedCodeGenerator({
   allowfullscreen
   style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);"
 ></iframe>`
-  }, [embedUrl, options.width, options.height])
 
   const handleCopy = async () => {
     try {

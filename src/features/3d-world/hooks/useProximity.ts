@@ -30,11 +30,13 @@ export function useProximity(
 ) {
   const { checkInterval = 100, disabled = false } = options;
   const checkIntervalRef = useRef<number | undefined>(undefined);
-  const setCanInteract = useCharacterStore((s) => s.setCanInteract);
+  const lastStateRef = useRef<{ canInteract: boolean; target: any } | null>(null);
 
   useEffect(() => {
     if (disabled || objects.length === 0) {
-      setCanInteract(false);
+      const store = useCharacterStore.getState();
+      store.setCanInteract(false);
+      lastStateRef.current = { canInteract: false, target: null };
       return;
     }
 
@@ -57,19 +59,28 @@ export function useProximity(
         }
       }
 
-      if (closestObject) {
-        setCanInteract(
-          true,
-          {
-            name: closestObject.data.name,
-            route: closestObject.data.route,
-            objectId: closestObject.id,
-            type: closestObject.data.type,
-            targetWorld: closestObject.data.targetWorld,
-          }
-        );
-      } else {
-        setCanInteract(false);
+      const newState = closestObject ? {
+        canInteract: true,
+        target: {
+          name: closestObject.data.name,
+          route: closestObject.data.route,
+          objectId: closestObject.id,
+          type: closestObject.data.type,
+          targetWorld: closestObject.data.targetWorld,
+        }
+      } : { canInteract: false, target: null };
+
+      // CRITICAL: Only update store if state actually changed to prevent infinite loops
+      if (!lastStateRef.current ||
+          lastStateRef.current.canInteract !== newState.canInteract ||
+          JSON.stringify(lastStateRef.current.target) !== JSON.stringify(newState.target)) {
+        const store = useCharacterStore.getState();
+        if (newState.target) {
+          store.setCanInteract(newState.canInteract, newState.target);
+        } else {
+          store.setCanInteract(newState.canInteract);
+        }
+        lastStateRef.current = newState;
       }
     };
 
@@ -81,7 +92,7 @@ export function useProximity(
         clearInterval(checkIntervalRef.current);
       }
     };
-  }, [objects, checkInterval, disabled, setCanInteract]);
+  }, [objects, checkInterval, disabled]);
 
   return { objects };
 }

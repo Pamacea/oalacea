@@ -1,7 +1,7 @@
 // UndergroundPortal - Neon brutalist portal for ArtWorld
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Portal } from './Portal';
@@ -34,7 +34,7 @@ export function UndergroundPortal({
   const rightLightRef = useRef<THREE.PointLight>(null);
   const signRef = useRef<THREE.Mesh>(null);
 
-  const glitchColors = useMemo(() => NEON_COLORS.map(c => new THREE.Color(c)), []);
+  const glitchColors = NEON_COLORS.map(c => new THREE.Color(c));
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;

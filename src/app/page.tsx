@@ -1,7 +1,7 @@
 // 3D HomePage - Isometric view with controllable character
 'use client';
 
-import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useWorldStore } from '@/features/3d-world/store';
 import { FloatingNav } from '@/components/navigation/FloatingNav';
@@ -31,9 +31,9 @@ export default function HomePage() {
   const [cameraMode, setCameraMode] = useState<'follow' | 'free'>('follow');
   const cameraPositionRef = useRef<CameraPosition>({ x: -15, z: 15 });
 
-  const toggleCamera = useCallback(() => {
+  const toggleCamera = () => {
     setCameraMode(m => m === 'follow' ? 'free' : 'follow');
-  }, []);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

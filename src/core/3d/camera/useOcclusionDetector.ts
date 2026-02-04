@@ -2,7 +2,7 @@
 // Makes occluding objects transparent and highlights character
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Raycaster, Vector3, Object3D, Mesh, PerspectiveCamera as PerspectiveCameraType, Material } from 'three';
 
@@ -42,7 +42,7 @@ export function useOcclusionDetector({
   });
 
   // Restore original material properties
-  const restoreOccluders = useCallback(() => {
+  const restoreOccluders = () => {
     occluderStates.current.forEach((state) => {
       const material = state.mesh.material as Material | undefined;
       if (material) {
@@ -56,10 +56,10 @@ export function useOcclusionDetector({
       }
     });
     occluderStates.current.clear();
-  }, []);
+  };
 
   // Apply transparency to occluding objects
-  const applyOcclusion = useCallback((occludingMeshes: Mesh[]) => {
+  const applyOcclusion = (occludingMeshes: Mesh[]) => {
     // Restore previous occluders first
     const currentOccluders = new Set(occludingMeshes);
     occluderStates.current.forEach((state, key) => {
@@ -104,7 +104,7 @@ export function useOcclusionDetector({
       isOccluded: occludingMeshes.length > 0,
       occludingObjects: occludingMeshes,
     };
-  }, [transparency]);
+  };
 
   // Check for occlusion each frame
   useFrame(() => {

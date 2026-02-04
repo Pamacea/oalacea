@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import * as THREE from 'three';
@@ -48,15 +48,12 @@ export function AdminTerminal({ position, world, isActive = false, isAdmin = fal
   const pi = Math.PI;
 
   // Floating particles for terminal effect
-  const particles = useMemo(() => {
-    // Use deterministic seed-based random instead of Math.random
-    return Array.from({ length: 12 }, (_, i) => ({
-      angle: (i / 12) * Math.PI * 2,
-      radius: 0.8 + seededRandom(i * 3) * 0.4,
-      speed: 0.3 + seededRandom(i * 5 + 50) * 0.4,
-      yOffset: (seededRandom(i * 7 + 100) - 0.5) * 1.5,
-    }));
-  }, []);
+  const particles = Array.from({ length: 12 }, (_, i) => ({
+    angle: (i / 12) * Math.PI * 2,
+    radius: 0.8 + seededRandom(i * 3) * 0.4,
+    speed: 0.3 + seededRandom(i * 5 + 50) * 0.4,
+    yOffset: (seededRandom(i * 7 + 100) - 0.5) * 1.5,
+  }));
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;

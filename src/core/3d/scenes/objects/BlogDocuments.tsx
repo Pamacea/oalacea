@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { BlogDocument } from './BlogDocument';
 import { BlogTerminal } from './BlogTerminal';
 import { usePosts } from '@/features/blog/queries';
@@ -18,10 +18,10 @@ export function BlogDocuments({ world }: BlogDocumentsProps) {
 
   const currentPagePosts = posts.slice(0, postsPerPage);
 
-  const handlePostSelect = useCallback((post: PostListItem | { id: string }) => {
+  const handlePostSelect = (post: PostListItem | { id: string }) => {
     const fullPost = posts.find((p) => p.id === post.id);
     if (fullPost) setActivePost(fullPost);
-  }, [posts]);
+  };
 
   const getTerminalPosition = (): [number, number, number] => {
     if (world === 'DEV') {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useAudioStore } from '@/features/3d-world/store/3d-audio-store';
 
 /**
@@ -78,7 +78,7 @@ export function useUISound() {
     };
   }, []);
 
-  const play = useCallback((type: SoundType) => {
+  const play = (type: SoundType) => {
     if (!isEnabled || isPaused) return;
 
     const config = soundConfigs[type];
@@ -134,7 +134,7 @@ export function useUISound() {
     }).catch(() => {
       // Ignore context initialization errors
     });
-  }, [sfxVolume, masterVolume, isEnabled, isPaused]);
+  };
 
   return {
     playHover: () => play('hover'),

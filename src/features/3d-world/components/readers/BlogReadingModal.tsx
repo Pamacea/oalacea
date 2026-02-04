@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, Clock, Eye, Scroll, Tag } from 'lucide-react';
 import Image from 'next/image';
@@ -19,7 +19,7 @@ interface BlogReadingModalProps {
 
 // Markdown renderer with proper React keys
 function MarkdownContent({ content }: { content: string }) {
-  const parsedElements = useMemo(() => {
+  const parsedElements = (() => {
     if (!content) return [];
 
     const lines = content.split('\n');
@@ -168,7 +168,7 @@ function MarkdownContent({ content }: { content: string }) {
     }
 
     return elements;
-  }, [content]);
+  })();
 
   return <div className="markdown-content">{parsedElements}</div>;
 }

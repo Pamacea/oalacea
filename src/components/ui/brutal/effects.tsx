@@ -263,24 +263,21 @@ export function FallingFragments({
 }: FallingFragmentsProps) {
   const { w, h } = sizeMap[size]
 
-  // Pre-generate random values using useMemo to avoid impure render
-  const fragments = React.useMemo(() =>
-    Array.from({ length: count }, (_, i) => ({
-      key: i,
-      colorClass: (Array.isArray(fragmentColors[color])
-        ? fragmentColors[color]
-        : [fragmentColors[color]])[i % (Array.isArray(fragmentColors[color])
-        ? fragmentColors[color].length
-        : 1)],
-      duration: 2 + ((i * 7) % 100) / 25,
-      delay: ((i * 11) % 100) / 33,
-      xPos: ((i * 13) % 100),
-      rotate: 180 + ((i * 17) % 180),
-      x: (((i * 19) % 100) / 100) * 100 - 50,
-      repeatDelay: ((i * 23) % 100) / 50,
-    })),
-  [count, color]
-  )
+  // Pre-generate random values (compiler handles memoization)
+  const fragments = Array.from({ length: count }, (_, i) => ({
+    key: i,
+    colorClass: (Array.isArray(fragmentColors[color])
+      ? fragmentColors[color]
+      : [fragmentColors[color]])[i % (Array.isArray(fragmentColors[color])
+      ? fragmentColors[color].length
+      : 1)],
+    duration: 2 + ((i * 7) % 100) / 25,
+    delay: ((i * 11) % 100) / 33,
+    xPos: ((i * 13) % 100),
+    rotate: 180 + ((i * 17) % 180),
+    x: (((i * 19) % 100) / 100) * 100 - 50,
+    repeatDelay: ((i * 23) % 100) / 50,
+  }))
 
   return (
     <div className={cn("absolute inset-0 pointer-events-none overflow-hidden", className)}>

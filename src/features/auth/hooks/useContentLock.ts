@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { useSession } from "next-auth/react"
 
 export interface ContentLock {
@@ -45,6 +45,7 @@ export function useContentLock({
   const [isLoading, setIsLoading] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Keep useCallback for useEffect dependency (React Compiler exception #1)
   const fetchLock = useCallback(async () => {
     if (!enabled) return
 
@@ -74,7 +75,7 @@ export function useContentLock({
     }
   }, [enabled, entityType, entityId, session?.user?.id, isLockedByMe, isLockedByOthers, onLockAcquired, onLockLost, onLockConflict])
 
-  const acquireLock = useCallback(async (durationMinutes: number = 30) => {
+  const acquireLock = async (durationMinutes: number = 30) => {
     if (!session?.user) {
       return { success: false, error: "Not authenticated" }
     }
@@ -105,9 +106,9 @@ export function useContentLock({
     } finally {
       setIsLoading(false)
     }
-  }, [session, entityType, entityId, onLockAcquired, onLockConflict])
+  }
 
-  const releaseLock = useCallback(async () => {
+  const releaseLock = async () => {
     if (!session?.user) {
       return { success: false }
     }
@@ -130,9 +131,9 @@ export function useContentLock({
     } catch {
       return { success: false }
     }
-  }, [session, entityType, entityId, onLockLost])
+  }
 
-  const refreshLock = useCallback(async (durationMinutes: number = 30) => {
+  const refreshLock = async (durationMinutes: number = 30) => {
     if (!lock || !isLockedByMe) {
       return { success: false, error: "No lock to refresh" }
     }
@@ -158,9 +159,9 @@ export function useContentLock({
     } finally {
       setIsLoading(false)
     }
-  }, [lock, isLockedByMe])
+  }
 
-  const forceReleaseLock = useCallback(async (lockId: string) => {
+  const forceReleaseLock = async (lockId: string) => {
     if (session?.user?.role !== "ADMIN") {
       return { success: false, error: "Unauthorized" }
     }
@@ -180,7 +181,7 @@ export function useContentLock({
     } catch {
       return { success: false, error: "Failed to force release lock" }
     }
-  }, [session, fetchLock])
+  }
 
   useEffect(() => {
     if (!enabled) return

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Mesh, Group } from 'three';
 import type { WorldType } from '../types';
@@ -50,10 +50,8 @@ export function InteractionZone({
 
   const zoneColor = color || colors.primary;
 
-  const pulseSpeed = useMemo(() => {
-    const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return 1.5 + ((hash % 100) / 100) * 0.5;
-  }, [id]);
+  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const pulseSpeed = 1.5 + ((hash % 100) / 100) * 0.5;
   const baseRadius = radius;
 
   useFrame((state) => {

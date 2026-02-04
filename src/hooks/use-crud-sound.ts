@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback } from 'react';
 import { useAudioStore } from '@/features/3d-world/store/3d-audio-store';
 
 /**
@@ -10,20 +9,20 @@ import { useAudioStore } from '@/features/3d-world/store/3d-audio-store';
 export function useCrudSound() {
   const { playNotification, playNotificationDelete, isEnabled } = useAudioStore();
 
-  const playSuccess = useCallback(() => {
+  const playSuccess = () => {
     if (isEnabled) playNotification();
-  }, [isEnabled, playNotification]);
+  };
 
-  const playDelete = useCallback(() => {
+  const playDelete = () => {
     if (isEnabled) playNotificationDelete();
-  }, [isEnabled, playNotificationDelete]);
+  };
 
   /**
    * Wrapper for async CRUD operations that plays SFX on completion
    * @param operation - The async operation to execute
    * @param type - 'create' | 'update' | 'delete' | 'view'
    */
-  const withSound = useCallback(async <T>(
+  const withSound = async <T>(
     operation: () => Promise<T>,
     type: 'create' | 'update' | 'delete' | 'view' = 'create'
   ): Promise<T> => {
@@ -40,7 +39,7 @@ export function useCrudSound() {
     } catch (error) {
       throw error;
     }
-  }, [playSuccess, playDelete]);
+  };
 
   return {
     playSuccess,

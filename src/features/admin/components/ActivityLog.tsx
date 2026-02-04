@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -66,6 +66,7 @@ export function ActivityLog({ userId, entityType, className }: ActivityLogProps)
   const canReadActivity = permissions.can("activity:read")
   const canDelete = permissions.can("users:delete") // Admins can delete via user management
 
+  // Keep useCallback for useEffect dependency (React Compiler exception #1)
   const fetchActivities = useCallback(async () => {
     if (!canReadActivity) return
 

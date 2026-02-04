@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import { MeshStandardMaterial } from 'three';
@@ -61,17 +61,17 @@ export function BlogTerminal({ posts, position = [0, 0, 0], onPostSelect, active
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
   const currentPosts = posts.slice(currentPage * POSTS_PER_PAGE, (currentPage + 1) * POSTS_PER_PAGE);
 
-  const handleNextPage = useCallback(() => {
+  const handleNextPage = () => {
     if (currentPage < totalPages - 1) {
       setCurrentPage((p) => p + 1);
     }
-  }, [currentPage, totalPages]);
+  };
 
-  const handlePrevPage = useCallback(() => {
+  const handlePrevPage = () => {
     if (currentPage > 0) {
       setCurrentPage((p) => p - 1);
     }
-  }, [currentPage]);
+  };
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;

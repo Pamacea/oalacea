@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAudioStore } from '@/features/3d-world/store';
 import { SFX_CONFIGS } from '@/config/3d/audio';
 
@@ -278,50 +278,41 @@ export function useSoundManager() {
     };
   }, [isEnabled]);
 
-  const play = useCallback(
-    (soundType: SoundType, volumeMultiplier = 1) => {
-      if (isEnabled && !isPaused) {
-        soundManager.play(soundType, volumeMultiplier);
-      }
-    },
-    [isEnabled, isPaused]
-  );
+  const play = (soundType: SoundType, volumeMultiplier = 1) => {
+    if (isEnabled && !isPaused) {
+      soundManager.play(soundType, volumeMultiplier);
+    }
+  };
 
-  const stop = useCallback(
-    (soundType: SoundType) => {
-      soundManager.stop(soundType);
-    },
-    []
-  );
+  const stop = (soundType: SoundType) => {
+    soundManager.stop(soundType);
+  };
 
-  const playInteraction = useCallback(() => play('interaction'), [play]);
-  const playHover = useCallback(() => play('hover'), [play]);
-  const playClick = useCallback(() => play('click'), [play]);
-  const playSuccess = useCallback(() => play('success'), [play]);
-  const playError = useCallback(() => play('error'), [play]);
-  const playDoorOpen = useCallback(() => play('doorOpen'), [play]);
-  const playDoorClose = useCallback(() => play('doorClose'), [play]);
-  const playNotification = useCallback(() => play('notification'), [play]);
-  const playNotificationDelete = useCallback(() => play('notificationDelete'), [play]);
-  const playAmbient = useCallback(() => play('ambient'), [play]);
+  const playInteraction = () => play('interaction');
+  const playHover = () => play('hover');
+  const playClick = () => play('click');
+  const playSuccess = () => play('success');
+  const playError = () => play('error');
+  const playDoorOpen = () => play('doorOpen');
+  const playDoorClose = () => play('doorClose');
+  const playNotification = () => play('notification');
+  const playNotificationDelete = () => play('notificationDelete');
+  const playAmbient = () => play('ambient');
 
-  const crossfadeWorld = useCallback(
-    async (fromWorld: string, toWorld: string, duration = 2000) => {
-      if (isEnabled) {
-        await soundManager.crossfadeWorld(fromWorld, toWorld, duration);
-      }
-    },
-    [isEnabled]
-  );
+  const crossfadeWorld = async (fromWorld: string, toWorld: string, duration = 2000) => {
+    if (isEnabled) {
+      await soundManager.crossfadeWorld(fromWorld, toWorld, duration);
+    }
+  };
 
-  const stopAll = useCallback(() => {
+  const stopAll = () => {
     soundManager.stopAll();
-  }, []);
+  };
 
-  const cleanup = useCallback(() => {
+  const cleanup = () => {
     cleanupRef.current = true;
     soundManager.cleanup();
-  }, []);
+  };
 
   return {
     play,

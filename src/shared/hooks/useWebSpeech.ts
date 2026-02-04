@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export type SpeechLanguage = 'en' | 'fr';
 export type SpeechStatus = 'idle' | 'listening' | 'processing' | 'speaking' | 'error';
@@ -211,7 +211,7 @@ export function useWebSpeech({
     };
   }, [isSupported, language, status, onError, onInterimResult]);
 
-  const startListening = useCallback(() => {
+  const startListening = () => {
     if (!isSupported || !recognitionRef.current) {
       onError?.('Speech recognition is not available');
       return;
@@ -221,17 +221,17 @@ export function useWebSpeech({
     setInterimTranscript('');
     setError(null);
     recognitionRef.current.start();
-  }, [isSupported, onError]);
+  };
 
-  const stopListening = useCallback(() => {
+  const stopListening = () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
     setIsListening(false);
     setStatus('idle');
-  }, []);
+  };
 
-  const speak = useCallback(async (text: string): Promise<void> => {
+  const speak = async (text: string): Promise<void> => {
     if (!isSupported) {
       onError?.('Speech synthesis is not available');
       return;
@@ -272,22 +272,22 @@ export function useWebSpeech({
 
     synthesisRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [isSupported, language, onError]);
+  };
 
-  const stopSpeaking = useCallback(() => {
+  const stopSpeaking = () => {
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
     setStatus('idle');
-  }, []);
+  };
 
-  const toggleVoice = useCallback(() => {
+  const toggleVoice = () => {
     if (isListening) {
       stopListening();
       return false;
     }
     startListening();
     return true;
-  }, [isListening, startListening, stopListening]);
+  };
 
   return {
     isSupported,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, Vector3 } from 'three';
@@ -32,16 +32,13 @@ export function InteractionHighlight({
   const ringRef = useRef<Mesh>(null);
   const particlesRef = useRef<Group>(null);
 
-  const particles = useMemo(() => {
-    // Use deterministic seed-based random instead of Math.random
-    return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
-      angle: (i / PARTICLE_COUNT) * Math.PI * 2,
-      baseRadius: radius * 0.8,
-      speed: 0.5 + seededRandom(i * 3) * 0.5,
-      yOffset: (seededRandom(i * 5 + 100) - 0.5) * 0.5,
-      phase: seededRandom(i * 7 + 200) * Math.PI * 2,
-    }));
-  }, [radius]);
+  const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+    angle: (i / PARTICLE_COUNT) * Math.PI * 2,
+    baseRadius: radius * 0.8,
+    speed: 0.5 + seededRandom(i * 3) * 0.5,
+    yOffset: (seededRandom(i * 5 + 100) - 0.5) * 0.5,
+    phase: seededRandom(i * 7 + 200) * Math.PI * 2,
+  }));
 
   useFrame((state) => {
     if (!isActive) return;
@@ -143,22 +140,19 @@ export function BurstParticle({ position, color = '#00ff88', onComplete }: Burst
   const particlesRef = useRef<Group>(null);
   const [alive, setAlive] = useState(true);
 
-  const particles = useMemo(() => {
-    // Use deterministic seed-based random instead of Math.random
-    return Array.from({ length: 16 }, (_, i) => {
-      const angle = seededRandom(i * 11) * Math.PI * 2;
-      const speed = 2 + seededRandom(i * 13) * 3;
-      return {
-        angle,
-        speed,
-        velocity: new Vector3(
-          Math.cos(angle) * speed,
-          (seededRandom(i * 17) - 0.5) * speed,
-          Math.sin(angle) * speed
-        ),
-      };
-    });
-  }, []);
+  const particles = Array.from({ length: 16 }, (_, i) => {
+    const angle = seededRandom(i * 11) * Math.PI * 2;
+    const speed = 2 + seededRandom(i * 13) * 3;
+    return {
+      angle,
+      speed,
+      velocity: new Vector3(
+        Math.cos(angle) * speed,
+        (seededRandom(i * 17) - 0.5) * speed,
+        Math.sin(angle) * speed
+      ),
+    };
+  });
 
   useFrame((state, delta) => {
     if (!particlesRef.current) return;

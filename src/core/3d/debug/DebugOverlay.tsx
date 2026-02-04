@@ -1,7 +1,7 @@
 // Debug Overlay - Visual debugging for collision zones and pathfinding
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Vector3, Group } from 'three';
 import type { HitboxShape } from '@/core/3d/physics/engine/hitboxes/HitboxShape';
@@ -53,39 +53,36 @@ function BoxHitboxDebug({
   const halfH = height / 2;
   const halfD = depth / 2;
 
-  const edgePoints = useMemo(() => {
-    // Box edges (12 edges, 2 points each = 24 points)
-    const edges: number[][] = [
-      // Bottom face
-      [-halfW, -halfH, -halfD],
-      [halfW, -halfH, -halfD],
-      [halfW, -halfH, -halfD],
-      [halfW, -halfH, halfD],
-      [halfW, -halfH, halfD],
-      [-halfW, -halfH, halfD],
-      [-halfW, -halfH, halfD],
-      [-halfW, -halfH, -halfD],
-      // Top face
-      [-halfW, halfH, -halfD],
-      [halfW, halfH, -halfD],
-      [halfW, halfH, -halfD],
-      [halfW, halfH, halfD],
-      [halfW, halfH, halfD],
-      [-halfW, halfH, halfD],
-      [-halfW, halfH, halfD],
-      [-halfW, halfH, -halfD],
-      // Vertical edges
-      [-halfW, -halfH, -halfD],
-      [-halfW, halfH, -halfD],
-      [halfW, -halfH, -halfD],
-      [halfW, halfH, -halfD],
-      [halfW, -halfH, halfD],
-      [halfW, halfH, halfD],
-      [-halfW, -halfH, halfD],
-      [-halfW, halfH, halfD],
-    ];
-    return new Float32Array(edges.flat());
-  }, [halfW, halfH, halfD]);
+  // Box edges (12 edges, 2 points each = 24 points)
+  const edgePoints = new Float32Array([
+    // Bottom face
+    -halfW, -halfH, -halfD,
+    halfW, -halfH, -halfD,
+    halfW, -halfH, -halfD,
+    halfW, -halfH, halfD,
+    halfW, -halfH, halfD,
+    -halfW, -halfH, halfD,
+    -halfW, -halfH, halfD,
+    -halfW, -halfH, -halfD,
+    // Top face
+    -halfW, halfH, -halfD,
+    halfW, halfH, -halfD,
+    halfW, halfH, -halfD,
+    halfW, halfH, halfD,
+    halfW, halfH, halfD,
+    -halfW, halfH, halfD,
+    -halfW, halfH, halfD,
+    -halfW, halfH, -halfD,
+    // Vertical edges
+    -halfW, -halfH, -halfD,
+    -halfW, halfH, -halfD,
+    halfW, -halfH, -halfD,
+    halfW, halfH, -halfD,
+    halfW, -halfH, halfD,
+    halfW, halfH, halfD,
+    -halfW, -halfH, halfD,
+    -halfW, halfH, halfD,
+  ]);
 
   return (
     <group position={[position.x, position.y, position.z]} rotation={[0, rotation, 0]}>
@@ -112,14 +109,14 @@ function PathDebug({
   path: Vector3[];
   color?: number;
 }) {
-  // useMemo must be called before any early return to follow rules of hooks
-  const pathPoints = useMemo(() => {
+  // Compute path points (must be before early return)
+  const pathPoints = (() => {
     const pts: number[] = [];
     for (const p of path) {
       pts.push(p.x, p.y + 0.1, p.z);
     }
     return new Float32Array(pts);
-  }, [path]);
+  })();
 
   if (!path || path.length < 2) return null;
 
@@ -163,7 +160,7 @@ function SpatialGridDebug({
   worldMin: number;
   worldMax: number;
 }) {
-  const gridLines = useMemo(() => {
+  const gridLines = (() => {
     const lines: number[] = [];
 
     // Horizontal lines (every 5 cells)
@@ -179,7 +176,7 @@ function SpatialGridDebug({
     }
 
     return new Float32Array(lines);
-  }, [cellSize, cols, rows, worldMin, worldMax]);
+  })();
 
   return (
     <lineSegments>
@@ -238,14 +235,12 @@ function TargetIndicator({ position }: { position: Vector3 }) {
     }
   });
 
-  const crossPoints = useMemo(() => {
-    return new Float32Array([
-      -0.3, 0, 0,
-      0.3, 0, 0,
-      0, 0, -0.3,
-      0, 0, 0.3,
-    ]);
-  }, []);
+  const crossPoints = new Float32Array([
+    -0.3, 0, 0,
+    0.3, 0, 0,
+    0, 0, -0.3,
+    0, 0, 0.3,
+  ]);
 
   return (
     <group position={[position.x, 0.1, position.z]}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useRef } from 'react';
 
 export type HapticPattern = 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'notification';
 
@@ -22,54 +22,48 @@ export function useHapticFeedback(options: HapticFeedbackOptions = {}) {
   const { enabled = true, intensity = 1 } = options;
   const isVibratingRef = useRef(false);
 
-  const isSupported = useCallback(() => {
+  const isSupported = () => {
     return typeof navigator !== 'undefined' && 'vibrate' in navigator;
-  }, []);
+  };
 
-  const trigger = useCallback(
-    (pattern: HapticPattern, customIntensity?: number) => {
-      if (!enabled || !isSupported() || isVibratingRef.current) return;
+  const trigger = (pattern: HapticPattern, customIntensity?: number) => {
+    if (!enabled || !isSupported() || isVibratingRef.current) return;
 
-      const vibrationPattern = HAPTIC_PATTERNS[pattern] || HAPTIC_PATTERNS.light;
-      const scaledPattern = vibrationPattern.map((duration) => duration * (customIntensity || intensity));
+    const vibrationPattern = HAPTIC_PATTERNS[pattern] || HAPTIC_PATTERNS.light;
+    const scaledPattern = vibrationPattern.map((duration) => duration * (customIntensity || intensity));
 
-      isVibratingRef.current = true;
+    isVibratingRef.current = true;
 
-      const success = navigator.vibrate(scaledPattern);
+    const success = navigator.vibrate(scaledPattern);
 
-      if (!success) {
-        isVibratingRef.current = false;
-        return;
-      }
+    if (!success) {
+      isVibratingRef.current = false;
+      return;
+    }
 
-      setTimeout(() => {
-        isVibratingRef.current = false;
-      }, scaledPattern.reduce((sum, duration) => sum + duration, 0));
-    },
-    [enabled, intensity, isSupported]
-  );
+    setTimeout(() => {
+      isVibratingRef.current = false;
+    }, scaledPattern.reduce((sum, duration) => sum + duration, 0));
+  };
 
-  const triggerLight = useCallback(() => trigger('light'), [trigger]);
-  const triggerMedium = useCallback(() => trigger('medium'), [trigger]);
-  const triggerHeavy = useCallback(() => trigger('heavy'), [trigger]);
-  const triggerSuccess = useCallback(() => trigger('success'), [trigger]);
-  const triggerError = useCallback(() => trigger('error'), [trigger]);
-  const triggerNotification = useCallback(() => trigger('notification'), [trigger]);
+  const triggerLight = () => trigger('light');
+  const triggerMedium = () => trigger('medium');
+  const triggerHeavy = () => trigger('heavy');
+  const triggerSuccess = () => trigger('success');
+  const triggerError = () => trigger('error');
+  const triggerNotification = () => trigger('notification');
 
-  const triggerCustom = useCallback(
-    (pattern: number[]) => {
-      if (!enabled || !isSupported()) return;
-      navigator.vibrate(pattern.map((d) => d * intensity));
-    },
-    [enabled, intensity, isSupported]
-  );
+  const triggerCustom = (pattern: number[]) => {
+    if (!enabled || !isSupported()) return;
+    navigator.vibrate(pattern.map((d) => d * intensity));
+  };
 
-  const stop = useCallback(() => {
+  const stop = () => {
     if (isSupported()) {
       navigator.vibrate(0);
       isVibratingRef.current = false;
     }
-  }, [isSupported]);
+  };
 
   return {
     trigger,

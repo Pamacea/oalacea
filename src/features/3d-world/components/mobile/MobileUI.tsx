@@ -2,7 +2,7 @@
 // Collapsed by default, expandable with drag handle
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useWorldStore } from '@/features/3d-world/store';
@@ -43,27 +43,24 @@ export function MobileUI(): React.ReactElement {
     return () => window.removeEventListener('resize', handleResize);
   }, [showRotationHint]);
 
-  const handleDragEnd = useCallback(
-    (_: unknown, info: PanInfo) => {
-      const shouldExpand = info.offset.y < -DRAG_THRESHOLD;
-      const shouldCollapse = info.offset.y > DRAG_THRESHOLD;
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    const shouldExpand = info.offset.y < -DRAG_THRESHOLD;
+    const shouldCollapse = info.offset.y > DRAG_THRESHOLD;
 
-      if (shouldExpand && !isExpanded) {
-        setIsExpanded(true);
-      } else if (shouldCollapse && isExpanded) {
-        setIsExpanded(false);
-      }
-    },
-    [isExpanded]
-  );
+    if (shouldExpand && !isExpanded) {
+      setIsExpanded(true);
+    } else if (shouldCollapse && isExpanded) {
+      setIsExpanded(false);
+    }
+  };
 
-  const toggleExpanded = useCallback(() => {
+  const toggleExpanded = () => {
     setIsExpanded((prev) => !prev);
-  }, []);
+  };
 
-  const handleSwitchWorld = useCallback(() => {
+  const handleSwitchWorld = () => {
     switchWorld(currentWorldStore === 'dev' ? 'art' : 'dev');
-  }, [currentWorldStore, switchWorld]);
+  };
 
   const worldColors = {
     dev: {

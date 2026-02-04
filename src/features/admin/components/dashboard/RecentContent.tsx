@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { memo } from 'react';
 import { GlitchText } from '@/components/ui/imperium';
 import { motion } from 'framer-motion';
 import type { DashboardPostItem, DashboardProjectItem } from '@/types/component';
@@ -11,7 +10,7 @@ interface RecentContentProps {
   projects: DashboardProjectItem[];
 }
 
-export const RecentContent = memo(function RecentContent({ posts, projects }: RecentContentProps) {
+export function RecentContent({ posts, projects }: RecentContentProps) {
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       {posts.length > 0 && (
@@ -124,4 +123,4 @@ export const RecentContent = memo(function RecentContent({ posts, projects }: Re
       )}
     </div>
   );
-});
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, Tag, Scroll, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -11,7 +11,7 @@ import { useUISound } from '@/hooks/use-ui-sound';
 
 // Simple markdown renderer for basic content with proper React keys
 function MarkdownRenderer({ content }: { content: string }) {
-  const elements = useMemo(() => {
+  const elements = (() => {
     if (!content) return [];
 
     const lines = content.split('\n');
@@ -150,7 +150,7 @@ function MarkdownRenderer({ content }: { content: string }) {
     }
 
     return result;
-  }, [content]);
+  })();
 
   return <>{elements}</>;
 }

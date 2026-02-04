@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ export function ShareCardPreview({
   const [isLoading, setIsLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const cardUrl = useMemo(() => {
+  const cardUrl = (() => {
     if (!slug) return '';
 
     const baseUrl = '/api/share-card';
@@ -39,7 +39,7 @@ export function ShareCardPreview({
       v: refreshKey.toString(),
     });
     return `${baseUrl}?${params.toString()}`;
-  }, [type, slug, theme, refreshKey]);
+  })();
 
   const handleRefresh = () => {
     setIsLoading(true);

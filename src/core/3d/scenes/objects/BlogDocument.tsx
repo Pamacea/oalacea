@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh } from 'three';
 import * as THREE from 'three';
@@ -86,15 +86,12 @@ export function BlogDocument({ post, position, world, isActive = false }: BlogDo
   const categoryColor = getCategoryColor(post.category, colors.green);
 
   // Particles
-  const particles = useMemo(() => {
-    // Use deterministic seed-based random instead of Math.random
-    return Array.from({ length: 8 }, (_, i) => ({
-      angle: (i / 8) * Math.PI * 2,
-      radius: 1.5 + seededRandom(i * 3) * 0.5,
-      speed: 0.5 + seededRandom(i * 5 + 50) * 0.5,
-      yOffset: (seededRandom(i * 7 + 100) - 0.5) * 2,
-    }));
-  }, []);
+  const particles = Array.from({ length: 8 }, (_, i) => ({
+    angle: (i / 8) * Math.PI * 2,
+    radius: 1.5 + seededRandom(i * 3) * 0.5,
+    speed: 0.5 + seededRandom(i * 5 + 50) * 0.5,
+    yOffset: (seededRandom(i * 7 + 100) - 0.5) * 2,
+  }));
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;

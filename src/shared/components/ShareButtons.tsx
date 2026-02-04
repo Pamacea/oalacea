@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import {
   Share2 as Share2Icon,
@@ -86,7 +86,7 @@ export function ShareButtons({
 
   const shareUrl = url || (typeof window !== "undefined" ? window.location.href : "")
 
-  const generateQRCode = useCallback(async () => {
+  const generateQRCode = async () => {
     if (qrCode) return
     setQrLoading(true)
     try {
@@ -105,7 +105,7 @@ export function ShareButtons({
     } finally {
       setQrLoading(false)
     }
-  }, [shareUrl, qrCode])
+  }
 
   const handleCopy = async () => {
     try {

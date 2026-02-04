@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, Mesh, DoubleSide } from 'three';
 import { Text } from '@react-three/drei';
@@ -56,20 +56,20 @@ export function ProjectPedestal({ project, position, isActive = false, onInterac
     }
   });
 
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     openProjectListing();
     onInteract?.();
-  }, [openProjectListing, onInteract]);
+  };
 
-  const handlePointerOver = useCallback(() => {
+  const handlePointerOver = () => {
     setHovered(true);
     document.body.style.cursor = 'pointer';
-  }, []);
+  };
 
-  const handlePointerOut = useCallback(() => {
+  const handlePointerOut = () => {
     setHovered(false);
     document.body.style.cursor = 'auto';
-  }, []);
+  };
 
   return (
     <group ref={groupRef} position={position}>

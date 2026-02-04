@@ -2,7 +2,7 @@
 // Now supports unified ObstacleConfig with explicit hitbox types
 'use client';
 
-import { useRef, useEffect, useMemo, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Vector3 } from 'three';
 import {
   SpatialHashGrid,
@@ -63,30 +63,28 @@ export function usePhysicsEngine(
   const [engine, setEngine] = useState<PhysicsEngineInstance | null>(null);
 
   // Stable dependency for useEffect - only changes if zone data actually changes
-  const zonesKey = useMemo(() => {
-    return JSON.stringify(
-      collisionZones.map((z) => {
-        // Handle both ObstacleConfig and CollisionZone
-        if ('hitbox' in z) {
-          // New ObstacleConfig format
-          return {
-            id: z.id,
-            position: z.position,
-            type: z.type,
-            hitbox: z.hitbox,
-          };
-        } else {
-          // Legacy CollisionZone format
-          return {
-            id: z.id,
-            position: z.position,
-            radius: z.radius,
-            name: z.name,
-          };
-        }
-      })
-    );
-  }, [collisionZones]);
+  const zonesKey = JSON.stringify(
+    collisionZones.map((z) => {
+      // Handle both ObstacleConfig and CollisionZone
+      if ('hitbox' in z) {
+        // New ObstacleConfig format
+        return {
+          id: z.id,
+          position: z.position,
+          type: z.type,
+          hitbox: z.hitbox,
+        };
+      } else {
+        // Legacy CollisionZone format
+        return {
+          id: z.id,
+          position: z.position,
+          radius: z.radius,
+          name: z.name,
+        };
+      }
+    })
+  );
 
   useEffect(() => {
     // Initialize components

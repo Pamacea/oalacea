@@ -2,7 +2,7 @@
 // Enables shareable URLs: ?world=art&x=10&z=-5&showProject=abc123
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { WorldType } from '@/core/3d/scenes/types';
 import { useWorldStore } from '@/features/3d-world/store';
@@ -82,17 +82,17 @@ export function useWorldStateSync() {
   /**
    * Update URL with current world state
    */
-  const updateURL = useCallback((state: WorldStateURL) => {
+  const updateURL = (state: WorldStateURL) => {
     const encoded = encodeWorldState(state);
     const url = new URL(window.location.href);
     url.searchParams.set(WORLD_STATE_KEY, encoded);
     router.replace(url.toString(), { scroll: false });
-  }, [router]);
+  };
 
   /**
    * Share current view
    */
-  const shareView = useCallback(async (state: WorldStateURL) => {
+  const shareView = async (state: WorldStateURL) => {
     const encoded = encodeWorldState(state);
     const url = `${window.location.origin}${window.location.pathname}?${WORLD_STATE_KEY}=${encoded}`;
 
@@ -111,19 +111,19 @@ export function useWorldStateSync() {
     }
 
     return url;
-  }, []);
+  };
 
   /**
    * Get stored state (for components to use)
    */
-  const getStoredState = useCallback(() => {
+  const getStoredState = () => {
     return {
       showProject: sessionStorage.getItem('showProject') || undefined,
       showBlog: sessionStorage.getItem('showBlog') || undefined,
       camX: parseFloat(sessionStorage.getItem('camX') || '0'),
       camZ: parseFloat(sessionStorage.getItem('camZ') || '0'),
     };
-  }, []);
+  };
 
   return {
     updateURL,
