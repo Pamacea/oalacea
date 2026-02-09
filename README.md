@@ -1,5 +1,11 @@
 # Oalacea
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/Pamacea/oalacea)](https://github.com/Pamacea/oalacea/releases/latest)
+[![CI](https://github.com/Pamacea/oalacea/actions/workflows/ci.yml/badge.svg)](https://github.com/Pamacea/oalacea/actions)
+
+
+
 Portfolio/blog professionnel avec scène 3D interactive en vue isométrique.
 
 ## Stack Technique
