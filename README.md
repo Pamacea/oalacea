@@ -8,6 +8,8 @@
 
 Portfolio/blog professionnel avec scène 3D interactive en vue isométrique.
 
+**Current Version:** v1.0.1 - About Page Redesign
+
 ## Stack Technique
 
 | Catégorie | Technologies |

@@ -8,13 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Blog system with markdown support
-- Project showcase gallery
-- Contact form
-- Dark/light mode toggle
-- Performance optimizations
+- 3D model assets (GLB/GLTF/FBX) in `/public/3d/models/`
+- Environment textures (HDRs) in `/public/3d/env/`
+- NPC system (Tech Priest, Art Curator)
 
-## [1.0.0] - 2026-02-09
+## [1.0.1] - 2025-02-11
+
+### Added
+- **About Page v1.0.1**: Completely redesigned about page with Imperium Theme
+  - Clean, minimal design inspired by 3D About Modal
+  - Simple tech stack badges (no progress bars)
+  - Animated header with glitch effect
+  - Identity card with stats (Projects, Articles, Commits)
+  - Navigation cards to Projects and Blogs
+  - Contact section (GitHub, Email)
+  - Responsive grid layout
+  - Moved from `(marketing)` to `(mie)` route group
+
+### Changed
+- Removed old about page from `(marketing)` route group
+- Updated overall project completion to 91%
+
+### Fixed
+- Route conflict between `(marketing)/about` and `(mie)/about`
+- Client component metadata export issue (moved to layout.tsx)
+
+[Unreleased]: https://github.com/Pamacea/oalacea/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Pamacea/oalacea/releases/tag/v1.0.1
+[1.0.0]: https://github.com/Pamacea/oalacea/releases/tag/v1.0.0
 
 ### Added
 - **3D Interactive Scene**: Isometric 3D scene built with Three.js and React Three Fiber
