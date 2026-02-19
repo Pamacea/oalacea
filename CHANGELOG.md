@@ -12,6 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Environment textures (HDRs) in `/public/3d/env/`
 - NPC system (Tech Priest, Art Curator)
 
+## [1.0.2] - 2025-02-19
+
+### Added
+- **Shadow Secret Integration**: Secure secrets management with SOPS encryption
+  - Added `project.yaml` for shadow-secret configuration
+  - Added `.sops.yaml` for age-based encryption
+  - Secure vault system for environment secrets
+
+### Changed
+- **Git Configuration**: Updated `.gitignore` to only exclude `.env.local`
+- **Prisma Configuration**: Improved environment loading with dotenv priority
+- Enhanced `prisma.config.ts` with better dotenv configuration
+
+### Fixed
+- Environment file handling for better local development experience
+
 ## [1.0.1] - 2025-02-11
 
 ### Added
@@ -33,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Route conflict between `(marketing)/about` and `(mie)/about`
 - Client component metadata export issue (moved to layout.tsx)
 
-[Unreleased]: https://github.com/Pamacea/oalacea/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/Pamacea/oalacea/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/Pamacea/oalacea/releases/tag/v1.0.2
 [1.0.1]: https://github.com/Pamacea/oalacea/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Pamacea/oalacea/releases/tag/v1.0.0
 
